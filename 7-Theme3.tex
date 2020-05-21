@@ -20,17 +20,104 @@ Toutefois, un ajout majeur : le retirage récursif des entités à regrouper pou
 \section{Méthode proposée}
 \subsection{Regroupement hiérarchique récursif avec retirage}
 
+Rappeler le principe général
+
+Exposer le principe de récursivité avec un schéma
+
+Modalités de retirage
+
+Expérimentation avec/sans retirage
+
+Seuil adaptatif
+
+
 \subsection{Extraction d'axiomes}
 \label{subsec:texp-exaxiom}
+
+Une fois que l'on dispose de clusters hiérarchisés, il reste à 
 Qui peut être vu comme un étiquetage automatique des clusters
+
+Idée générale
+
+Extraction des atomes
+
+Ici, nous proposons un schéma d'axiome extraction très simple, basé sur des statistiques d'occurrence au sein d'un cluster. Toutefois, la méthode peut s'adapter à beaucoup d'autres algorithmes d'extraction d'axiomes. 
+
+\subsubsection{Couverture, spécificité et score de partition}
+Soit $C = \{e_1, e_2, \ldots, e_n \} \subseteq \Ent$ un cluster contenant $n$ entités. Si $C$ n'est pas une feuille, alors il a deux sous-clusters gauche et droit, notés $L$ et $R$, et contenant respectivement $n_1$ et $n_2$ entités, avec $n = n_1 + n_2$. En notant $\sqcup$ l'union disjointe, on a donc :
+\begin{equation}
+C = L \sqcup R
+\end{equation}
+Pour un axiome logique $A$ et une entité $x \in \Ent$, on note $A(x)$ si $x$ vérifie l'axiome $A$. On se propose d'expliquer la séparation du cluster $C$ en ses deux sous-clusters, c'est-à-dire d'identifier des axiomes qui sont vrais dans l'un des clusters mais pas dans l'autre. Ce choix a d'abord été fait dans le but de mieux comprendre le fonctionnement du regroupement hiérarchique et d'analyser l'arbre de clustering obtenu. Toutefois, il est apparu que cette approche pouvait servir également à étiquetter des clusters, et donc à leur attribuer des axiomes.
+
+Expliquer la division de $C$ en $L \sqcup R$ nécessite de trouver un axiome $A$ tel que $A$ est valide pour tous les éléments de $L$ et pour aucun élément de $R$ :
+\begin{equation}
+    \left(\forall x \in L, A(x)  \right) \land \left(\forall x \in R, \neg A(x) \right)
+\end{equation}
+Soit, de manière équivalente :
+\begin{equation}
+    \forall x \in C = L \sqcup R, A(x) \oplus (x \in R)
+    \label{eq:exaxiom-xor-def}
+\end{equation}
+Avec $\oplus$ l'opérateur «ou exclusif». L'équation \ref{eq:exaxiom-xor-def} signifie qu'une entité de $C$ ne peut pas à la fois être dans $R$ et vérifier $A$, et elle ne peut pas non plus être dans $L$ sans vérifier $A$. Cette équation correspond au cas optimal où il existe un axiome qui divise parfaitement $C$ en $L$ et $R$ : en pratique, la plupart des clusters ne peuvent pas être parfaitement divisés, et il nous faut donc mesurer à quel point on se trouve de l'optimalité. Pour cela, on commence par définir la \textit{précision} d'un axiome $A$ par rapport à un ensemble d'éléments $E \sqsubset \Ent$ quelconque comme la proprtion d'éléments de $E$ qui vérifient $A$ :
+\begin{equation}
+    \text{prec}(A, E) = \frac{| x \in E, A(x)|}{| E |}
+\end{equation}
+On mesure alors la capacité d'un axiome $A$ à expliquer la division $C = L \sqcup R$ avec deux métriques : d'une part, sa \textit{couverture}, définie comme la proportion d'éléments de $L$ qui vérifient $A$; d'autre part, sa \textit{spécificité}, qui indique la proportion d'éléments de $R$ qui ne vérifient pas $A$. Ces deux métriques se calculent à partir de la précision comme suit :
+\begin{align}
+    \text{cov}_{L \sqcup R}(A) &= \text{prec}(A, L) \\
+    \text{sep}_{L \sqcup R}(A) &= 1 - \text{prec}(A, R)
+\end{align}
+On combine ces deux mesures en un seul indicateur synthétique, que l'on appelle le \textit{score de partition} de $A$, à l'aide d'une moyenne harmonique :
+\begin{equation}
+    \text{part}_{L \sqcup R}(A) = \left(  \text{cov}_{L \sqcup R}(A)^{-1} + \text{sep}_{L \sqcup R}(A)^{-1} \right)^{-1}
+\end{equation}
+
+On peut vérifier que l'on retrouve bien l'intuition derrière l'équation \ref{eq:exaxiom-xor-def}. La proportion d'éléments qui vérifient la condition de séparation \ref{eq:exaxiom-xor-def} est donnée par :
+\begin{equation}
+    \text{xor}(A) = \frac{| \{x \in C : A(x) \oplus (x \in R) \}|}{| C |}
+\end{equation}
+Par définition de l'opérateur ou exclusif, on peut écrire :
+\begin{equation}
+    n \cdot \text{xor}(A) = |\{x \in C: (A(x) \land \neg (x \in R) \lor (x \in R \land \neg A(x)) \}|
+\end{equation}
+Puis, comme $C$ est l'union disjointe $L$ et $R$, si $x \in C$, alors $\neg (x \in R) = x \in L$ et on a donc :
+\begin{align*}
+    n \cdot \text{xor}(A) &= |\{x \in L: (A(x)\} \sqcup \{x \in R : \neg A(x)) \}| \\
+    &= |\{x \in L: (A(x)\} | + | \{x \in R : \neg A(x)) \}|  \\
+    &= |\{x \in L: (A(x)\} | + | \{x \in R \} \setminus \{x \in R : A(x)) \}| \\
+    &= n_1 \cdot \text{prec}(A, L) + n_2 - n_2 \cdot \text{prec}(A, R) \\
+    &= n_1 \cdot \text{cov}(A) + n_2 \cdot \text{spe}(A) \\
+\end{align*}
+Soit finalement :
+\begin{equation}
+    \text{xor}(A) = \frac{n_1 \cdot \text{cov}(A) + n_2 \cdot \text{spe}(A)}{n_1 + n_2}
+\end{equation}
+
+\subsubsection{Construction d'axiomes complexes par combinaison d'axiomes atomiques}
+
+Combinaison d'atomes avec négation, conjonction, disjonction pour produire des axiomes
+
+Autre principe : TF-IDF based
+
 
 \subsection{Algorithme général}
 % Raffinements
 \subsubsection{Vue d'ensemble}
 
+Extraction de taxonomie à partir des axiomes
+
+Choix des seuils
+
+Discussion sur les paramètres
+
 \subsubsection{Diminution du seuil}
+ % Déplacer en section 5.2.1 ?
 
 \subsubsection{Phase finale}
+
+Phase finale : ajout des classes manquantes (si disponible), restriction des patterns
+
 
 \section{Évaluation et discussion}
 

@@ -123,7 +123,7 @@ Ainsi, toutes les combinaisons $\mathbf{h_i t_j}$ de $\mathbf{h}$ et de $\mathbf
     = \sigma(t, r, h)
 \end{equation}
 
-Une matrice symétrique induit donc une fonction de score est symétrique elle aussi; cela permet de modéliser des relations symétriques. Inversement, si $\mathbf{W_r}$ est antisymétrique (c'est-à-dire, $\mathbf{W_r} = -\mathbf{W_r}^\top$), on aura une fonction de score antisymétrique, ce qui permet de modéliser une relation antisymétrique.
+Une matrice symétrique induit donc une fonction de score symétrique elle aussi; cela permet de modéliser des relations symétriques. Inversement, si $\mathbf{W_r}$ est antisymétrique (c'est-à-dire, $\mathbf{W_r} = -\mathbf{W_r}^\top$), on aura une fonction de score antisymétrique, ce qui permet de modéliser une relation antisymétrique.
 
 Cette expressivité se paie toutefois par un nombre plus élevé de paramètres ($d^2$ par relation, contre $d$ pour TransE); au-delà des considérations de mémoire, l'entraînement de ces $d^2$ paramètres est plus difficile et la convergence plus lente.
 
