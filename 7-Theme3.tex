@@ -1,1 +1,41 @@
-\Chapter{EXTRACTION DE TAXONOMIE EXPRESSIVE}\label{chap:texp}
+\Chapter{EXTRACTION DE TAXONOMIE EXPRESSIVE}
+\label{chap:texp}
+
+\section{Motivation et principes généraux}
+
+Dans la section précédente, on a décrit une méthode pour extraire une hiérarchie entre les types à partir des seuls plongements d'entité. 
+
+Méthode précédente : on s'interdit d'utiliser le linked data => comment retrouver l'information connue (la taxonomie DBpédia) à partir des seuls plongements vectoriels ?
+
+Cette méthode : en utilisant toute l'information accessible, comment aller plus loin que ce qui existe (en l'occurence, trouver une taxonomie expressive – qui à l'heure actuelle n'existe pas)
+
+Pas d'utilisation du Linked Data = méthode très descriptive, qui n'utilise pas toute l'information à notre disposition.
+
+Schéma général proche de la méthode précédente : regroupement hiérarchique sur les entités, puis transformation de la hiérarchie entre entités en une hiérarchie sur les classes. Ici, étiquettage de la classe plus sophistiqué, puisuq'on s'autorise Linked Data
+
+Pourquoi ça marche ? Parce qu'on travaille sur un groupe d'entités dont on sait qu'elles sont sémantiquement proches, de par la géométrie de leurs plongements. Donc on restreint la dimension de l'espace de recherche, qui est un goulot d'étranglement habituel des méthodes d'extraction d'axiomes.
+
+Toutefois, un ajout majeur : le retirage récursif des entités à regrouper pour limiter la propagation des erreurs dans l'arbre, limiter le bruit et affiner progressivement la spécificité des classes extraites. Plus un \textit{bag of tricks} pour que ça marche bien.
+
+\section{Méthode proposée}
+\subsection{Regroupement hiérarchique récursif avec retirage}
+
+\subsection{Extraction d'axiomes}
+\label{subsec:texp-exaxiom}
+Qui peut être vu comme un étiquetage automatique des clusters
+
+\subsection{Algorithme général}
+% Raffinements
+\subsubsection{Vue d'ensemble}
+
+\subsubsection{Diminution du seuil}
+
+\subsubsection{Phase finale}
+
+\section{Évaluation et discussion}
+
+
+
+
+
+
