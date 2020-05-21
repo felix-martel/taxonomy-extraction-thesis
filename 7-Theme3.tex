@@ -96,6 +96,20 @@ Soit finalement :
 
 \subsubsection{Construction d'axiomes complexes par combinaison d'axiomes atomiques}
 
+On dispose d'un moyen pour évaluer la capacité d'un axiome $A$ à expliquer la partition d'un cluster en deux sous-clusters. Il reste à définir une procédure pour construire de tels axiomes. Pour cela, on définit d'abord des types d'axiomes primitifs, appelés des \textit{axiomes atomiques} ou simplement \textit{atomes} dans la suite; on extrait, pour chaque cluster, une liste d'axiomes atomiques, puis on combine ces atomes au moyen de conjonctions et de disjonctions pour produire des axiomes plus complexes.
+
+On considère les types d'axiomes atomiques suivants :
+\begin{itemize}
+    \item les classes $C$, aussi appelés concepts en logique descriptive, comme par exemple \dbo{Agent}, \dbo{Person} ou \dbo{Place};
+    \item les restrictions de la forme $\exists R.C$ avec $C$ une classe, par exemple $\exists \dbo{locatedIn}.\dbo{Country}$, qui contient toutes les entités situées dans un pays ;
+    \item les restrictions de la forme $\exists R.\{v\}$ avec $v \in \Ent$ une entité, tel que $\exists \dbo{locatedIn}.\{\dbr{Canada}\}$ pour représenter l'ensembles des entités situées au Canada;
+    \item les restrictions de la forme $\exists R.t$, avec $t$ représentant les littéraux d'un type $t$ donné, comme par exemple $\exists \dbo{birthDate}.\texttt{xsd:date}$ l'ensemble des entités dont la date de naissance est du type \texttt{xsd:date};
+\end{itemize}
+
+Pour chaque entité $x$ du cluster d'entrée, on extrait l'ensemble des triplets $(x, r, y)$ dont $x$ est le sujet. Si $r$ est la relation \rdf{type}, alors $y$ représente une classe, et le triplet $(x, r, y)$ est transformé en l'axiome atomique $y$. Si $y$ est un littéral, on extrait son type $t$, et on obtient l'axiome atomique $\exists R.t$. Autrement, on liste les classes $C_1, C_2, \ldots, C_m$ dont $y$ fait partie, et on extrait les axiomes atomiques $\exists r.\{y\}, \exists r.C_1, \ldots, \exists r.C_m$. On obtient ainsi une liste d'axiomes atomiques pour l'entièreté du cluster; cette liste est filtrée et seuls les atomes vérifiés par plus de $\delta_1 = 10\%$ des entités du cluster sont conservés.
+
+
+
 Combinaison d'atomes avec négation, conjonction, disjonction pour produire des axiomes
 
 Autre principe : TF-IDF based
