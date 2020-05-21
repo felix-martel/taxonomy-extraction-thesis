@@ -1,7 +1,8 @@
 \usepackage{tikz}
 \usepackage{xcolor}
 
-\usetikzlibrary{math}
+\usetikzlibrary{math,fadings}
+ %
 
 \definecolor{accent1}{HTML}{FF4738}
 \definecolor{accent2}{HTML}{4C57FF}
@@ -20,8 +21,5 @@
     axis/.style={draw=gray!50, ->}
 }
 
-\tikzfading[name=fade out,
-inner color=transparent!0,
-outer color=transparent!100
-]
+
 

@@ -59,12 +59,7 @@
 %% Autres packages.
 \usepackage{amsmath,color,soulutf8,longtable,colortbl,setspace,xspace,url,pdflscape,cite}
 
-\usepackage{amssymb}
-\usepackage[textsize=tiny,
-backgroundcolor=white,
-bordercolor=white,
-textcolor=orange
-]{todonotes}
+\input{preamble}
 %%
 %% Support des acronymes.
 \usepackage[nolist]{acronym}
@@ -119,10 +114,21 @@ textcolor=orange
 
 \input{commands}
 \input{figures}
+
+\usetikzlibrary{external}
+\tikzexternalize[prefix=tikz/]
+
 %%
 %% Il y a un document par chapitre du mémoire.
 %%
+
 \begin{document}
+
+\tikzfading[name=fade out,
+inner color=transparent!0,
+outer color=transparent!100
+]
+
 \bstctlcite{IEEEexample:BSTcontrol}
 
 %%

@@ -140,13 +140,14 @@ Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les p
     &= \sum_{\substack{C_A, C_B \in \succs(C) \\  C_A \prec C_B}} P(Z_t = C_A)\cdot P(Z_{t'} = C_B) \label{eq:proba_subsumption}
 \end{align}
 
-To compute these probabilities for all $t, t'$ without summing over all pairs of clusters, we devise a divide-and-conquer algorithm. For this, we need a recursive formulation of $P(t' \sqsubset t)$, so we introduce $P_C(t' \sqsubset t)$, the probability of axiom $(t' \sqsubset t)$ computed on the subtree $X[C]$, for any given cluster $C$. Similarly to equation~\ref{eq:softmapping_2}, it represents the probability that the cluster $m(t)$ representing $t$ is a predecessor of  the cluster $m(t')$ representing $t'$, with the additional condition that both $m(t)$ and $m(t')$ must belong to the subtree $X[C]$ (that is, be successors of $C$):
-\begin{align}
-    P_C(t' \sqsubset t) &= P(C \preceq m(t) \prec m(t') % \text{ and } m(t),m(t') \succeq C %, C \preceq m(t')
-    ) \nonumber \\
-    &= \sum_{\substack{C_A, C_B \in \succs(C) \\ C_A \prec C_B}} P(m(t) = C_A)\cdot P(m(t') = C_B) 
-    \label{eq:proba_subsumption}
-\end{align}
+
+% To compute these probabilities for all $t, t'$ without summing over all pairs of % clusters, we devise a divide-and-conquer algorithm. For this, we need a recursive % formulation of $P(t' \sqsubset t)$, so we introduce $P_C(t' \sqsubset t)$, the % probability of axiom $(t' \sqsubset t)$ computed on the subtree $X[C]$, for any given % cluster $C$. Similarly to equation~\ref{eq:softmapping_2}, it represents the % probability that the cluster $m(t)$ representing $t$ is a predecessor of  the cluster % $m(t')$ representing $t'$, with the additional condition that both $m(t)$ and $m(t')$ % must belong to the subtree $X[C]$ (that is, be successors of $C$):
+% \begin{align}
+%     P_C(t' \sqsubset t) &= P(C \preceq m(t) \prec m(t') % \text{ and } m(t),m(t') % \succeq C %, C \preceq m(t')
+%     ) \nonumber \\
+%     &= \sum_{\substack{C_A, C_B \in \succs(C) \\ C_A \prec C_B}} P(m(t) = C_A)\cdot % P(m(t') = C_B) 
+%     \label{eq:proba_subsumption}
+% \end{align}
 
 Comme le sous-arbre $X[\texttt{racine}]$ est égal à l'arbre complet, on a $P_\texttt{racine}(t' \sqsubset t) = P(t' \sqsubset)$. Si on parvient à exprimer $P_\texttt{racine}$ en fonction de $P_{\gauche(\texttt{racine})}$ et de $P_{\gauche(\texttt{racine})}$
 
