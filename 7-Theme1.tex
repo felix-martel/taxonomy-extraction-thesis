@@ -1,0 +1,158 @@
+\Chapter{PLONGEMENTS VECTORIELS DE GRAPHES DE CONNAISSANCES}\label{chap:kge}
+
+\section{Généralités}
+\label{sec:kge-general}
+
+\subsection{Introduction, notations et premiers concepts}
+\label{subsec:kge-general-intro}
+
+Les graphes de connaissance permettent d'appliquer des algorithmes de raisonnement très puissants. Toutefois, dans les bases de grande taille comme DBpédia ou Wikidata, la complexité en temps de ces algorithmes augmente rapidement, au point de les rendre inutilisables. Hors des algorithmes dédiés, les entités et les relations d'un graphe sont représentés de façon purement symbolique. La nécessité est donc apparue d'obtenir une représentation plus expressive des entités et relations d'un graphe. Pour ce faire, et suivant la dynamique du traitement automatique des langues, on a recours à des modèles de plongement. 
+
+\todo{Reformuler, en partant des différents modes de représentation}
+
+Un modèle de plongement est une méthode pour obtenir des représentations vectorielles denses et sémantiquement cohérentes des entités d'un graphe. Denses, c'est-à-dire de faible dimension, par opposition à une représentation sous forme de matrice d'adjacence $M(h) \in \{0, 1\}^{n_r \times n_e}$ où $M(h)_{i, j} = 1 \iff (h, r_i, e_j) \in \mathcal{KG}$. Sémantiquement cohérentes, car le modèle est construit de façon à envoyer une partie de l'information sémantique contenue dans le graphe vers l'espace vectoriel d'arrivé, afin que des entités sémantiquement proches dans le graphe aient des plongements vectoriels géométriquement proches.
+
+Formellement, un modèle de plongement vectoriel est un modèle qui associe à chaque entité $e \in \mathcal{E}$ un vecteur $\mathbf{e} \in \mathbb{R}^d$, et à chaque relation $r \in \mathcal{R}$ un vecteur $\mathbf{r} \in \mathbb{R}^{d'}$. On note $\mathbf{E} = \{\mathbf{e}\}_{e \in \mathcal{E}} $ l'ensemble des plongements d'entité, $\mathbf{R} = \{\mathbf{r}\}_{r \in \mathcal{R}} $ l'ensemble des plongements de relation et $\Theta = (\mathbf{E}, \mathbf{R})$ l'ensemble des paramètres du modèle. Un modèle de plongement est caractérisé par $\Theta$ ainsi que par une fonction de score $\sigma_{\Theta} : \mathcal{E \times R \times E} \rightarrow [0, 1]$, définie sur l'ensemble des triplets possibles et paramétrée par $\Theta$.  
+
+Pour entraîner un modèle de plongement, on a besoin d'un ensemble de triplets valides $\Delta_+$ (généralement, $\Delta_+ = \mathcal{KG}$), et un ensemble de triplets invalides $\Delta_-$. Comme un graphe ne contient, par construction, aucun triplet invalide, on construit $\Delta_-$ en fabriquant des triplets aléatoirement, et en supposant qu'ils sont invalides – c'est \textit{l'hypothèse du monde localement fermé}, empiriquement vérifiée dans n'importe quel graphe suffisamment grand.
+\todo{Ajouter une ref à la section qui le justifie}
+
+Une fois que l'on dispose de $\Delta_+$ et de $\Delta_-$, on peut commencer l'entraînement proprement dit. La procédure varie d'un modèle à l'autre, mais on en présente ici les grandes lignes. Tout d'abord, les paramètres (c'est-à-dire les plongements) sont initialisés aléatoirement. On définit une fonction de perte, typiquement une perte par marge maximale :
+$$
+J(\Theta) = \sum_{(h_+, r_+, t_+) \in \Delta_+} \sum_{(h_-, r_-, t_-) \in \Delta_-} \lfloor \gamma + \sigma_\Theta(h_+, r_+, t_+) - \sigma_\Theta(h_-, r_-, t_-) \rfloor
+$$
+On souhaite alors minimiser la perte. Pour cela, on calcule alors $\displaystyle \frac{\partial J}{\partial \Theta}$, et on met à jour $\Theta$ par descente de gradient. Il faut garder à l'esprit que mettre à jour $\Theta$ signifie mettre à jour les plongements vectoriels des entités et des relations du graphe, de façon à avoir un score maximal sur les triplets valides et minimal sur les triplets invalides. La procédure s'arrête une fois un critère de convergence atteint – par exemple, lorsque $J$ ne diminue plus.
+
+Dans la suite de la section, on se propose de détailler plus avant les procédures communes à tous les modèles, et particulièrement la constitution des données d'entraînement, la distinction entre fonction de score et fonction d'énergie, ainsi que les fonctions de pertes communément utilisées. 
+
+\section{Modèles de plongement}
+\label{sec:kge-models}
+
+\subsection{Modèles à translation : TransE et ses variantes}
+\label{subsec:kge-models-transx}
+
+On présente ici une première famille de modèles, les modèles \textit{à translation}, constituée de TransE et de ses dérivés. L'idée première de ces modèles consiste à représenter une relation entre deux entités comme une translation entre leurs plongements. Une relation $r$ est représentée par une translation $T_r$ de vecteur caractéristique $\mathbf{r}$ :
+\begin{equation*}
+    T_r : \mathbf{u} \mapsto \mathbf{u + r}
+\end{equation*}
+
+Un triplet $(h, r, t)$ est considéré comme valide si le plongement de $t$ est le translaté du plongement de $h$ par la translation $T_r$, c'est-à-dire $T_r(\mathbf{h}) = \mathbf{t}$. La plupart des modèles ajoutent une étape préalable à la translation : le plongement d'une entité $e$ est d'abord envoyé dans un nouvel espace, qui dépend de $r$ et éventuellement de $e$. Ensuite seulement, la translation a lieu dans ce nouvel espace.
+
+Ainsi, on peut définir le cadre générale suivant pour décrire un modèle à translation :
+\begin{itemize}
+    \item une fonction de transformation $M_{e, r} : \mathbb{R}^d \rightarrow \mathbb{R}^{k}$
+    \item une fonction d'énergie $E_\Theta(h, r, t) = \| M_{h, r}(\mathbf{h}) + \mathbf{r} - M_{t, r}(\mathbf{t}) \|_2 $
+\end{itemize}
+
+\subsubsection{TransE \cite{bordes2013translating}}
+Le premier et le plus simple des modèles à translation, la fonction de transformation est la fonction identité ($\forall e, r, M_{e, r} = I_d$) – autrement dit, les plongements sont translatés directement, sans transformation préalable. En conséquence, les entités et les relations sont plongées dans le même espace $\mathbb{R}^d$, et la fonction d'énergie est donc
+
+$$ E_\Theta(h, r, t) = \| \mathbf{h + r - t} \|_2  $$
+
+Le nombre de paramètres est donc $d \times (N + M)$, linéaire en le nombre d'éléments du graphe. 
+
+La force de TransE réside dans sa simplicité théorique et son faible nombre de paramètres. Toutefois, cette simplicité se paye par une faible expressivité, qui limite sa capacité à modéliser des relations autres que \textit{one-to-one} :
+\begin{itemize}
+    \item relation \textit{many-to-one} : si plusieurs entités $h_1, h_2, \ldots, h_k$ sont reliées à une même entité $t$ par une relation $r$, alors les translatés $\mathbf{h_i + r}$ doivent tous être égaux, donc $\mathbf{h_1  = h_2 = \ldots = h_k}$;
+    \item relation \textit{one-to-many} : comme au-dessus, si $h$ est lié par $r$ à plusieurs entités $t_1, \ldots, t_k$, alors nécessairement $\mathbf{t_1 = t_2 = \ldots = t_k}$;
+    \item relations symétriques : si $r$ est symétrique, c'est-à-dire $h  \overset{r} \rightarrow t \implies t   \overset{r} \rightarrow h$, alors la translation de la translation par $r$ doit donner l'élément de départ, donc $\mathbf{r} = 0$
+\end{itemize}
+
+\subsubsection{TransH \cite{fu2014learning}}
+
+\begin{figure}[hbt]
+    \centering
+    \input{fig/transh}
+    \caption[Principe général de TransH]{Principe général de TransH : pour calculer le score d'un triplet $(h, r, t)$, on commence par projeter $\bf{h}$ et $\bf{t}$ sur l'hyperplan $H_r$, puis on translate $\bf{h}$. Le score du triplet est égal à la distance entre le translaté de $\bf{h}$ et $\bf{t}$.}
+    \label{fig:transh}
+\end{figure}
+
+\begin{figure}[hbt]
+    \centering
+    \input{fig/transh-2}
+    \caption[Exemple des possibilités laissées par TransH]{Exemple de deux relations \texttt{dbo:birthPlace} et \texttt{dbo:deathPlace}, ainsi que leurs hyperplans associés.}
+    \label{fig:transh-dual}
+\end{figure}
+
+\subsubsection{TransD}
+
+\subsubsection{Autres modèles}
+
+\subsubsection{Résumé}
+
+
+\begin{table}[ht]
+\caption{Propriétés de quelques modèles à translation}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline\rowcolor[gray]{0.8}\color{black}
+Modèle & Entités & Relations & Transformation & Nombre de paramètres\\\hline
+TransE & $\mathbf{e} \in \mathbb{R}^d$ & $\mathbf{r} \in \mathbb{R}^d$ & Aucune & $d \times (M + N)$ \\
+TransH & $\mathbf{e} \in \mathbb{R}^d$ & $\mathbf{r, n_r} \in \mathbb{R}^d$ & Projection sur un hyperplan & $d \times (2M + N)$ \\
+TransD & $\mathbf{e, e_p} \in \mathbb{R}^d$ & $\mathbf{r, r_p} \in \mathbb{R}^d$  & Transformation linéaire & $2d \times (M + N)$ \\\hline
+\end{tabular}
+\label{tab:transx}
+\end{table}
+
+\subsection{Modèles multiplicatifs : RESCAL et ses variantes}
+\label{subsec:kge-models-mult}
+
+\subsubsection{RESCAL}
+Soit un graphe $\KG$, représenté sous la forme d'un tenseur d'adjacence $\mathcal{T} \in \{0, 1\}^{N \times M \times N}$. Pour une relation $r \in \mathcal{R}$ donnée, on dispose d'une matrice d'adjacence $M^r$, de dimension $N \times N$, telle que $M_{i, j}^r$ vaut $1$ si $e_i$ est lié à $e_j$ par la relation $r$, et $0$ sinon.
+
+\ldots
+
+Le modèle RESCAL \cite{nickel2011learning} construit donc un plongement vectoriel $\mathbf{e}$ de dimension $d$ pour chaque entité $e \in \mathcal{E}$, et une matrice $W_r$ de dimension $n \times n$ pour chaque relation $r \in \mathcal{R}$. La fonction de score d'un triplet s'écrit :
+\begin{equation}
+    \sigma(h, r, t) = \mathbf{h^\top \cdot W_r \cdot t}
+    \label{eq:rescal}
+\end{equation}
+
+Notons $w_{i, j}$ la coordonnée $i,j$ de $W_r$, on peut réécrire l'équation~\ref{eq:rescal} sous la forme~:
+
+\begin{equation}
+    \sigma(h, r, t) = \sum_{i, j = 1}^{d} \mathbf{h_i \cdot t_j} \cdot w_{i, j}
+\end{equation}
+
+Ainsi, toutes les combinaisons $\mathbf{h_i t_j}$ de $\mathbf{h}$ et de $\mathbf{t}$ apparaissent dans la fonction de score, avec un coefficient $w_{i, j}$. En ce sens, RESCAL propose une expressivité maximale et permet de modéliser une large palette de relations. Par exemple, si $\mathbf{W_r}$ est symétrique (c'est-à-dire, $\mathbf{W_r} = \mathbf{W_r}^\top$), on a $w_{i,j} = w_{j, i}$ pour tous $i, j = 1, \ldots, d$, et donc :
+
+\begin{equation}
+    \sigma(h, r, t) = \sum_{i, j = 1}^{d} \mathbf{h_i \cdot t_j} \cdot d_{i, j}
+    =  \sum_{i, j = 1}^{d} \mathbf{h_j \cdot t_i} \cdot w_{j, i}
+    =  \sum_{i, j = 1}^{d} \mathbf{h_j \cdot t_i} \cdot w_{i, j}
+    = \sigma(t, r, h)
+\end{equation}
+
+Une matrice symétrique induit donc une fonction de score est symétrique elle aussi; cela permet de modéliser des relations symétriques. Inversement, si $\mathbf{W_r}$ est antisymétrique (c'est-à-dire, $\mathbf{W_r} = -\mathbf{W_r}^\top$), on aura une fonction de score antisymétrique, ce qui permet de modéliser une relation antisymétrique.
+
+Cette expressivité se paie toutefois par un nombre plus élevé de paramètres ($d^2$ par relation, contre $d$ pour TransE); au-delà des considérations de mémoire, l'entraînement de ces $d^2$ paramètres est plus difficile et la convergence plus lente.
+
+\subsubsection{DistMult}
+
+DistMult \cite{distmult} vise à simplifier RESCAL pour le rendre plus facile à entraîner et moins sujet au surapprentissage. Pour cela, on garde la fonction de score de RESCAL, exprimée dans l'équation~\ref{eq:rescal}, mais on impose que la matrice $\mathbf{W_r}$ soit diagonale – soit $d$ paramètres par relation, comme TransE, au lieu de $d^2$. Cela revient à représenter une relation $r$ par un vecteur $\mathbf{r}$ de dimension $d$, et à poser $\mathbf{W_r = I_{d\times d} \cdot r}$. La fonction de score s'écrit donc :
+\begin{equation}
+    \label{eq:distmult}
+    \sigma(h, r, t) = \mathbf{h^\top \cdot I_{d\times d}r \cdot t}
+\end{equation}
+
+Ce qui se réécrit:
+\begin{equation}
+    \sigma(h, r, t) = \sum_{i=1}^{d} \mathbf{h_i r_i t_i}
+\end{equation}
+
+Ainsi, la fonction de score peut être vue comme un produit scalaire à trois vecteurs. Comparé à RESCAL, l'expressivité est très réduite : seule les combinaisons de la forme $\mathbf{h_i t_i}$ sont utilisées pour le calcul du score. De plus, $\sigma$ est toujours symétrique, donc le sujet et l'objet d'un triplet ne sont pas différenciés.
+
+\subsubsection{ComplEx}
+\label{subsec:complex}
+
+
+\subsection{Autres modèles}
+\label{subsec:kge-models-misc}
+
+\subsubsection{RDF2Vec}
+\subsubsection{\textit{Graph Convolutional Networks}}
+\subsubsection{Modèles hyperboliques}
+
+
+\section{Séparabilités des plongements vectoriels}
+\label{sec:kge-sep}

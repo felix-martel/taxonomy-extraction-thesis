@@ -1,0 +1,92 @@
+\begin{tikzpicture}
+\def\rep{3};
+\def\size{1};
+\def\px{-0.5*\size};
+\def\py{1.5*\size};
+\def\pz{-.5*\size};
+\def\hplane{(\px, \py, \pz)};
+
+\def\hsize{2};
+\def\vsize{2};
+\def\offset{0.5};
+
+\tikzmath{
+    \base=2;
+    \rx=1*\base;
+    \ry=0.5*\base;
+    \rz=0.5*\base;
+    % h_p
+    \hp1=-0.5;
+    \hp2=0.5;
+    \hp3=-(\hp1*\rx+\hp2*\ry)/\rz;
+    \h1=\hp1+\rx;
+    \h2=\hp2+\ry;
+    \h3=\hp3+\rz;
+    % t_p
+    \tp1=0.5;
+    \tp2=1;
+    \tp3=-(\tp1*\rx+\tp2*\ry)/\rz;
+    \t1=\tp1+\rx;
+    \t2=\tp2+\ry;
+    \t3=\tp3+\rz;
+    % v
+    \v1=-sqrt(((\rx)^2) / ((\rx)^2 + (\rz)^2));
+    \v2=0;
+    \v3=sqrt(((\rz)^2) / ((\rx)^2 + (\rz)^2));
+    % u
+    \u1=-\ry / (\rx - (\v1 * \rz) / \v3);
+    \u2=1;
+    \u3=-\u1*\v1/\v3;
+}
+
+\newcommand{\makeplane}{
+    % Make axis
+    \node (o) at (0, 0, 0) {};
+    \node (x) at (\rep, 0, 0) {};
+    \node (y) at (0, \rep, 0) {};
+    \node (z) at (0, 0, \rep) {};
+    
+    \draw[axis] (o.center) -- (x);
+    \draw[axis] (o.center) -- (y);
+    \draw[axis] (o.center) -- (z);
+    
+    % Make plane
+    \filldraw[plane] 
+    (\hsize*\v1, \hsize*\v2, \hsize*\v3)
+    --  ++(\vsize*\u1, \vsize*\u2, \vsize*\u3)
+    -- ++(-2*\hsize*\v1, -2*\hsize*\v2, -2*\hsize*\v3)
+    -- ++(-\vsize*\u1, -\vsize*\u2, -\vsize*\u3)
+    -- node[below, accent1, sloped, near end] {$H_r$} cycle;
+}
+
+\begin{scope}
+    % Make axis
+    \makeplane
+    
+    \node[node=accent1, label={[accent1]$\bf{h_\bot}$}] (hp) at (\hp1,\hp2,\hp3) {};
+    \node[node=black, label={$\bf{h}$}] (h) at (\h1,\h2,\h3) {};
+    \draw[accent1, thick, ->] (h) -- (hp);
+    
+    \node[node=accent1, label={[accent1]$\bf{t_\bot}$}] (tp) at (\tp1,\tp2,\tp3) {};
+    \node[node=black, label={$\bf{t}$}] (t) at (\t1,\t2,\t3) {};
+    \draw[accent1, thick, ->] (t) -- (tp);
+\end{scope}
+
+\begin{scope}[xshift=7.5cm]
+    % Make axis
+    \makeplane
+    
+    \node[node=black, label={$\bf{h_\bot}$}] (hp) at (\hp1,\hp2,\hp3) {};
+    % \node[node=gray, label={$h$}] (h) at (\h1,\h2,\h3) {};
+    % \draw[gray, thin, ->] (h) -- (hp);
+    
+    \node[node=black, label={$\bf{t_\bot}$}] (tp) at (\tp1,\tp2,\tp3) {};
+    % \node[node=gray, label={$t$}] (t) at (\t1,\t2,\t3) {};
+    % \draw[gray, thin, ->] (t) -- (tp);
+    
+    \node (hr) at (\tp1-\offset*\u1,\tp2-\offset*\u2,\tp3-\offset*\u3) {};
+    
+    \draw[accent1, thick, ->] (hp) -- node[sloped, below] {$\bf{r}$} (hr.center);
+    \draw[thin, accent2, <->] (hr.center) -- node[accent2, near start,right] {$E(h, r, t)$} (tp);
+\end{scope}
+\end{tikzpicture}

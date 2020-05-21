@@ -1,0 +1,27 @@
+\usepackage{tikz}
+\usepackage{xcolor}
+
+\usetikzlibrary{math}
+
+\definecolor{accent1}{HTML}{FF4738}
+\definecolor{accent2}{HTML}{4C57FF}
+
+\tikzset{
+    node/.style={draw=#1,fill=#1!80, circle, scale=0.5},
+    node/.default=gray,
+    vec/.style={draw=#1, thick, ->},
+    vec/.default=gray,
+    plane/.style={draw=#1, fill=#1!5, dashed},
+    plane/.default=accent1,
+    plane-content/.style={fill=#1!5},
+    plane-content/.default=accent1,
+    plane-border/.style={draw=#1, dashed},
+    plane-border/.default=accent1,
+    axis/.style={draw=gray!50, ->}
+}
+
+\tikzfading[name=fade out,
+inner color=transparent!0,
+outer color=transparent!100
+]
+

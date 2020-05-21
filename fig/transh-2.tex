@@ -1,0 +1,88 @@
+\begin{tikzpicture}
+[
+scale=0.8,
+separation/.style={-, draw=gray!40, dashed},
+proja/.style={-, draw=red!20, thin},
+projb/.style={-, draw=blue!20}
+]
+
+\node  (0) at (0, 0) {};
+\node (1) at (0, 2) {};
+\node (2) at (2, 3) {};
+\node (3) at (4, 4) {};
+\node (4) at (3, -1) {};
+\node (5) at (3, 1) {};
+\node (6) at (7, 3) {};
+\node (7) at (7, 1) {};
+\node (8) at (4, 2) {};
+\node (9) at (4, -2) {};
+\node (10) at (7, -3) {};
+\node (11) at (3, -5) {};
+\node (12) at (0, -4) {};
+\node (13) at (-2, 4) {};
+\node (14) at (-2, 6) {};
+\node (15) at (-6, 2) {};
+\node (16) at (-6, 4) {};
+%\node (17) at (3, -8) {};
+\node (18) at (7, -6) {};
+\node (19) at (9, -4.75) {};
+\node (20) at (0, -7) {};
+\node (21) at (-4, -5) {};
+\node (22) at (-8, -2.75) {};
+\node (23) at (-8, 6) {};
+\node (24) at (-4, 8) {};
+\node (25) at (0, 8) {};
+\node (26) at (0, 4) {};
+\node (27) at (-8, -4) {};
+\node (28) at (-9.5, -3.5) {};
+\node (29) at (-13, 1) {};
+\node (30) at (-8, -4.75) {};
+\node (31) at (-7.1, -4.35) {};
+\node (32) at (-2, -1) {};
+\node (45) at (5, -7) {};
+\node (46) at (9, -2.75) {};
+
+\fill [plane-content=accent2] (27.center) -- (23.center) -- (24.center) -- (25.center) -- (26.center) -- (0,0) -- (32.center) -- cycle;
+\fill [plane-content=accent2] (27.center) -- (30.center) -- (31.center) -- cycle;
+\fill [plane-content=accent1] (0,0) -- (46.center) -- (19.center) -- (18.center) -- (45.center) -- (20.center) -- (27.center) -- cycle;
+\fill [plane-content=accent1] (27.center) -- (28.center) -- (22.center) -- cycle;
+\fill[white, path fading=fade out] (0,0) circle (3);
+\fill[white, path fading=fade out] (3, 1) circle (5);
+    
+\node [node=accent2, label={270:Sean McBride}] (33) at (-6, 4) {};
+\node [node=accent2, label={Paris}] (34) at (-2, 6) {};
+\node [node=accent2, label={Dublin}] (35) at (-2, 4) {};
+\node [node=accent2, label={270:Oscar Wilde}] (36) at (-6, 2) {};
+\node [node=accent1, label={200:Oscar Wilde}] (37) at (0, -4) {};
+\node [node=accent1, label={Paris}] (38) at (4, -2) {};
+\node [node=accent1, label={200:Sean McBride}] (39) at (3, -5) {};
+\node [node=accent1, label={Dublin}] (40) at (7, -3) {};
+\node [node, label={Sean McBride}] (41) at (3, 1) {};
+\node [node, label={Oscar Wilde}] (42) at (0, 0) {};
+\node [node, label={Paris}] (43) at (4, 4) {};
+\node [node, label={Dublin}] (44) at (7, 1) {};
+
+\draw [plane-border=accent2] (22.center) to node [above, sloped] {Hyperplan \texttt{dbo:birthPlace}} (23.center);
+\draw [plane-border=accent2] (23.center) to (24.center);
+\draw [plane-border=accent2] (25.center) to (26.center);
+\draw [plane-border=accent1] (19.center) to (45.center);
+\draw [plane-border=accent1] (27.center) to node [above, sloped] {Hyperplan \texttt{dbo:deathPlace}} (20.center);
+\draw [plane-border=accent2] (22.center) to (27.center);
+\draw [plane-border=accent1] (28.center) to (27.center);
+\draw [plane-border=accent1] (28.center) to (22.center);
+\draw [plane-border=accent2] (27.center) to (30.center);
+\draw [plane-border=accent2] (30.center) to (31.center);
+\draw [vec=accent1] (12) to (9);
+\draw [vec=accent1] (11) to node[below, sloped]{\footnotesize \texttt{dbo:deathPlace}} (10);
+\draw [vec=accent2] (16) to node[above, sloped]{\footnotesize \texttt{dbo:birthPlace}} (14);
+\draw [vec=accent2] (15) to (13);
+\draw [style=proja] (0.center) to (12.center);
+\draw [style=proja] (5.center) to (11.center);
+\draw [style=proja] (7.center) to (10.center);
+\draw [style=proja] (3.center) to (9.center);
+\draw [style=projb] (0.center) to (15.center);
+\draw [style=projb] (5.center) to (16.center);
+\draw [style=projb] (3.center) to (14.center);
+\draw [style=projb] (7.center) to (13.center);
+\draw [style=separation] (27.center) to (32.center);
+\end{tikzpicture}
