@@ -30,6 +30,19 @@
     \item $\diag(d_1, d_2, \ldots, d_k)$ : la matrice diagonale de dimension $k \times k$, dont la $i$-ème coordonnée diagnoale vaut $d_i$.
 \end{itemize}
 
+Pour deux vecteurs $\bf{u, v} \in \R^n$, on utilisera le produit scalaire usuel sur $\R^n$ :
+\begin{equation}
+    \bf{u \cdot v} = \sum_{i=1}^{n} \bf{u_i \times v_i}
+\end{equation}
+La distance euclidienne est définie pour tout $\bf{u, v} \in \R^n$ par :
+\begin{equation}
+        d_\text{euc}(\bf{u, v}) = \| \bf{u - v} \|_2 = \sqrt{\sum_{i = 1}^{n} (\bf{u_i - v_i})^2}
+\end{equation}
+La distance cosinus, qui n'est pas une distance mathématique mais plutôt une mesure de dissimilarité, est définie sur $\R^n$ par :
+\begin{equation}
+    d_\text{cos}(\bf{u, v}) = 1 - \frac{\bf{u \cdot v}}{\| \bf{u} \|_2 \times \| \bf{v} \|_2 }
+\end{equation}
+
 \section*{Graphes de connaissance}
 
 \begin{itemize}

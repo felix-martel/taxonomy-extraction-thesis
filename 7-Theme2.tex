@@ -5,8 +5,8 @@ Comme expliqué en introduction \ldots
 
 \section{Exposé du problème}
 \subsection{Problème}
-\label{sec:problem}
-Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
+\label{sec:te-problem}
+Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
 
 On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubseteq t_i')\}_{i=1, \ldots}$. Dans un axiome $t \sqsubseteq t'$, $t$ est appelé un \textit{sous-type} de $t'$, et $t'$ un \textit{supertype} de $t$; l'axiome signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubseteq t_1 \sqsubseteq \ldots \sqsubseteq t_k \sqsubseteq t_0$.
 
@@ -19,16 +19,17 @@ extraire l'information taxonomique contenue dans la géométrie des plongements 
 Relâcher cette contrainte : donne accès au graphe complet, et pas seulement aux embeddings + avoir accès aux co-occurences. Dans ce cas, beaucoup plus d'information = donne la possibilité d'extraire une taxonomie plus riche, cf chapitre suivant.
 
 \subsection{Données}
+\label{sec:te-data}
 
 DBpedia
 
 \section{Méthode proposée}
-
+\label{sec:te-method}
 Le préalable à notre méthode est le plongement du graphe dans $\R^d$. Pour cela, on s'appuie sur les travaux préliminaires décrits dans la section~\ref{chap:kge}.
 Notre point de départ est donc une matrice de dimension $N \times d$, qui peut être vue comme un nuage de points dans $\R^d$.
 
 \subsection{Regroupement hiérarchique}
-\label{subsec:clustering}
+\label{subsec:te-clustering}
 La première étape consiste à exécuter un algorithme de regroupement (ou \textit{clustering}) hiérarchique agglomératif sur ce nuage de points. 
 On commence avec $N$ clusters singletons, chacun contenant l'une des $N$ entités de départ. À chaque étape, deux des clusters existants sont fusionnés pour former un nouveau cluster. Les clusters à fusionner sont choisis de sorte à minimiser un certain critère : ce critère peut être la distance moyenne entre les entités des clusters, la distance minimale ou maximale entre ces entités, ou la variance du nouveau cluster. 
 L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient toutes les entités; ce cluster est appelé cluster racine. Le résultat de cet algorithme est un arbre binaire, dont la racine est le cluster racine contenant toutes les entités, et dont les feuilles sont les $N$ clusters singletons.
@@ -52,12 +53,15 @@ Considérations temportelles ? Complexité de l'algorithme ?
 
 
 \subsection{Association type-cluster}
+\label{subsec:te-mapping}
+
 On a d'un côté, une hiérarchie sur des groupes d'entités (les clusters), de l'autre, une liste de types non hiérarchisé; but de l'étape : fusionner ces deux sources d'information, utiliser la structure sur les entités pour créer une structure sur les types. Pour cela, on injecte les types dans l'arbre de clustering, en associant chaque type à un cluster. Pour ce faire, deux méthdoes : 
 - associer à chaque type un unique cluster
 - définir, pour chaque type, une probabilité d'injection, ou un score d'association avec tous les clusters
 
 
 \subsubsection{Méthode 1: \textit{Hard Mapping}}
+\label{ssubsec:te-hardmapping}
 
 Pour pouvoir associer les types aux clusters pertinents, il faut mesurer à quel point un cluster $C$ donné représente un type $t$. Pour ce faire, on peut utiliser la précision et le rappel de ce cluster pour $t$. Posons $N_{C,t} = | e \in C, type(e) = t|$ le nombre d'entités de type $t$ contenues dans le cluster $C$,
 $N_t = |e \in \mathcal{D}, type(e) = t|$ le nombre d'entités de type $t$ dans l'ensemble des données, et $N_C = | C |$ le nombre total d'entitésd dans le cluster $C$. On peut alors définir la précision, le rappel et la mesure $F_1$ :
@@ -72,7 +76,7 @@ La mesure $F_1$ varie entre 0 et 1: 0 indique que le cluster $C$ ne contient auc
 Ideally, we would map type $t$ to the cluster that maximizes its F-score, \textit{i.e} choose $m^*(t) = \argmax_C F(C, t)$, but then we could have two types mapped to the same cluster. 
 If two types $t_A$ and $t_B$ are mapped to the same cluster $C$, then any type that is mapped to a successor of $C$ will have both $t_A$ and $t_B$ as ancestors, and the resulting taxonomy will not be valid. The mapping thus need to be unambiguous. Formally, this condition means that we need to find a injective mapping between types and clusters $m^* : \mathcal{T} \rightarrow \mathcal{C}$, so that distinct types are mapped to distinct clusters.  
 
-Idéalement, on souhaiterait associer chaque type $t$ au cluster qui maximise sa mesure $F_1$, et donc choisir $m^*(t) = \argmax_C F(C, t)$, mais on pourrait alors avoir deux types associés au même cluster. Or, si deux types $t_A$ et $t_B$ sont associés au même cluster $C$, alors tout type associé à un successeur de $C$ aurait à la fois $t_A$ et $t_B$ comme prédecesseurs, et la taxonomie résultante serait donc invalide, selon les conditions énoncées en section~\ref{sec:problem}. Il faut donc garantir une association univoque entre types et clusters. Formellement, cela signifie que la fonction d'association $m^* : \Types \rightarrow \Clusters$ entre les types et les clusters doit être injective :
+Idéalement, on souhaiterait associer chaque type $t$ au cluster qui maximise sa mesure $F_1$, et donc choisir $m^*(t) = \argmax_C F(C, t)$, mais on pourrait alors avoir deux types associés au même cluster. Or, si deux types $t_A$ et $t_B$ sont associés au même cluster $C$, alors tout type associé à un successeur de $C$ aurait à la fois $t_A$ et $t_B$ comme prédecesseurs, et la taxonomie résultante serait donc invalide, selon les conditions énoncées en section~\ref{sec:te-problem}. Il faut donc garantir une association univoque entre types et clusters. Formellement, cela signifie que la fonction d'association $m^* : \Types \rightarrow \Clusters$ entre les types et les clusters doit être injective :
 \begin{equation}
     \forall t, t' \in \Types, t \neq t' \implies m^*(t) \neq m^*(t')
 \end{equation}
@@ -96,6 +100,7 @@ Cette solution optimal peut être trouvée par l'algorithme de Jonker-Volgenant,
 %, which can be useful when the size of $\mathcal{D}$ increases.
 
 \subsubsection{Méthode 2: \textit{Soft Mapping}}
+\label{ssubsec:te-softmapping}
 
 L'approche précédente aboutit à une fonction de décision binaire : un axiome $(t_i \sqsubset t_j)$ est prédit ou non, sans intermédiaire possible. Ceci parce que la fonction $\argmax$ de l'équation~\ref{eq:optim-mapping} n'est pas continue. En conséquence, la taxonomie prédite est sensible à des légers changements dans les données d'entrée.
 
@@ -228,10 +233,16 @@ For a balanced binary tree, this algorithm guarantees a maximum cache size of $O
 
 
 \subsection{Construction de la taxonomie}
+\label{subsec:te-taxconstruction}
 
 \section{Évaluation et discussion}
+\label{sec:te-evaluation}
+
 \subsection{Méthode d'évaluation}
+\label{subsec:te-evaluation}
+
 \subsection{Résultats}
+\label{subsec:te-results}
 
 \begin{table}
     \centering
@@ -243,11 +254,12 @@ For a balanced binary tree, this algorithm guarantees a maximum cache size of $O
 
 
 \subsection{Discussion}
+\label{subsec:te-discussion}
 
 \section{Hyperparamètres}
-\label{sec:hp}
+\label{sec:te-hp}
 \subsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
-\label{subsec:hp-beta}
+\label{subsec:te-hp-beta}
 
 \begin{figure}
     \centering
@@ -270,4 +282,4 @@ For a balanced binary tree, this algorithm guarantees a maximum cache size of $O
     }
     \label{fig:t-search-1}
 \end{figure}
-\label{subsec:hpsearch}
+

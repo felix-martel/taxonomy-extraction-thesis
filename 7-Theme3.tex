@@ -17,8 +17,41 @@ Pourquoi ça marche ? Parce qu'on travaille sur un groupe d'entités dont on sai
 
 Toutefois, un ajout majeur : le retirage récursif des entités à regrouper pour limiter la propagation des erreurs dans l'arbre, limiter le bruit et affiner progressivement la spécificité des classes extraites. Plus un \textit{bag of tricks} pour que ça marche bien.
 
+\paragraph{Remarque}
+
+DBpédia, comme la plupart des graphes de connaissances, fonctionne sous l'hypothèse du monde ouvert : si un triplet est absent du graphe, cela ne signifie pas nécessairement qu'il est faux. Aussi, dans la suite, lorsqu'on écrit qu'une entité $x$ ne vérifie pas un prédicat logique $P$, cela doit être compris comme un raccourci pour écrire que l'assertion $P(x)$ n'est pas contenue dans le graphe, et non comme l'assertion $\neg P(x)$.
+
 \section{Méthode proposée}
 \subsection{Regroupement hiérarchique récursif avec retirage}
+
+La méthode d'extraction de taxonomie expressive commence elle aussi par une phase de regroupement hiérarchique. Dans la méthode précédente, on avait comme seules données d'entrée un ensemble fixé d'entités typées $\cal{D}$. Ici au contraire, on s'autorise l'accès à tout le graphe, donc l'ensemble $\cal{D}$ sur lequel s'opère le regroupement hiérarchique est variable et change au cours de l'exécution de l'algorithme. À chaque étape $t$, on effectue un regroupement hiérarchique sur les plongements des entités de $\cal{D}_t$, puis on étiquette les clusters obtenus avec des axiomes logiques (l'extraction d'axiomes à partir de clusters est détaillée dans la section \ref{subsec:texp-exaxiom}). Ensuite, pour chacun des axiomes $a_1, \ldots, a_k$ obtenus, on tire aléatoirement des entités qui vérifient cet axiome, ce qui donne de nouveaux ensembles d'entrées $\cal{D}_{t+1}, \ldots, \cal{D}_{t+k}$.
+
+Dans cette section, on se donne une fonction d'extraction d'axiome $\alpha$, telle que $\alpha(C)$ est un axiome logique qui qualifie le cluster $C$, si un tel axiome existe, et qui renvoie un symbole spéciale \texttt{indéfini} dans le cas contraire. Un exemple d'une telle fonction est donné dans la section suivante. 
+
+Soit un axiome d'entrée $a$. Lors de la première étape, $a = \top$, c'est-à-dire que l'on considère toutes les entités du graphe, sans restrictions. Dans les étapes suivantes, d'autres axiomes seront utilisés.
+L'étape de regroupement commence par tirer aléatoirement $N$ entités du graphe qui vérifient l'axiome $a$, et de considérer les plongements de ces entités : cela donne un nuage de points $\cal{D}_a$ de dimension $d \times N$, où $d$ est la dimension des entités. Sur ce nuage de point, on effectue un regroupement hiérarchique, comme décrit dans la section \ref{subsec:te-clustering}. À nouveau, on considère deux choix de paramètres de cet algorithmes : distance euclidienne avec critère de Ward, et distance cosinus avec liaison moyenne. La première fusionne les clusters de façon à minimiser la variance du nouveau cluster créé. À l'étape $t$, notons $\cal{C}_t$ les clusters existant; les clusters $C_1$ et $C_2$ à fusionner sont choisis selon l'équation :
+\begin{equation}
+    C_1, C_2 = \argmin_{C_1, C_2 \in \cal{C}_t} 
+    \frac{1}{| C |} \sum_{\bf{e} \in C_1 \cup C_2} \| \bf{e} - \frac{1}{| C |} \sum_{\bf{e'} \in C_1 \cup C_2} \bf{e} \|_2^2 
+\end{equation}
+La seconde fusionne les clusters dont les entités ont la distance moyenne la plus faible. On fusionnera donc $C_1$ et $C_2$ tels que :
+\begin{equation}
+    C_1, C_2 = \argmin_{C_1, C_2 \in \cal{C}_t} \frac{1}{|C_1| \times |C_2|} \sum_{\bf{e_1}\in C_1} \sum_{\bf{e_2} \in C_2} d_\text{cos}(\bf{e_1, e_2})
+\end{equation}
+
+Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N$ éléments de $\cal{D}_a$. On effectue alors un parcours de l'arbre $X_a$ : pour un cluster $C$, on calcule $L(C)$ pour trouver l'axiome associé à $C$. Si $\alpha(C) = \texttt{indéfini}$, le cluster $C$ n'a pas de signification logique accessible, et on poursuit la recherche dans les sous-clusters. Au contraire, si $\alpha(C)$ existe, on interrompt la recherche, et on ajoute $\alpha(C)$ à la liste d'axiomes à visiter. Au-delà d'une certaine profondeur $D_\text{max}$ dans l'arbre, on arrête la recherche. 
+
+Certains clusters de $X_a$ vont alors être étiquettés par des axiomes logiques, selon le procédé décrit dans la section suivante. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/expressive_extraction_overview.jpg}
+    \caption{(Provisoire) Principe général pour l'expansion d'arbres. À partir d'un axiome initial $\alpha_0$, un arbre est construit, et trois nouveaux axiomes $\alpha_1, \alpha_2, \alpha_3$. Trois nouveaux arbres sont construits, et ajoutés à l'arbre initial. Le procédé est répété, jusqu'à obtenir une taxonomie expressive complète.}
+    \label{fig:my_label}
+\end{figure}
+\todo{Insérer la vraie figure pour l'expansion d'arbre}
+
+
 
 Rappeler le principe général
 
@@ -159,10 +192,13 @@ Le résultat de cet algorithme est un ensemble $\cal{A}(L)$ (éventuellement vid
     \alpha^*(L) = \argmax_{a \in \cal{A}(L)}(\xscore(a))
 \end{equation}
 
-
-Combinaison d'atomes avec négation, conjonction, disjonction pour produire des axiomes
-
 \todo{Mentionner l'autre idée (TF-IDF) ?} %Autre principe : TF-IDF based
+
+\subsubsection{Détails pratiques}
+
+Axiomes vus comme des vecteurs booléens. Le tout est vu comme une matrice booléenne, opérations rapides sur les lignes et les columns
+
+Expliquer la traduction matricielle de $\cov, \spe, \xscore \ldots$
 
 
 \subsection{Algorithme général}
