@@ -50,7 +50,7 @@ La seconde fusionne les clusters dont les entités ont la distance moyenne la pl
 
 Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N$ éléments de $\cal{D}_a$. 
 
-On effectue alors un parcours de l'arbre $X_a$, en excluant la racine $a$ qui est déjà étiquettée : pour un cluster $C$, on calcule $\alpha(C)$ pour trouver l'axiome associé à $C$. Si $\alpha(C) = \texttt{indéfini}$, le cluster $C$ n'a pas de signification logique accessible, et on poursuit la recherche dans les sous-clusters. Au contraire, si $\alpha(C)$ existe, on interrompt la recherche, et on ajoute $\alpha(C)$ à la file d'axiomes à visiter. Au-delà d'une certaine profondeur $D_\text{max}$ dans l'arbre, on arrête la recherche. 
+On effectue alors un parcours de l'arbre $X_a$, en excluant la racine $a$ qui est déjà étiquettée : pour un cluster $C$, on calcule $\alpha(C)$ pour trouver l'axiome associé à $C$. Si $\alpha(C) = \texttt{indéfini}$, le cluster $C$ n'a pas de signification logique accessible, et on poursuit la recherche dans les sous-clusters. Au contraire, si $\alpha(C)$ existe, on interrompt la recherche, et on ajoute $\alpha(C)$ à la file d'axiomes à visiter. Au-delà d'une certaine profondeur $D_\text{max}$ dans l'arbre, on arrête la recherche. On note $L_\alpha(a)$ l'ensemble des cluster $C$ étiquettés rencontrés lors de la recherche.
 
 Finalement, on construit la sous-taxonomie extraite $T_a$ à partir de $X_a$ en suivant la procédure décrite à la section \ref{subsec:te-taxconstruction} : $T_a$ ne contient que les sommets de $X_a$ qui sont étiquettés, et qui laisse la relation de succession entre clusters inchangée :
 \begin{align}
@@ -58,6 +58,17 @@ Finalement, on construit la sous-taxonomie extraite $T_a$ à partir de $X_a$ en 
     &\{(C, C' \in X_a : \exists C_1, \ldots, C_k \in X_a, \alpha(C_1) = \ldots = \alpha(C_k) = \texttt{indéfini} \nonumber \\
     &\text{ et } C \prec C_1 \prec \ldots \prec C_k \prec C'\})
 \end{align}
+Autre formulation\todo{choisir entre les deux notations} :
+\begin{align}
+    T_a = (L_\alpha(a), \nonumber 
+    \{(C, C' \in X_a : \exists C_1, \ldots, C_k \in X_a \setminus L_\alpha(a), C \prec C_1 \prec \ldots \prec C_k \prec C'\})
+\end{align}
+
+Enfin, si au moins l'une des feuilles de $X_a$ n'est pas couverte par un axiome $\alpha(C)$, c'est-à-dire s'il existe au moins une branche allant des feuilles à la racine qui ne contient pas d'étiquette, c'est qu'une partie de l'arbre n'a pas été décrite par un axiome, et qu'il reste potentiellement de nouveaux axiomes à extraire. Dans ce cas, un nœud spécial \texttt{<?>} est ajouté à $T_a$ et relié directement à $a$. La signification logique de ce nœud s'écrit :
+\begin{equation}
+    \texttt{<?>} = a \land \left( \bigwedge\limits_{C \in L_\alpha(a)} \neg \alpha(C) \right)
+\end{equation}
+Soit, en langage courant, l'ensemble des éléments qui vérifient $a$ mais ne vérifient aucun des sous-axiomes $\alpha(C)$ de $a$. Cette définition purement négative n'est pas d'une grande utilité dans une taxonomie expressive, puisqu'elle exprime simplement la tautologie $C \sqsubset \neg C = \top$. On utilise donc le symbole \texttt{<?>} pour signifier que la recherche n'est pas encore finie pour $a$ et qu'il reste des sous-axiomes de $a$ à trouver.
 
 Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été trouvé en parcourant l'arbre $X_a$, alors $a$ n'aura pas de sous-axiome dans la taxonomie extraite et restera une feuille de $\Tpred$. Sinon, on remplace le nœud $a$ de $\Tpred$ par la sous-taxonomie $T_a$
 
