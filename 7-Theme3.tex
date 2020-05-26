@@ -67,14 +67,15 @@ Autre formulation\todo{choisir entre les deux notations} :
 Enfin, si au moins l'une des feuilles de $X_a$ n'est pas couverte par un axiome $\alpha(C)$, c'est-à-dire s'il existe au moins une branche allant des feuilles à la racine qui ne contient pas d'étiquette, c'est qu'une partie de l'arbre n'a pas été décrite par un axiome, et qu'il reste potentiellement de nouveaux axiomes à extraire. Dans ce cas, un nœud spécial \texttt{<?>} est ajouté à $T_a$ et relié directement à $a$. La signification logique de ce nœud s'écrit :
 \begin{equation}
     \texttt{<?>} = a \land \left( \bigwedge\limits_{C \in L_\alpha(a)} \neg \alpha(C) \right)
+    \label{eq:texp-special-node}
 \end{equation}
 Soit, en langage courant, l'ensemble des éléments qui vérifient $a$ mais ne vérifient aucun des sous-axiomes $\alpha(C)$ de $a$. Cette définition purement négative n'est pas d'une grande utilité dans une taxonomie expressive, puisqu'elle exprime simplement la tautologie $C \sqsubset \neg C = \top$. On utilise donc le symbole \texttt{<?>} pour signifier que la recherche n'est pas encore finie pour $a$ et qu'il reste des sous-axiomes de $a$ à trouver.
 
 Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été trouvé en parcourant l'arbre $X_a$, alors $a$ n'aura pas de sous-axiome dans la taxonomie extraite et restera une feuille de $\Tpred$. Sinon, on remplace le nœud $a$ de $\Tpred$ par la sous-taxonomie $T_a$. On répète alors l'étape précédente, tant que la file d'axiomes $A$ n'est pas vide.
 
-\paragraph{Le cas des nœuds spéciaux \texttt{<?>}} À écrire \todo{Traiter le cas particulier des noeuds inconnus}
+\paragraph{Le cas des nœuds spéciaux \texttt{<?>}} Dans l'étape précédente, le cas où l'axiome de départ $a$ est l'axiome spécial \texttt{<?>} est traité un peu différemment du cas général. Les données d'entrées sont toujours tirées aléatoirement, suivant la formule \ref{eq:texp-special-node}; le regroupement hiérarchique et l'extraction de la sous-taxonomie $T_a$ suit une procédure identique. Ensuite, on rattache $T_a$ à $\Tpred$. La taxonomie $\Tpred$ en cours d'extraction contient alors toujours le nœuds spécial \texttt{<?>}, qu'on ne souhaite pas garder : on modifie alors $\Tpred$ en rattachant directement les successeurs directs de \texttt{<?>} avec le prédecesseur direct de \texttt{<?>}, on ré-écrit donc les chemins $\alpha \rightarrow \texttt{<?>} \rightarrow \beta$ en $\alpha \rightarrow \beta$, et on supprime \texttt{<?>} de $\Tpred$.
 
-%Certains clusters de $X_a$ vont alors être étiquettés par des axiomes logiques, selon le procédé décrit dans la section suivante. 
+\todo{Insérer une figure pour expliquer cette étape}
 
 \begin{figure}
     \centering
@@ -250,6 +251,8 @@ Discussion sur les paramètres
 
 \subsubsection{Diminution du seuil}
  % Déplacer en section 5.2.1 ?
+% À faire : mentionner quelque part 
+
 
 \subsubsection{Phase finale}
 
@@ -260,6 +263,9 @@ Phase finale : ajout des classes manquantes (si disponible), restriction des pat
 
 
 
-
-
-
+%
+%
+% ??????????????
+%
+%
+%

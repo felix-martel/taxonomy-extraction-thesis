@@ -40,12 +40,12 @@ Un triplet $(h, r, t)$ est considéré comme valide si le plongement de $t$ est 
 
 Ainsi, on peut définir le cadre générale suivant pour décrire un modèle à translation :
 \begin{itemize}
-    \item une fonction de transformation $M_{e, r} : \mathbb{R}^d \rightarrow \mathbb{R}^{k}$
-    \item une fonction d'énergie $E_\Theta(h, r, t) = \| M_{h, r}(\mathbf{h}) + \mathbf{r} - M_{t, r}(\mathbf{t}) \|_2 $
+    \item une fonction de transformation $F_{e, r} : \mathbb{R}^d \rightarrow \mathbb{R}^{k}$
+    \item une fonction d'énergie $E_\Theta(h, r, t) = \| F_{h, r}(\mathbf{h}) + \mathbf{r} - F_{t, r}(\mathbf{t}) \|_2 $
 \end{itemize}
 
 \subsubsection{TransE \cite{bordes2013translating}}
-Le premier et le plus simple des modèles à translation, la fonction de transformation est la fonction identité ($\forall e, r, M_{e, r} = I_d$) – autrement dit, les plongements sont translatés directement, sans transformation préalable. En conséquence, les entités et les relations sont plongées dans le même espace $\mathbb{R}^d$, et la fonction d'énergie est donc
+Le premier et le plus simple des modèles à translation, la fonction de transformation est la fonction identité ($\forall e, r, F_{e, r} = I_d$) – autrement dit, les plongements sont translatés directement, sans transformation préalable. En conséquence, les entités et les relations sont plongées dans le même espace $\mathbb{R}^d$, et la fonction d'énergie est donc
 
 $$ E_\Theta(h, r, t) = \| \mathbf{h + r - t} \|_2  $$
 
@@ -75,6 +75,29 @@ La force de TransE réside dans sa simplicité théorique et son faible nombre d
 \end{figure}
 
 \subsubsection{TransD}
+
+TransD est une extension de TransE dans laquelle les entités à translater sont transformées via une fonction de transformation linéaire qui dépend à la fois de la relation considérée et de l'entité à transformer. Outre les plongements usuels $\bf{e}, \bf{r}$ définis pour chaque entité $e \in \Ent $ et chaque relation $r \in \Rel$, le modèle TransD entraîne aussi des vecteurs de projection $\bf{e_p}$ et $\bf{r_p}$. Ces vecteurs servent à construire dynamiquement une matrice de tranformation $M_{e, r}$:
+\begin{equation}
+    \label{eq:kge-transd-matrix}
+    \bf{M}_{e, r} = \bf{r_p \cdot e_p^\top + I_{d' \times d}}
+\end{equation}
+% TODO: indices sont gras ou pas ?
+
+La fonction de transformation pour une entité $e$ et un triplet $r$ s'écrit alors :
+\begin{equation}
+    \label{eq:kge-transd-function}
+    F_{e, r} = \bf{M}_{e, r} \cdot \bf{e}
+\end{equation}
+
+Soit finalement une fonction d'énergie :
+\begin{equation}
+    E_\Theta(h, r, t) = \| (\bf{r_p \cdot h_p^\top + I_{d' \times d}}) \cdot \bf{h} + \mathbf{r} - (\bf{r_p \cdot t_p^\top + I_{d' \times d}}) \cdot \bf{t} \|_2 
+\end{equation}
+On peut voir cette équation comme l'équation de TransE avec un terme correcteur :
+\begin{equation}
+    E_\Theta(h, r, t) = \| (\bf{h + r - t}) + \bf{r_p} \cdot (\bf{ h_p^\top \cdot h - t_p^\top \cdot t}) \|_2 
+\end{equation}
+
 
 \subsubsection{Autres modèles}
 
