@@ -46,8 +46,10 @@ Ainsi, on peut définir le cadre générale suivant pour décrire un modèle à 
 
 \subsubsection{TransE \cite{bordes2013translating}}
 Le premier et le plus simple des modèles à translation, la fonction de transformation est la fonction identité ($\forall e, r, F_{e, r} = I_d$) – autrement dit, les plongements sont translatés directement, sans transformation préalable. En conséquence, les entités et les relations sont plongées dans le même espace $\mathbb{R}^d$, et la fonction d'énergie est donc
-
-$$ E_\Theta(h, r, t) = \| \mathbf{h + r - t} \|_2  $$
+\begin{equation}
+    E_\Theta(h, r, t) = \| \mathbf{h + r - t} \|_2
+    \label{eq:transe-main}
+\end{equation}
 
 Le nombre de paramètres est donc $d \times (N + M)$, linéaire en le nombre d'éléments du graphe. 
 
@@ -168,6 +170,39 @@ Ainsi, la fonction de score peut être vue comme un produit scalaire à trois ve
 \subsubsection{ComplEx}
 \label{subsec:complex}
 
+ComplEx est une extension de DistMult dans l'espace complexe. Comme RESCAL, il s'appuie sur une décomposition de la matrice d'adjacence $\bf{X}_r$ associée à la relation $r$ pour en réduire la dimension; toutefois, au lieu d'utiliser la décomposition en valeurs singulières (SVD), il repose sur la décomposition en valeurs propres. Selon le théorème spectral, tout matrice normale est diagonalisable sur une base orthonormale :
+\begin{equation}
+    \bf{X}_r = \bf{E \cdot W_r \cdot \compconj{E}^\top}
+\end{equation}
+Avec $\bf{W}_r \in \mathbb{C}^{|\Ent| \times |\Ent|}$ une matrice diagonale. En gardant alors les $d \times d$ premières coordonnées de $\bf{W}_r$ pour former les matrices $\bf{W}_r^{(d)} \in \mathbb{C}^{d \times d}$ et $\bf{E}^{(d)} \in \mathbb{C}^{|\Ent| \times d}$, on obtient une approximation de $\bf{X}_r$ de dimension $d$ :
+\begin{equation}
+    \bf{X}_r \approx \bf{E}^{(d)} \cdot \bf{W}_r^{(d)} \cdot \compconj{ \bf{E}^{(d)}}^\top
+\end{equation}
+
+Enfin, la matrice devant être réelle, son approximation en basse dimension est projetée dans $\R$ en ne considérant que la partie réelle de $\bf{E}^{(d)} \cdot \bf{W}_r^{(d)} \cdot \compconj{ \bf{E}^{(d)}}^\top$. Autrement dit, la fonction de score de ComplEx peut s'écrire :
+\begin{equation}
+    \sigma(h, r, t) = \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}})
+\end{equation}
+Avec $\bf{h, t} \in \mathbb{C}^d$ des vecteurs complexes, et $\bf{W}_r$ une matrice complexe diagonale de dimension $d \times d$.
+
+Un avantage théorique de la fonction de score de ComplEx par rapport aux précédentes est qu'elle est capable d'être symétrique, antisymétrique ou ni l'un ni l'autre, selon la position de $\bf{W}_r$ dans l'espace complexe. Considérons d'abord le cas où $\bf{W}_r$ est réelle ($\bf{W}_r \in \R^{d \times d}$). On a :
+\begin{align}
+    \sigma(h, r, t) &= \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}}) \\
+    &= \Re\left((\compconj{\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}}})^\top\right) \label{eq:complex-symmetric-1} \\
+    &= \Re\left( \compconj{\compconj{\bf{t}}^\top \cdot \compconj{\bf{W}_r}^\top \cdot 
+    \compconj{\bf{h^\top}}^\top}\right) \label{eq:complex-symmetric-2} \\
+    &= \Re\left(\bf{t}^\top \cdot \bf{W}_r \cdot \compconj{\bf{h}}\right) \label{eq:complex-symmetric-3} \\
+    &= \sigma(t, r, h)
+\end{align}
+\ref{eq:complex-symmetric-1} est vraie car la partie réelle est invariante par conjugaison, et \ref{eq:complex-symmetric-3} parce que $\bf{W}_r$ est réelle et symétrique. Ainsi, la fonction de score est symétrique lorsque le plongement de la relation associée est réel, on peut donc modéliser plus fidèlement une relation symétrique. Si un triplet $(h, r, t)$ est valide et présent à l'entraînement, le modèle sera entraîné pour maximiser $\sigma(h, r, t)$; or, sous réserve que $\bf{W}_r$ soit réelle, on aura $\sigma(t, r, h) = \sigma(h, r, t)$ et donc on aura bien l'équivalence : $(h, r, t) \text{ est valide} \iff (t, r, h) \text{ est valide}$.
+
+Inversement, si $\bf{W}_r$ est imaginaire pure, c'est-à-dire $\bf{W}_r \in i\R$, on aura $\compconj{\bf{W}_r} = - \bf{W}_r$; en injectant ce résultat dans l'équation \ref{eq:complex-symmetric-2}, on aura :
+\begin{equation}
+    \sigma(h, r, t) = - \sigma(t, r, h)
+\end{equation}
+Soit une fonction de score antisymétrique. Donc un plongement imaginaire pur modélisera des relations antisymétriques, puisqu'un score élevé pour le triplet $(h, r, t)$ impliquera nécessairement un score faible pour le symétrique $(t, r, h)$.
+
+Enfin, dans le cas général où $\bf{W}_r$ n'est ni réelle, ni imaginaire pure, la relation $r$ modélisée ne sera ni symétrique, ni antisymétrique. Évidemment, il s'agit là de propriétés \textit{théoriques} du modèle : en particulier, ces propriétés ne sont utiles qu'à la condition que le modèle soit capable de faire converger les plongements des relations symétriques vers l'espace réel, et les plongements des relations antisymétriques vers l'espace des imaginaires purs. Toutefois, cela indique une expressivité \textit{a priori}, que n'ont ni TransE, ni DistMult. En effet, pour TransE, une relation symétrique devrait vérifier $\bf{h + r - t} \approx 0$ et $\bf{t + r - h} \approx 0$, pour tous les plongements $\bf{h, t}$; en injectant la seconde équation dans la première, on obtient $\bf{h + r + r} \approx h, \forall \bf{h}$, soit $\bf{r \approx -r}$ et donc $\bf{r} \approx 0$. Ainsi,  une relation modélisée par TransE n'est pas symétrique, sauf dans le cas particulier où $\bf{r}$ est nul. Dans le cas de DistMult, toutes les relations sont symétriques.
 
 \subsection{Autres modèles}
 \label{subsec:kge-models-misc}
