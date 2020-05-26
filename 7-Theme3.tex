@@ -70,7 +70,7 @@ Enfin, si au moins l'une des feuilles de $X_a$ n'est pas couverte par un axiome 
 \end{equation}
 Soit, en langage courant, l'ensemble des éléments qui vérifient $a$ mais ne vérifient aucun des sous-axiomes $\alpha(C)$ de $a$. Cette définition purement négative n'est pas d'une grande utilité dans une taxonomie expressive, puisqu'elle exprime simplement la tautologie $C \sqsubset \neg C = \top$. On utilise donc le symbole \texttt{<?>} pour signifier que la recherche n'est pas encore finie pour $a$ et qu'il reste des sous-axiomes de $a$ à trouver.
 
-Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été trouvé en parcourant l'arbre $X_a$, alors $a$ n'aura pas de sous-axiome dans la taxonomie extraite et restera une feuille de $\Tpred$. Sinon, on remplace le nœud $a$ de $\Tpred$ par la sous-taxonomie $T_a$
+Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été trouvé en parcourant l'arbre $X_a$, alors $a$ n'aura pas de sous-axiome dans la taxonomie extraite et restera une feuille de $\Tpred$. Sinon, on remplace le nœud $a$ de $\Tpred$ par la sous-taxonomie $T_a$. On répète alors l'étape précédente, tant que la file d'axiomes $A$ n'est pas vide.
 
 \paragraph{Le cas des nœuds spéciaux \texttt{<?>}} À écrire \todo{Traiter le cas particulier des noeuds inconnus}
 
@@ -84,17 +84,21 @@ Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été t
 \end{figure}
 \todo{Insérer la vraie figure pour l'expansion d'arbre}
 
+\paragraph{Seuil adaptatif} On expérimente également une variante de l'algorithme précédent, dans laquelle le seuil $\delta$ pour l'extraction d'axiome varie au cours du temps : au début, le seuil de validité des axiomes est fixé à une valeur initiale élevée $\delta = \delta_\text{init}$; puis, à chaque fois que la file d'axiome $A$ est vidée, on diminue $\delta$ d'une quantité $d\delta$, on ré-initialise $A = \{ \top \}$, et on recommence l'algorithme, jusqu'à atteindre un seuil minimal $\delta_\text{min}$ . Des valeurs typiques sont $\delta_\text{init} = 0.9, d\delta = 0.1, \delta_\text{min} = 0.5$.
+
+Partir avec un seuil bas dès le début ne permet pas de discriminer efficacement les axiomes valides des axiomes invalides; au contraire, conserver un seuil élevé tout au long de l'algorithme conduit à écarter des axiomes valides : en effet, les graphes de connaissance étant incomplets et bruités – certaines relations manquent, des triplets peuvent être erronés etc., un axiome valide peut être imparfaitement vérifié. La technique du seuil adaptatif permet de contourner en partie cette limitation, en imposant d'abord un seuil haut qui permet de créer une ossature fiable pour la taxonomie, puis en relâchant ce seuil pour aggréger de nouveaux axiomes plus incertains.
 
 
-Rappeler le principe général
 
-Exposer le principe de récursivité avec un schéma
-
-Modalités de retirage
-
-Expérimentation avec/sans retirage
-
-Seuil adaptatif
+% Rappeler le principe général
+% 
+% Exposer le principe de récursivité avec un schéma
+% 
+% Modalités de retirage
+% 
+% Expérimentation avec/sans retirage
+% 
+% Seuil adaptatif
 
 
 \subsection{Extraction d'axiomes}
