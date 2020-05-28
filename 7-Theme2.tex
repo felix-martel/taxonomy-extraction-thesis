@@ -1,6 +1,7 @@
-\Chapter{EXTRACTION DE TAXONOMIE}\label{chap:te}
+\Chapter{EXTRACTION DE TAXONOMIE}
+\label{chap:te}
 
-Comme expliqué en introduction \ldots
+introduction et présentation générale \ldots
 
 
 \section{Exposé du problème}
@@ -21,7 +22,20 @@ Relâcher cette contrainte : donne accès au graphe complet, et pas seulement au
 \subsection{Données}
 \label{sec:te-data}
 
-DBpedia
+L'ontologie DBpédia comporte un ensemble de classes et de sous-classes qui forment un arbre dont on peu trouver le détail à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{http://mappings.dbpedia.org/server/ontology/classes/}. Comme on peut le voir, toutes les classes héritent d'une seule classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une sous-classe est 6. On peut difficilement utiliser toute l'ontologie pour le clustering, car certaines classes très spécifiques contiennent trop peu d'éléments [par exemple, seulement 7 éléments sont de type \texttt{dbo:Star}). On cherche donc à extraire un sous-arbre qui soit (a) suffisamment profond pour modéliser une base de connaissance du monde réel et tel que (b) chaque classe contienne un nombre minimal d'éléments. 
+
+Pour cela, on fixe la profondeur maximale à $p_\max=3$, le nombre maximal de sous-classe par classe à $n_c=7$ et le nombre minimal d'éléments par classe à $n_e=500$. En partant de la classe racine \texttt{owl:Thing}, on ajoute récursivement les sous-classes $S$ d'une classe $C$, par ordre décroissant d'effectif (on commence par ajouter les sous-classes qui contiennent le plus d'éléments), à condition que : 
+\begin{itemize}
+    \item $S$ contienne au moins $n_e$ entités
+    \item la profondeur de $S$ soit au plus $p_\max$
+    \item $C$ ait moins de $n_c$ sous-classes
+\end{itemize}
+
+Le détail de la taxonomie restreinte ainsi obtenue est présenté en annexe \todo{Ajouter la référence en annexe}. Elle contient 7 classes de niveau 1, qui sont `Agent`, `Event`, `MeanOfTransportation`, `Place`, `Species`, `SportsSeason`, `Work`, 25 classes de niveau 2, et 52 classes de niveau 3. 
+
+J'appelle classes feuilles les classes qui n'ont pas de sous-classes, c'est-à-dire qu'elles sont les plus spécifiques pour qualifier une entité. Les classes feuilles peuvent être de niveau 2, comme par exemple `MeanOfTransportation/Aircraft` ou  `Work/TelevisionEpisode`, mais la plupart sont de niveau 3 (`Agent/Person/Artist` ou `Work/WrittenWork/Comic`). Au total, il y a 64 classes feuilles distinctes.
+
+À partir de cette taxonomie, on tire pour chaque classe feuille un ensemble d'instances DBpédia qui y appartienne. On obtient alors $N=51 418$  instances. Chaque instance est représentée par son plongement, de dimension $d=50$. Le jeu de données consiste donc en une matrice réelle de dimension $51 418 \times 50$.
 
 \section{Méthode proposée}
 \label{sec:te-method}
