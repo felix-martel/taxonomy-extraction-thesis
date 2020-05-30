@@ -3,14 +3,34 @@
 \section{Généralités}
 \label{sec:kge-general}
 
+%1 : généralité sur les plongements, et pourquoi on en a besoin : à faire
+
+\todo {motiver l'existence des KGE}
+
+
+Ce chapitre présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relation qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
+
+Enfin, on présente une nouvelle tâche sur laquelle évaluer un modèle de plongement de graphe. Cette tâche vise explicitement à mesurer la capacité d'un modèle à envoyer des entités appartenant à une même classe dans une même région de l'espace – une propriété essentielle pour pouvoir extraire des informations taxonomiques à partir des plongements vectoriels, et un préalable aux méthodes présentées dans les chapitres suivants de ce mémoire.
+
 \subsection{Introduction, notations et premiers concepts}
 \label{subsec:kge-general-intro}
 
 Les graphes de connaissance permettent d'appliquer des algorithmes de raisonnement très puissants. Toutefois, dans les bases de grande taille comme DBpédia ou Wikidata, la complexité en temps de ces algorithmes augmente rapidement, au point de les rendre inutilisables. Hors des algorithmes dédiés, les entités et les relations d'un graphe sont représentés de façon purement symbolique. La nécessité est donc apparue d'obtenir une représentation plus expressive des entités et relations d'un graphe. Pour ce faire, et suivant la dynamique du traitement automatique des langues, on a recours à des modèles de plongement. 
 
 \todo{Reformuler, en partant des différents modes de représentation}
+\newcommand{\URI}{\operatorname{URI}}
+\newcommand{\Adja}{\operatorname{Adj}}
 
-Un modèle de plongement est une méthode pour obtenir des représentations vectorielles denses et sémantiquement cohérentes des entités d'un graphe. Denses, c'est-à-dire de faible dimension, par opposition à une représentation sous forme de matrice d'adjacence $M(h) \in \{0, 1\}^{n_r \times n_e}$ où $M(h)_{i, j} = 1 \iff (h, r_i, e_j) \in \mathcal{KG}$. Sémantiquement cohérentes, car le modèle est construit de façon à envoyer une partie de l'information sémantique contenue dans le graphe vers l'espace vectoriel d'arrivé, afin que des entités sémantiquement proches dans le graphe aient des plongements vectoriels géométriquement proches.
+Dans un graphe de connaissance RDF, une entité est représentée par un identifiant unique, l'URI (\textit{Uniform Resource Identifier}). Cette URI est purement symbolique et ne contient aucune information sur la ressource qu'elle représente : si deux entités $e$ et $e'$ sont représentées par leurs URI $\URI(e)$ et $\URI(e')$, on peut savoir que $e = e'$ si $r=r'$; dans le cas $r \neq r'$, on ne peut rien conclure. Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence $\Adja(e)$ : une matrice booléenne de dimension $|\Rel|\times |\Ent|$, dont la coordonnée $(i, j)$ vaut $1$ si le triplet $(e, r_i, e_j)$ est valide et $0$ sinon. Cette représentation est déjà plus informative que la précédente : on peut comparer les représentations de deux entités $e$ et $e'$, par exemple en calculant le coefficient de Jaccard :
+\begin{equation}
+    \operatorname{Jaccard}(e, e') = \frac{\sum_{i, j} \Adja(e)_{i, j} \land \Adja(e')_{i, j}}{\sum_{i, j} \Adja(e)_{i, j} \lor \Adja(e')_{i, j}}    
+\end{equation}
+
+Cette représentation possède toutefois ses limites. % à détailler
+
+Certains auteurs combinent URI et plongements lexicaux pour obtenir des représentations vectorielles des entités d'un graphe (ref). Pour cela, on découpe l'URI en mots, on récupère les plongements lexicaux de ces mots (c'est-à-dire des représentations vectorielles de mots en faible dimension, comme par exemple Word2Vec (ref)), et on combine ces plongements, par exemple en les moyennant. Cette représentation permet d'éviter certains problèmes identifiés précédemment, mais elle présente elle aussi des inconvénients. En premier lieu, rien dans les spécifications RDF n'exige que les URI des ressources décrivent fidèlement les ressources en question. D'autre part, les plongements lexicaux sont appris sur des corpus textuels génériques et étrangers au graphe. Le contexte effectif de l'entité dans le graphe n'est donc pas pris en compte. (à détailler)
+
+Un modèle de plongement est une méthode pour obtenir une représentation vectorille dense et sémantiquement cohérente des entités d'un graphe, à partir des triplets contenus dans le graphe. Dense, c'est-à-dire de faible dimension, et par opposition à la représentation sous forme de matrice d'adjacence. Sémantiquement cohérente, car on souhaite que la géométrie des plongements reflète le graphe de connaissance original : deux entités sémantiquement proches dans le graphe doivent avoir des plongements géométriquement proches. Enfin, contrairement à la méthode basée sur des plongements lexicaux, cette repésentation vectorielle est basée sur le graphe de connaissance et non sur des ressources extenrnes, et doit donc tenir compte des spécificités de ce graphe.
 
 Formellement, un modèle de plongement vectoriel est un modèle qui associe à chaque entité $e \in \mathcal{E}$ un vecteur $\mathbf{e} \in \mathbb{R}^d$, et à chaque relation $r \in \mathcal{R}$ un vecteur $\mathbf{r} \in \mathbb{R}^{d'}$. On note $\mathbf{E} = \{\mathbf{e}\}_{e \in \mathcal{E}} $ l'ensemble des plongements d'entité, $\mathbf{R} = \{\mathbf{r}\}_{r \in \mathcal{R}} $ l'ensemble des plongements de relation et $\Theta = (\mathbf{E}, \mathbf{R})$ l'ensemble des paramètres du modèle. Un modèle de plongement est caractérisé par $\Theta$ ainsi que par une fonction de score $\sigma_{\Theta} : \mathcal{E \times R \times E} \rightarrow [0, 1]$, définie sur l'ensemble des triplets possibles et paramétrée par $\Theta$.  
 
