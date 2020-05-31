@@ -289,6 +289,12 @@ Ces deux modes d'évaluation – directe et transitive – sont nécessaires pou
 \subsection{Résultats}
 \label{subsec:te-results}
 
+Les résultats sont présentés dans le tableau \ref{tab:te-results}. La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supérieurs à \textit{Hard Mapping} (HM) et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. Les modèles qui obtiennent un $F1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidiene, HM avec TransE et la distance euclidienne. 
+
+Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérachie entre modèle est nette : TransE obtient les meilleurs résultats, quel que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
+
+% à affiner
+
 \begin{table}
     \centering
     \caption{
