@@ -18,21 +18,21 @@
 \section{Éléments de la problématique}  % environ 3 pages
 
 
-\begin{table}[ht]
-\caption{Plages de valeurs pour le champ \texttt{DSCP}}
-\centering
-\begin{tabular}{|c|c|l|}
-\hline\rowcolor[gray]{0.8}\color{black}
-Plage & Valeurs & Règle d'assignation\\\hline
-1 & xxxxx0 & Assignation par une norme de l'IANA\\\hline
-2 & xxxx11 & Expérimentation/Usage local\\\hline
-3 & xxxx01 & Expérimentation/Usage local (pourrait être jointe à la plage 1)\\\hline
-\end{tabular}
-\label{tab:RangesDSCP}
-\end{table}
+% \begin{table}[ht]
+% \caption{Plages de valeurs pour le champ \texttt{DSCP}}
+% \centering
+% \begin{tabular}{|c|c|l|}
+% \hline\rowcolor[gray]{0.8}\color{black}
+% Plage & Valeurs & Règle d'assignation\\\hline
+% 1 & xxxxx0 & Assignation par une norme de l'IANA\\\hline
+% 2 & xxxx11 & Expérimentation/Usage local\\\hline
+% 3 & xxxx01 & Expérimentation/Usage local (pourrait être jointe à la plage % 1)\\\hline
+% \end{tabular}
+% \label{tab:RangesDSCP}
+% \end{table}
 
 % On veut éviter que la figure et le tableau soient placés au-delà de la section courante.
-\FloatBarrier
+% \FloatBarrier
 
 
 %%
@@ -46,4 +46,12 @@ Plage & Valeurs & Règle d'assignation\\\hline
 %%
 \section{Plan du mémoire}  % 0.5 page
 
+
+On présente d'abord une panorama de la littérature existante. Y sont introduit les concepts fondamentaux du Web sémantique : les graphes de connaissance, qui permettent une représentation structurée de la connaissance, et la logique descriptive, qui permet d'enrichir ces graphes de règles logiques dont la somme constitue une taxonomie ou une ontologie, selon leur complexité. On décrit ensuite les techniques existantes pour extraire automatiquement ces taxonomies, soit à partir d'un graphe, soit à partir de corpus textuels. On propose finalement un survol des méthodes pour inférer de nouveaux axiomes à partir d'un graphe.
+
+Le chapitre \ref{chap:kge} est consacré aux modèles de plongement, qui sont au cœur du travail présenté ici et qui permettent une représentation vectorielle des éléments d'un graphe. On présente différents modèles concurrents, en s'efforçant de dégager les intuitions et les hypothèses qui ont dirigé leur conception, et de mettre en évidence leurs limitations théoriques et pratiques. On définit ensuite une nouvelle tâche pour l'évaluation de ces modèles, et on présente les résultats de cette évaluation.
+
+Dans le chapitre \ref{chap:te}, on présente une nouvelle approche pour extraire automatiquement une taxonomie à partir des plongements d'un graphe de connaissance.
+
+Le chapitre \ref{chap:texp} applique certaines des idées précédentes à l'extraction d'une taxonomie expressive. 
 \clearpage
