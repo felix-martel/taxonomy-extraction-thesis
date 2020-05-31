@@ -249,11 +249,42 @@ For a balanced binary tree, this algorithm guarantees a maximum cache size of $O
 \subsection{Construction de la taxonomie}
 \label{subsec:te-taxconstruction}
 
+Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode \textit{Hard Mapping}, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t) \prec m(t')$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
+\begin{equation}
+    \Tpred = (\cal{T}, \{t' \sqsubset t : m(t) \prec m(t') \text{ et } \forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T}) \})
+    \label{eq:te-extract-tax-from-mapping}
+\end{equation}
+Pour rappel, $m(\cal{T})$ désigne l'image de $\cal{T}$ par $m$, c'est-à-dire l'ensemble des clusters qui sont associés à un type :
+\begin{equation}
+    m(\cal{T}) = \{ C \in \cal{C}, \exists t \in \cal{T}, m(t) = C \}
+\end{equation}
+Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$, et on remonte vers la racine en cherchant le premier prédecesseur de $m(t')$ qui soit associé à un type. Si un tel prédecesseur $m(t)$ existe, on ajoute à $\Tpred$ l'axiome de subsumption $t' \sqsubset t$.
+
+Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extraie pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
+
+Pour cela, on construit un graphe $G$ des axiomes à conserver. Chaque axiome extrait est examiné, par ordre de probabilité décroissante. Pour chaque axiome $\alpha$, si ajouter $\alpha$ à $G$ crée un cycle, on rejete $\alpha$. Sinon, on l'ajoute effectivement à $G$. Par construction, le graphe $G$ ainsi obtenu est un graphe orienté acyclique (ou DAG en anglais, pour \textit{direct acyclic graph}) : il est bien acyclique car le graphe de départ est vide donc acyclique, et car il reste acyclique à chaque étape; il est orienté car l'axiome de subsumption $t \sqsubset t'$ est différent de l'axiome inverse $t' \sqsubset t$, il y a donc bien une orientation des arêtes de $G$. 
+
+Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le plus petit graphe $G_{red}$ tel qu'il existe un chemin de $t$ vers $t'$ dans $G_{red}$ si et seulement si il existe un chemin de $t$ vers $t'$ dans $G_{red}$. Enfin, pour tout type $t$ qui a un degré entrant supérieur à 1, c'est-à-dire qui est impliqué dans au moins deux axiomes $t \sqsubset t'$ et $t\sqsubset t''$, on supprime tous les axiomes de la forme $t \sqsubset t'$ à l'exception de celui de probabilité maximale. Le résultat est un la taxonomie extraite $\Tpred$. Le processus est représenté à la figure \ref{fig:softmapping-extraction}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
+    \caption{Extraction de taxonomie à partir d'une liste pondérée d'axiomes : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis les cycles sont éliminés en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
+    \label{fig:softmapping-extraction}
+\end{figure}
+
 \section{Évaluation et discussion}
 \label{sec:te-evaluation}
 
 \subsection{Méthode d'évaluation}
 \label{subsec:te-evaluation}
+
+On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus. La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb (ref vers la section Revue de littérature). 
+
+Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpédia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédecesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
+
+Ces deux modes d'évaluation – directe et transitive – sont nécessaires pour évaluer correctement la proximité d'une taxonomie prédite avec une taxonomie de référence, car ils ne mesurent pas la même chose. Prenons le cas où le modèle d'extraction prédit correctement la plupart des axiomes mais commet des erreurs sur les axiomes de haut niveau (proches de la racine, par exemple en prédisant à tort l'axiome $\dbo{Person} \sqsubset \dbo{Event}$). Comme la majorité des axiomes sont corrects, la mesure $F1$ directe est élévée; toutefois, après clôture transitive, l'erreur de haut niveau se propage dans tout le sous-arbre : dans notre exemple, toutes les sous-classe de \dbo{Person} seront incorrectement considérées comme des sous-classes de \dbo{Event}, ce qui fera chuter la précision et donc la mesure $F1$. À l'inverse, considérons le cas où un modèle extrait correctement les axiomes de haut niveau mais ne parvient pas à reproduire les axiomes de plus bas niveau – par exemple en prédisant $\dbo{SoccerPlayer} \sqsubset \dbo{Person}$ et $\dbo{Athlete} \sqsubset \dbo{Person}$ au lieu de $\dbo{SoccerPlayer} \sqsubset \dbo{Athlete} \sqsubset \dbo{Person}$. Dans ce cas, la mesure $F1$ transitive est élevée, car la majorité des axiomes transitifs de référence sont correctement prédits, mais la mesure $F1$ directe est basse, car les axiomes directs manquent. % En un sens, la mesure directe donne une évaluation locale de la prédiction
+
 
 \subsection{Résultats}
 \label{subsec:te-results}
