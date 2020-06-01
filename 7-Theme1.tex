@@ -24,12 +24,13 @@ Les graphes de connaissance permettent d'appliquer des algorithmes de raisonneme
 \newcommand{\Adja}{\operatorname{Adj}}
 
 
-Dans un graphe de connaissance RDF, une entité est représentée par un identifiant unique, l'URI (\textit{Uniform Resource Identifier}). Cette URI est purement symbolique et ne contient aucune information sur la ressource qu'elle représente : si deux entités $e$ et $e'$ sont représentées par leurs URI $\URI(e)$ et $\URI(e')$, on peut savoir que $e = e'$ si $r=r'$; dans le cas $r \neq r'$, on ne peut rien conclure. Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence $\Adja(e)$ : une matrice booléenne de dimension $|\Rel|\times |\Ent|$, dont la coordonnée $(i, j)$ vaut $1$ si le triplet $(e, r_i, e_j)$ est valide et $0$ sinon. Cette représentation est déjà plus informative que la précédente : on peut comparer les représentations de deux entités $e$ et $e'$, par exemple en calculant le coefficient de Jaccard :
+Dans un graphe de connaissance RDF, une entité est représentée par un identifiant unique, l'URI (\textit{Uniform Resource Identifier}). 
+Cette URI est purement symbolique et ne contient aucune information sur la ressource qu'elle représente : si deux entités $e$ et $e'$ sont représentées par leurs URI $\URI(e)$ et $\URI(e')$, on peut savoir que $e = e'$ si $r=r'$; dans le cas $r \neq r'$, on ne peut rien conclure. Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence $\Adja(e)$ : une matrice booléenne de dimension $|\Rel|\times |\Ent|$, dont la coordonnée $(i, j)$ vaut $1$ si le triplet $(e, r_i, e_j)$ est valide et $0$ sinon. Cette représentation est déjà plus informative que la précédente : on peut comparer les représentations de deux entités $e$ et $e'$, par exemple en calculant le coefficient de Jaccard :
 \begin{equation}
     \operatorname{Jaccard}(e, e') = \frac{\sum_{i, j} \Adja(e)_{i, j} \land \Adja(e')_{i, j}}{\sum_{i, j} \Adja(e)_{i, j} \lor \Adja(e')_{i, j}}    
 \end{equation}
 
-Cette représentation possède toutefois ses limites. \hl{à détailler :} représentation non dense, donc si j'ai deux entités e et e' distinctes mais sémantiquement proches, l'indice de jaccard donnera zéro. Donner un exemple peut-être. % à détailler
+Cette représentation possède toutefois ses limites. \hl{à détailler :} représentation non dense, donc si j'ai deux entités e et e' distinctes mais sémantiquement proches, l'indice de jaccard donnera zéro. Donner un exemple peut-être. % à détailler 
 
 Certains auteurs combinent URI et plongements lexicaux pour obtenir des représentations vectorielles des entités d'un graphe (ref). Pour cela, on découpe l'URI en mots, on récupère les plongements lexicaux de ces mots (c'est-à-dire des représentations vectorielles de mots en faible dimension, comme par exemple Word2Vec (ref)), et on combine ces plongements, par exemple en les moyennant. Cette représentation permet d'éviter certains problèmes identifiés précédemment, mais elle présente elle aussi des inconvénients. En premier lieu, rien dans les spécifications RDF n'exige que les URI des ressources décrivent fidèlement les ressources en question. D'autre part, les plongements lexicaux sont appris sur des corpus textuels génériques et étrangers au graphe. Le contexte effectif de l'entité dans le graphe n'est donc pas pris en compte. (à détailler)
 
@@ -64,7 +65,7 @@ Pour entraîner un modèle de plongement, on a besoin d'un ensemble de triplets 
 
 Cette section présente les modèles de plongement utilisés dans la suite de ce mémoire. On y distingue deux façons de concevoir ces modèles : la première est une approche algébrique, qui considère un graphe de connaissance comme une matrice d'adjacence, et applique sur cette matrice des techniques de réduction de la dimension. %et consiste à appliquer des techniques de réduction de la dimension à une représentation tensorielle du graphe de connaissance. 
 Cette approche algébrique est illustrée par trois modèles : RESCAL, DistMult et ComplEx. Une seconde approche est davantage géométrique : elle consiste à définir des contraintes géométriques pour les triplets valides du graphe, et à entraîner les plongements afin qu'ils respectent ces contraintes. %traduire géométriquement des propriétés 
-Cette approche géométrique est ici représentée par trois modèles : TransE, TransH, TransD. 
+Cette approche géométrique est ici représentée par trois modèles, qui sont TransE, TransH, TransD. 
 Enfin, on présente un tour d'horizon d'autres approches existantes.
 
 
@@ -82,7 +83,6 @@ Soit $\KG$ un graphe de connaissance ayant $n$ entités et $m$ relations, on not
     &0 \text{ sinon}
     \end{cases}
 \end{equation}
-On peut en voir une illustration dans la figure \ref{fig:kge-algebric-overview}.
 
 \begin{figure}
     \centering
@@ -91,37 +91,87 @@ On peut en voir une illustration dans la figure \ref{fig:kge-algebric-overview}.
     \label{fig:kge-algebric-overview}
 \end{figure}
 
-Pour une relation $r \in \Rel$, on note $\cal{X}_{r}$ la matrice d'adjacence associée à cette relation : $\cal{X}_{r_k}$ est une matrice booléenne carrée de dimension $n$.
+Pour une relation $r \in \Rel$, on note $\bf{X}^{(r)}$ la matrice d'adjacence associée à cette relation : $\bf{X}^{(r)}$ est une matrice booléenne carrée, de dimension $n$ et dont la coordonnée $(i, j)$ contient $1$ si le triplet $(e_i, r, e_j)$ est valide, et $0$ sinon. On peut donc voir $\cal{X}$ comme une collection des matrices $\bf{X}^{(r)}$ : $\cal{X} = [\bf{X}^{(r_1)}, \bf{X}^{(r_2)}, \ldots, \bf{X}^{(r_M)}]$, comme l'illustre la figure  \ref{fig:kge-algebric-overview}. Notons ici que le cas où $\cal{T}_{i, j, k} = 0$ ne signifie pas que le triplet $(e_i, r_k, e_j)$ est invalide : dans l'hypothèse du monde ouvert, un triplet absent du graphe peut être soit invalide, soit inconnu.
+
+Les modèles algébriques présentés dans cette section approcher les matrices $\bf{X}^{(r)}$ par des matrices de rang faible, et à extraire de ces approximations des représentations en faible dimension des entités et des relations du graphe. Ils peuvent être rapprochés de techniques de réduction de la dimension comme l'analyse sémantique latente (ou LSA, pour \textit{Latent Semantic Analysis} \hl{ref}), fréquente en traitement des langues naturelles.
+
+Dans toute la suite, $d \in \mathbb{N}$ désigne la dimension des plongements, généralement $d$ est compris entre 50 et 500.
 
 \subsubsection{RESCAL}
-Soit un graphe $\KG$, représenté sous la forme d'un tenseur d'adjacence $\mathcal{T} \in \{0, 1\}^{N \times M \times N}$. Pour une relation $r \in \mathcal{R}$ donnée, on dispose d'une matrice d'adjacence $M^r$, de dimension $N \times N$, telle que $M_{i, j}^r$ vaut $1$ si $e_i$ est lié à $e_j$ par la relation $r$, et $0$ sinon.
 
-\ldots
-
-Le modèle RESCAL \cite{nickel2011learning} construit donc un plongement vectoriel $\mathbf{e}$ de dimension $d$ pour chaque entité $e \in \mathcal{E}$, et une matrice $W_r$ de dimension $n \times n$ pour chaque relation $r \in \mathcal{R}$. La fonction de score d'un triplet s'écrit :
+Le modèle RESCAL \cite{nickel2011learning} s'appuie sur une factorisation approximative de $\bf{X}^{(r)}$, de rang $d$, qui s'écrit comme suit  :
 \begin{equation}
-    \sigma(h, r, t) = \mathbf{h^\top \cdot W_r \cdot t}
+    \bf{X}^{(r)} \approx \bf{E} \cdot \bf{W}_r \cdot \bf{E}^\top
+    \label{eq:kge-rescal-factorization}
+\end{equation}
+
+Où $\bf{E} \in \R^{N \times d}$ contient la représentation vectorielles des entités, et $\bf{W}_r \in \R^{d \times d}$ modélise l'interaction entre les composants du sujet et de l'objet pour la relation $r$.
+
+Notons $\bf{E} = (\bf{e}_1, \bf{e}_2, \ldots, \bf{e}_N)^\top$ : $\bf{e}_i$ désigne la $i$-ème ligne de $\bf{E}$ et constitue la représentation vectorielle en $d$ dimension de l'entité $e_i$, soit le plongement vectoriel recherché. L'équation \ref{eq:kge-rescal-factorization} présente deux caractéristiques importantes : d'une part, la représentation des entités ne dépend pas de la relation $r$; d'autre part, les entités sont représentées de la même manière selon qu'elle sont sujet ou objet dans la relation. La modélisation de RESCAL comprend donc les éléments suivants :
+\begin{itemize}
+    \item les entités sont représentés par un vecteur de dimension $d$, qui est le même pour chaque relation et quelle que soit la position de l'entité dans le triplet. 
+    \item une relation consiste en une interaction entre les représentations vectorielles de son sujet et de son objet. Cette interaction se traduit mathématiquement par une matrice carrée, a priori non symétrique. La matrice étant asymétrique, le rôle des deux entités impliquées (sujet ou objet) est pris en compte.
+\end{itemize}
+
+Ce dernier point est visible lorqu'on ré-écrit l'équation \ref{eq:kge-rescal-factorization} pour un triplet $(e_i, r_k, e_j)$ donné. Notons d'abord $\hat{\bf{X}}^{(r)}$ l'approximation de rang $d$ de $\bf{X}^{(r)}$ :
+\begin{equation*}
+    \hat{\bf{X}}^{(r)} = \bf{E} \cdot \bf{W}_r \cdot \bf{E}^\top
+\end{equation*}
+Et $\hat{\cal{T}} = [\hat{\bf{X}}^{(r_1)}, \hat{\bf{X}}^{(r_2)}, \ldots, \hat{\bf{X}}^{(r_M)}]$ l'approximation de rang $d$ du tenseur d'adjacence complet. On peut alors approximer la validité d'un triplet $(e_i, r_k, e_j)$ par :
+\begin{equation}
+    \hat{\cal{T}}_{i, j, k} = \bf{e}_i^\top \cdot \bf{W}_r \cdot \bf{e}_j
+\end{equation}
+
+Cette équation est fondamentale, puisqu'elle permet d'estimer la validité d'un triplet à partir de ses plongements. On la ré-écrit sous forme plus générique, en interprétant la quantité $\hat{\cal{T}}_{i, j, k}$ comme le \textit{score} associé au triplet $(e_i, r_k, e_j)$ : 
+\begin{equation}
+    s(h, r, t) = \mathbf{h}^\top \cdot \bf{W}_r \cdot \bf{t}
     \label{eq:rescal}
 \end{equation}
 
-Notons $w_{i, j}$ la coordonnée $i,j$ de $W_r$, on peut réécrire l'équation~\ref{eq:rescal} sous la forme~:
-
+Le but est donc d'obtenir des plongements tels que le score $s$ d'un triplet valide soit élevé, et le score d'un triplet invalide soit faible. Pour les obtenir, on définit un programme d'optimisation non-linéaire : les paramètres à entraîner sont les plongements des entités $\bf{E}$ et les $M$ matrices de relation $\bf{R} = \{ \bf{W}_r \}_{r \in \Rel}$. On note $\Theta = (\bf{E}, \bf{R})$ ces paramètres. La fonction de perte mesure l'écart entre le tenseur d'adjacence initial et son approximation de rang $d$, avec un terme de régularisation $g$ supplémentaire :
 \begin{equation}
-    \sigma(h, r, t) = \sum_{i, j = 1}^{d} \mathbf{h_i \cdot t_j} \cdot w_{i, j}
+    J(\Theta) = \frac{1}{2} \sum_{r \in \Rel} \left\| \bf{X}^{(r)} - \hat{\bf{X}}^{(r)} \right\|_F^2 + g(\Theta)
+    \label{eq:kge-rescal-loss-function}
 \end{equation}
 
-Ainsi, toutes les combinaisons $\mathbf{h_i t_j}$ de $\mathbf{h}$ et de $\mathbf{t}$ apparaissent dans la fonction de score, avec un coefficient $w_{i, j}$. En ce sens, RESCAL propose une expressivité maximale et permet de modéliser une large palette de relations. Par exemple, si $\mathbf{W_r}$ est symétrique (c'est-à-dire, $\mathbf{W_r} = \mathbf{W_r}^\top$), on a $w_{i,j} = w_{j, i}$ pour tous $i, j = 1, \ldots, d$, et donc :
+Le terme $g$ étant caractérisé par un paramètre $\lambda$ qui indique l'intensité de la régularisation, et défini par :
+\begin{equation}
+    g(\Theta) = \frac{1}{2} \lambda \left( \| \bf{E} \|_F^2 + \sum_{r \in \Rel} \| \bf{W}_r \|_F^2 \right)
+\end{equation}
+
+
+Pour harmoniser les notations avec les autres modèles de plongement, on peut réécrire la perte $J(\Theta)$ à l'aide de la fonction de score $s$. Pour cela, définissons un ensemble de triplets valides $\Delta_+$, par exemple $\Delta_+ = \{(e_i, r_k, e_j) : \cal{T}_{i, j, k} = 1 \}$, et un ensemble de triplets négatifs $\Delta_-$, par exemple $\Delta_- = \{(e_i, r_k, e_j) : \cal{T}_{i, j, k} = 0 \}$. La réunion des deux donne un ensemble d'entraînement $\Delta = (\Delta_- \times \{ 0 \}) \cup (\Delta_+ \times \{ 1 \})$, dans lequel chaque triplet $(h, r, t)$ est associé à une étiquette $y \in \{ 0, 1\}$ qui vaut $0$ si le triplet est invalide, et $1$ sinon.
+On a alors :
+\begin{equation}
+    J(\Theta) = \frac{1}{2} \sum_{(h, r, t), y \in \Delta} \left(y - s(h, r, t) \right)^2
+    + g(\Theta)
+\end{equation}
+
+La perte est donc égale aux carrés de la distance entre le score d'un triplet et son label, plus un terme de régularisation. Muni de cette fonction de perte, l'entraînement des plongements se fait en initialisant aléatoirement les paramètres, puis par descente de gradient sur $J$ jusqu'à atteindre un nombre maximal d'itérations, ou jusqu'à remplir un critère de convergence. Les auteurs proposent le critère de convergence suivant :
+\begin{equation}
+    \frac{\displaystyle \frac{1}{2} \sum_{r \in \Rel} \left\| \bf{X}^{(r)} - \hat{\bf{X}}^{(r)} \right\|_F^2}{\| \cal{T} \|_F^2} < \epsilon
+\end{equation}
+Ils fixent $\epsilon = 10^{-5}$.
+
+
+Notons $w_{i, j}$ la coordonnée $i,j$ de $\bf{W}_r$ et $u_i$ la $i$-ème coordonnée d'un vecteur $\bf{u}$, on peut réécrire l'équation~\ref{eq:rescal} sous la forme~:
 
 \begin{equation}
-    \sigma(h, r, t) = \sum_{i, j = 1}^{d} \mathbf{h_i \cdot t_j} \cdot d_{i, j}
+    s(h, r, t) = \sum_{i, j = 1}^{d} h_i \cdot t_j \cdot w_{i, j}
+\end{equation}
+
+Ainsi, toutes les combinaisons $h_i t_j$ de $\mathbf{h}$ et de $\mathbf{t}$ apparaissent dans la fonction de score, avec un coefficient $w_{i, j}$. En ce sens, RESCAL propose une expressivité maximale et permet de modéliser une large palette de relations. Par exemple, si $\mathbf{W_r}$ est symétrique (c'est-à-dire, $\mathbf{W}_r = \mathbf{W}_r^\top$), on a $w_{i,j} = w_{j, i}$ pour tous $i, j = 1, \ldots, d$, et donc :
+
+\begin{equation}
+    s(h, r, t) = \sum_{i, j = 1}^{d} \mathbf{h_i \cdot t_j} \cdot d_{i, j}
     =  \sum_{i, j = 1}^{d} \mathbf{h_j \cdot t_i} \cdot w_{j, i}
     =  \sum_{i, j = 1}^{d} \mathbf{h_j \cdot t_i} \cdot w_{i, j}
-    = \sigma(t, r, h)
+    = s(t, r, h)
 \end{equation}
 
-Une matrice symétrique induit donc une fonction de score symétrique elle aussi; cela permet de modéliser des relations symétriques. Inversement, si $\mathbf{W_r}$ est antisymétrique (c'est-à-dire, $\mathbf{W_r} = -\mathbf{W_r}^\top$), on aura une fonction de score antisymétrique, ce qui permet de modéliser une relation antisymétrique.
+Une matrice symétrique induit donc une fonction de score symétrique elle aussi; cela permet de modéliser des relations symétriques. Inversement, si $\mathbf{W_r}$ est antisymétrique (c'est-à-dire, $\mathbf{W}_r = -\mathbf{W}_r^\top$), on aura une fonction de score antisymétrique, ce qui permet de modéliser une relation antisymétrique.
 
-Cette expressivité se paie toutefois par un nombre plus élevé de paramètres ($d^2$ par relation, contre $d$ pour TransE); au-delà des considérations de mémoire, l'entraînement de ces $d^2$ paramètres est plus difficile et la convergence plus lente.
+Cette expressivité se paie toutefois par un nombre plus élevé de paramètres ($d^2$ par relation); au-delà des considérations de mémoire, l'entraînement de ces $d^2$ paramètres est plus difficile et la convergence plus lente.
 
 \subsubsection{DistMult}
 
