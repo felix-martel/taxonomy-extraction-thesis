@@ -93,7 +93,7 @@ Soit $\KG$ un graphe de connaissance ayant $n$ entités et $m$ relations, on not
 
 Pour une relation $r \in \Rel$, on note $\bf{X}^{(r)}$ la matrice d'adjacence associée à cette relation : $\bf{X}^{(r)}$ est une matrice booléenne carrée, de dimension $n$ et dont la coordonnée $(i, j)$ contient $1$ si le triplet $(e_i, r, e_j)$ est valide, et $0$ sinon. On peut donc voir $\cal{X}$ comme une collection des matrices $\bf{X}^{(r)}$ : $\cal{X} = [\bf{X}^{(r_1)}, \bf{X}^{(r_2)}, \ldots, \bf{X}^{(r_M)}]$, comme l'illustre la figure  \ref{fig:kge-algebric-overview}. Notons ici que le cas où $\cal{T}_{i, j, k} = 0$ ne signifie pas que le triplet $(e_i, r_k, e_j)$ est invalide : dans l'hypothèse du monde ouvert, un triplet absent du graphe peut être soit invalide, soit inconnu.
 
-Les modèles algébriques présentés dans cette section approcher les matrices $\bf{X}^{(r)}$ par des matrices de rang faible, et à extraire de ces approximations des représentations en faible dimension des entités et des relations du graphe. Ils peuvent être rapprochés de techniques de réduction de la dimension comme l'analyse sémantique latente (ou LSA, pour \textit{Latent Semantic Analysis} \hl{ref}), fréquente en traitement des langues naturelles.
+Les modèles algébriques présentés dans cette section approchent les matrices $\bf{X}^{(r)}$ par des matrices de rang faible, et à extraire de ces approximations des représentations en faible dimension des entités et des relations du graphe. Ils peuvent être rapprochés de techniques de réduction de la dimension comme l'analyse sémantique latente (ou LSA, pour \textit{Latent Semantic Analysis} \hl{ref}), fréquente en traitement des langues naturelles.
 
 Dans toute la suite, $d \in \mathbb{N}$ désigne la dimension des plongements, généralement $d$ est compris entre 50 et 500.
 
@@ -175,61 +175,112 @@ Cette expressivité se paie toutefois par un nombre plus élevé de paramètres 
 
 \subsubsection{DistMult}
 
-DistMult \cite{distmult} vise à simplifier RESCAL pour le rendre plus facile à entraîner et moins sujet au surapprentissage. Pour cela, on garde la fonction de score de RESCAL, exprimée dans l'équation~\ref{eq:rescal}, mais on impose que la matrice $\mathbf{W_r}$ soit diagonale – soit $d$ paramètres par relation, comme TransE, au lieu de $d^2$. Cela revient à représenter une relation $r$ par un vecteur $\mathbf{r}$ de dimension $d$, et à poser $\mathbf{W_r = I_{d\times d} \cdot r}$. La fonction de score s'écrit donc :
+DistMult \cite{distmult}, bien qu'il ne soit pas présenté comme tel par ses auteurs, peut être vu comme une simplification de RESCAL pour le rendre plus facile à entraîner et moins sujet au sur-apprentissage. Pour cela, on conserve comme fonction de score un produit trilinéaire entre les plongements des éléments du triplets  (équation~\ref{eq:rescal}), mais on impose que la matrice $\mathbf{W_r}$ soit diagonale – soit $d$ paramètres par relation au lieu de $d^2$. Cela revient à représenter une relation $r$ par un vecteur $\mathbf{r}$ de dimension $d$, et à poser $\mathbf{W_r = I_{d\times d} \cdot r}$. La fonction de score s'écrit donc :
 \begin{equation}
     \label{eq:distmult}
-    \sigma(h, r, t) = \mathbf{h^\top \cdot I_{d\times d}r \cdot t}
+    s(h, r, t) = \mathbf{h^\top \cdot I_{d\times d}r \cdot t}
 \end{equation}
 
-Ce qui se réécrit:
+Ce qui se réécrit sous forme non-matricielle :
 \begin{equation}
-    \sigma(h, r, t) = \sum_{i=1}^{d} \mathbf{h_i r_i t_i}
+    s(h, r, t) = \sum_{i=1}^{d} h_i r_i t_i
+    \label{eq:kge-distmult-scorenv}
 \end{equation}
 
-Ainsi, la fonction de score peut être vue comme un produit scalaire à trois vecteurs. Comparé à RESCAL, l'expressivité est très réduite : seule les combinaisons de la forme $\mathbf{h_i t_i}$ sont utilisées pour le calcul du score. De plus, $\sigma$ est toujours symétrique, donc le sujet et l'objet d'un triplet ne sont pas différenciés.
+Ainsi, la fonction de score peut être vue comme un produit scalaire à trois vecteurs. Comparé à RESCAL, l'expressivité est très réduite : seule les combinaisons de la forme $\mathbf{h_i t_i}$ sont utilisées pour le calcul du score. De plus, $s$ est toujours symétrique, donc le sujet et l'objet d'un triplet ne sont pas différenciés.
+
+% L'équation \ref{eq:kge-distmult-scorenv} permet d'interpréter la fonction de score de DistMult comme une mesure de similarité entre le sujet $h$ et l'objet $t$, pondérée en fonction de la relation $r$ considérée. En effet, le terme $\bf{h^\top \cdot t}$ s'interprète comme une similarité cosinus sans normalisation, et chaque coefficient $r_i$ indique le poids à accorder à chaque dimension.
+
+
+L'entraînement de DistMult se fait avec une fonction de perte spécifique, la perte par marge maximale, qui s'écrit comme suit :
+\begin{equation}
+    J(\Theta) = \sum_{(h, r, t) \in \Delta_+} \sum_{(h', r', t') \in \Delta_-} \lfloor \gamma + s(h', r', t') - s(h, r, t) \rfloor_+
+    \label{eq:kge-distmult-maxmarginloss}
+\end{equation}
+Pour rappel, $\lfloor \cdot \rfloor_+$ désigne la partie positive, c'est-à-dire que $\lfloor x \rfloor_+$ vaut $x$ si $x > 0$, et vaut zéro sinon. Pour interpréter cette perte, considérons un triplet valide $u \in \Delta_+$ et un triplet invalide $u' \in \Delta_-$. L'objectif d'un modèle est de maximiser le score de $u$ et de minimiser celui de $u'$. Si on pose $\delta s = s(u) - s(u')$ (c'est l'écart entre le score de $u$ et celui de $u'$), cet objectif revient alors à maximiser $\delta s$. Le terme de la somme dans l'équation \ref{eq:kge-distmult-maxmarginloss} s'écrit :
+\begin{equation}
+    j(u, u') = \lfloor \gamma - \delta s \rfloor_+
+\end{equation}
+Ainsi, la perte associée à $u$ et $u'$ est nulle si $\delta s >= \gamma$, et vaut $\gamma - \delta s$ sinon. L'objectif du modèle est donc de séparer les scores des triplets valides des scores des triplets invalides, et ce d'une marge au moins égale à $\gamma$.
 
 \subsubsection{ComplEx}
 \label{subsec:complex}
 
-ComplEx est une extension de DistMult dans l'espace complexe. Comme RESCAL, il s'appuie sur une décomposition de la matrice d'adjacence $\bf{X}_r$ associée à la relation $r$ pour en réduire la dimension; toutefois, au lieu d'utiliser la décomposition en valeurs singulières (SVD), il repose sur la décomposition en valeurs propres. Selon le théorème spectral, tout matrice normale est diagonalisable sur une base orthonormale :
+ComplEx est une extension de DistMult dans l'espace complexe. Comme RESCAL, il s'appuie sur une décomposition de la matrice d'adjacence $\bf{X}^{(r)}$ associée à la relation $r$ pour en réduire la dimension.
+
+Pour motiver la conception de ComplEx, les auteurs s'interrogent sur les fondements mathématiques de la factorisation de $\bf{X}^{(r)}$. Avant réduction de la dimension, la décomposition qui sert de base à DistMult peut s'écrire :
 \begin{equation}
-    \bf{X}_r = \bf{E \cdot W_r \cdot \compconj{E}^\top}
+    \bf{X}^{(r)} = \bf{E} \cdot \bf{W}_r \cdot \bf{E}^\top
+    \label{eq:kge-complex-spectral}
 \end{equation}
-Avec $\bf{W}_r \in \mathbb{C}^{|\Ent| \times |\Ent|}$ une matrice diagonale. En gardant alors les $d \times d$ premières coordonnées de $\bf{W}_r$ pour former les matrices $\bf{W}_r^{(d)} \in \mathbb{C}^{d \times d}$ et $\bf{E}^{(d)} \in \mathbb{C}^{|\Ent| \times d}$, on obtient une approximation de $\bf{X}_r$ de dimension $d$ :
+Avec $\bf{E} \in \R^{N \times N}$ et $\bf{W}_r \in \R^{N \times N}$ une matrice diagonale : il s'agit de la diagonalisation d'une matrice réelle symétrique sur une base orthonormée. Toutefois, cette décomposition n'existe que dans le cas particulier où $\bf{X}^{(r)}$ est symétrique : en effet, les valeurs propres d'une matrice réelle symétrique sont réelles, et leurs sous-espaces propres sont orthogonaux, donc le théorème spectral s'applique.
+
+En revanche, la décomposition précédente n'est pas possible dans le cas général où $\bf{X}^{(r)}$ n'est pas symétrique. On pourrait alors utiliser la décomposition en valeur singulière (SVD, pour \textit{Singular Value Decomposition}), qui s'écrit :
+\begin{equation}
+    \bf{X}^{(r)} = \bf{U} \cdot \bf{W}_r \cdot \bf{V}^\top
+\end{equation}
+Avec $\bf{U}, \bf{V} \in \R^{N \times N}$. Dans ce cas, on a $\bf{U \neq V}$, donc on perd une propriété essentielle de la décomposition précédente : une entité possède une représentation unique qu'elle soit sujet ou objet dans la relation. 
+
+ComplEx vise à concilier ces deux exigences : obtenir une représentation unique des entités, indépendante de leur rôle dans le triplet, et pouvoir représenter des matrices non-symétriques. Pour cela, le modèle utilise la diagonalisation sur une base de vecteurs propres, comme l'équation \ref{eq:kge-complex-spectral}, dans le cas général où $\bf{X}^{(r)}$ n'est pas symétrique : dans ce cas, $\bf{E}$ et $\bf{W}_r$ ne sont plus nécessairement réelles, et la décomposition s'écrit :
+\begin{equation}
+    \bf{X}_r = \bf{E} \cdot \bf{W}_r \cdot \compconj{\bf{E}}^\top
+    \label{eq:kge-complex-main}
+\end{equation}
+Avec $\bf{W}_r \in \mathbb{C}^{N \times N}$ une matrice diagonale qui contient les valeurs propres de $\bf{X}^{(r)}$, classées dans l'ordre décroissant de leurs modules. En gardant alors les $d \times d$ premières coordonnées de $\bf{W}_r$ pour former les matrices $\bf{W}_r^{(d)} \in \mathbb{C}^{d \times d}$ et $\bf{E}^{(d)} \in \mathbb{C}^{N \times d}$, on obtient une approximation de $\bf{X}_r$ de dimension $d$ :
 \begin{equation}
     \bf{X}_r \approx \bf{E}^{(d)} \cdot \bf{W}_r^{(d)} \cdot \compconj{ \bf{E}^{(d)}}^\top
 \end{equation}
 
-Enfin, la matrice devant être réelle, son approximation en basse dimension est projetée dans $\R$ en ne considérant que la partie réelle de $\bf{E}^{(d)} \cdot \bf{W}_r^{(d)} \cdot \compconj{ \bf{E}^{(d)}}^\top$. Autrement dit, la fonction de score de ComplEx peut s'écrire :
+La matrice $\bf{X}^{(r)}$ devant être réelle, son approximation en basse dimension est projetée dans $\R$ en ne considérant que la partie réelle de $\bf{E}^{(d)} \cdot \bf{W}_r^{(d)} \cdot \compconj{ \bf{E}^{(d)}}^\top$. Autrement dit, la fonction de score de ComplEx peut s'écrire :
 \begin{equation}
-    \sigma(h, r, t) = \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}})
+    \eta(h, r, t) = \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}})
 \end{equation}
-Avec $\bf{h, t} \in \mathbb{C}^d$ des vecteurs complexes, et $\bf{W}_r$ une matrice complexe diagonale de dimension $d \times d$.
+Avec $\bf{h, t} \in \mathbb{C}^d$ des vecteurs complexes, et $\bf{W}_r$ une matrice complexe diagonale de dimension $d \times d$. Si on note $\eta$ ce score et non $s$, c'est parce que ComplEx fait un choix de modélisation légèrement différent des modèles précédents. En effet, plutôt que de prédire directement des valeurs entre 0 et 1, on autorise les coefficients de $\Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}})$ à prendre n'importe quelle valeur dans $] -\infty, +\infty[$, et on ramène ensuite le score dans $[0, 1]$ à l'aide de la fonction logistique : $\sigma : z \mapsto (1 + e^{-z})^{-1}$, soit une fonction de score finalement égale à $s = \sigma \circ \eta$:
+\begin{equation}
+    s(h, r, t) = \sigma \left( \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}}) \right)
+\end{equation}
 
 Un avantage théorique de la fonction de score de ComplEx par rapport aux précédentes est qu'elle est capable d'être symétrique, antisymétrique ou ni l'un ni l'autre, selon la position de $\bf{W}_r$ dans l'espace complexe. Considérons d'abord le cas où $\bf{W}_r$ est réelle ($\bf{W}_r \in \R^{d \times d}$). On a :
 \begin{align}
-    \sigma(h, r, t) &= \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}}) \\
+    \eta(h, r, t) &= \Re(\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}}) \\
     &= \Re\left((\compconj{\bf{h^\top \cdot W}_r \cdot \compconj{\bf{t}}})^\top\right) \label{eq:complex-symmetric-1} \\
     &= \Re\left( \compconj{\compconj{\bf{t}}^\top \cdot \compconj{\bf{W}_r}^\top \cdot 
     \compconj{\bf{h^\top}}^\top}\right) \label{eq:complex-symmetric-2} \\
     &= \Re\left(\bf{t}^\top \cdot \bf{W}_r \cdot \compconj{\bf{h}}\right) \label{eq:complex-symmetric-3} \\
-    &= \sigma(t, r, h)
+    &= \eta(t, r, h)
 \end{align}
-\ref{eq:complex-symmetric-1} est vraie car la partie réelle est invariante par conjugaison, et \ref{eq:complex-symmetric-3} parce que $\bf{W}_r$ est réelle et symétrique. Ainsi, la fonction de score est symétrique lorsque le plongement de la relation associée est réel, on peut donc modéliser plus fidèlement une relation symétrique. Si un triplet $(h, r, t)$ est valide et présent à l'entraînement, le modèle sera entraîné pour maximiser $\sigma(h, r, t)$; or, sous réserve que $\bf{W}_r$ soit réelle, on aura $\sigma(t, r, h) = \sigma(h, r, t)$ et donc on aura bien l'équivalence : $(h, r, t) \text{ est valide} \iff (t, r, h) \text{ est valide}$.
+\ref{eq:complex-symmetric-1} est vraie car la partie réelle est invariante par conjugaison, et \ref{eq:complex-symmetric-3} parce que $\bf{W}_r$ est réelle et symétrique. On ramène alors le score dans l'intervalle $[0, 1]$, et on obtient :
+\begin{equation}
+    s(h, r, t) = s(t, r, h)
+\end{equation}
+Ainsi, $s$ attribue le même score à un triplet et à son symétrique lorsque le plongement de la relation associée est réel, on peut donc modéliser plus fidèlement une relation symétrique. 
+Si un triplet $(h, r, t)$ est valide et présent à l'entraînement, le modèle sera entraîné pour maximiser $s(h, r, t)$; or, sous réserve que $\bf{W}_r$ soit réelle, on aura $s(t, r, h) = s(h, r, t)$ et donc on aura bien l'équivalence : $(h, r, t) \text{ est valide} \iff (t, r, h) \text{ est valide}$.
 
 Inversement, si $\bf{W}_r$ est imaginaire pure, c'est-à-dire $\bf{W}_r \in i\R$, on aura $\compconj{\bf{W}_r} = - \bf{W}_r$; en injectant ce résultat dans l'équation \ref{eq:complex-symmetric-2}, on aura :
 \begin{equation}
-    \sigma(h, r, t) = - \sigma(t, r, h)
+    \eta(h, r, t) = - \eta(t, r, h)
 \end{equation}
-Ainsi, une matrice imaginaire pure donne une fonction de score antisymétrique. Donc un plongement imaginaire pur modélisera des relations antisymétriques, puisqu'un score élevé pour le triplet $(h, r, t)$ impliquera nécessairement un score faible pour le symétrique $(t, r, h)$.
+Ce qui, une fois ramené dans $[0, 1]$, donne :
+\begin{equation}
+    s(h, r, t) = 1 - s(t, r, h)
+\end{equation}
+Donc un plongement imaginaire pur modélisera des relations antisymétriques, puisqu'un score proche de 1 pour le triplet $(h, r, t)$ impliquera nécessairement un score proche de 0 pour le symétrique $(t, r, h)$.
 
 Enfin, dans le cas général où $\bf{W}_r$ n'est ni réelle, ni imaginaire pure, la relation $r$ modélisée ne sera ni symétrique, ni antisymétrique. Évidemment, il s'agit là de propriétés \textit{théoriques} du modèle : en particulier, ces propriétés ne sont utiles qu'à la condition que le modèle soit capable de faire converger les plongements des relations symétriques vers l'espace réel, et les plongements des relations antisymétriques vers l'espace des imaginaires purs. Toutefois, cela indique une expressivité \textit{a priori}, que n'ont ni TransE, ni DistMult. En effet, pour TransE, une relation symétrique devrait vérifier $\bf{h + r - t} \approx 0$ et $\bf{t + r - h} \approx 0$, pour tous les plongements $\bf{h, t}$; en injectant la seconde équation dans la première, on obtient $\bf{h + r + r} \approx h, \forall \bf{h}$, soit $\bf{r \approx -r}$ et donc $\bf{r} \approx 0$. Ainsi,  une relation modélisée par TransE n'est pas symétrique, sauf dans le cas particulier où $\bf{r}$ est nul. Dans le cas de DistMult, toutes les relations sont symétriques.
 
 
-\subsection{Modèles à translation : TransE et ses variantes}
+\subsection{Modèles translationnels : TransE et ses variantes}
 \label{subsec:kge-models-transx}
 
-On présente ici une première famille de modèles, les modèles \textit{à translation}, constituée de TransE et de ses dérivés. L'idée première de ces modèles consiste à représenter une relation entre deux entités comme une translation entre leurs plongements. Une relation $r$ est représentée par une translation $T_r$ de vecteur caractéristique $\mathbf{r}$ :
+On introduit ici une seconde approche, davantage géométrique, que l'on présente à travers l'exemple des modèles translationnels. Un modèle géométrique abandonne la référence au graphe vu comme un tenseur d'adjacence. Il est caractérisé par deux éléments : d'une part, des plongements vectoriels $\bf{E} = \{ \bf{e} \}_{e \in \Ent} \subset \R^d$ représentant les entités; d'autre part, d'une famille d'opérateurs géométriques $\{ F_r \}_{r \in Rel}$ qui combinent les plongements de deux entités en fonction d'une relation. En appliquant l'opérateur $F_r$ aux plongements $\bf{h}$ et $\bf{t}$, on obtient un nombre réel positif appelé l'\textit{énergie} du triplet $(h, r, t)$ et noté $E(h, r, t)$. L'objectif d'un modèle de plongement géométrique est de minimiser l'énergie des triplets valides, et de maximiser celle des triplets invalides.
+
+Dans cette section, on examine une unique famille de modèles géométriques, les modèles translationnels. Le premier de ces modèles est TransE, qui a inspiré un grand nombre de variantes. L'opérateur $F_r$ d'un modèle translationnel est précisément la translation du sujet d'un triplet vers l'objet du triplet, la translation étant paramétrée par la relation considérée.
+
+\subsubsection{TransE}
+
+L'idée fondamentale de TransE est de représenter une relation entre deux entités comme une translation entre leurs plongements. 
+
+On présente ici une seconde famille de modèles, les modèles \textit{translationnels}, constituée de TransE et de ses dérivés. L'idée première de ces modèles consiste à représenter une relation entre deux entités comme une translation entre leurs plongements. Une relation $r$ est représentée par une translation $T_r$ de vecteur caractéristique $\mathbf{r}$ :
 \begin{equation*}
     T_r : \mathbf{u} \mapsto \mathbf{u + r}
 \end{equation*}
