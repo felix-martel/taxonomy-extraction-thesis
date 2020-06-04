@@ -1,0 +1,26 @@
+\begin{tikzpicture} [
+            neuron/.style={fill=gray!20, draw=gray!40, circle},
+            rel/.style={fill=gray!40, <-}
+        ]
+\def\offsety{0.75}
+\def\offsetx{-1}
+
+\def\ypos{-1.5}
+\node[label={0:\textit{Sortie}}] at (0*\offsetx, \ypos*\offsety) {};
+\node at (2*\offsetx, \ypos*\offsety) {\textit{Projection}};
+\node[label={180:\textit{Entrée}}] at (4*\offsetx, \ypos*\offsety) {};
+
+\node [neuron, label={0:\texttt{Picasso}}] (0) at (0*\offsetx, 3*\offsety) {};
+\node [neuron, label={0:\texttt{dbo:birthPlace}}] (1) at (0*\offsetx, 2*\offsety) {};
+\node [neuron, label={0:\texttt{dbo:country}}] (2) at (0*\offsetx, 1*\offsety) {};
+\node [neuron, label={0:\texttt{Spain}}] (3) at (0*\offsetx, 0*\offsety) {};
+\node [neuron] (4) at (2*\offsetx, 1.5*\offsety) {$ $};
+\node [neuron, label={180:\texttt{Málaga}}] (5) at (4*\offsetx, 1.5*\offsety) {};
+
+\draw [style=rel] (0) to (4);
+\draw [style=rel] (1) to (4);
+\draw [style=rel] (2) to (4);
+\draw [style=rel] (3) to (4);
+\draw [style=rel] (4) to (5);
+        
+\end{tikzpicture}
