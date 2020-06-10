@@ -60,6 +60,55 @@ Pour un cluster $C$ donné, on définit $X[C]$ le sous-arbre de racine $C$ comme
 
 Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters gauche et droit de $C$, et $\succs(C)$ l'ensemble des successeurs de $C$.
 
+\subsubsection{Critère de fusion}
+
+Plusieurs critères sont envisagés pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut-être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
+
+Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Chaque critère définit une distance $D$ entre les clusters, et choisit de fusionner les clusters $A$ et $B$ qui ont la plus faible distance entre eux. Ainsi, à l'étape $t$, on fusionne :
+\begin{equation}
+    A_t, B_t = \argmin_{A, B \in \cal{C}_t} D(A, B)
+\end{equation}
+La distance $D(A, B)$ peut être vue comme le \textit{coût} associé à la fusion de $A$ et $B$. 
+
+\paragraph{Saut minimum}
+
+La distance entre $A$ et $B$ est la distance minimale entre un point de $A$ et un point de $B$ :
+\begin{equation}
+    D(A, B) = \min_{\bf{x} \in A, \bf{y} \in B} d(\bf{x}, \bf{y})
+\end{equation}
+
+\paragraph{Saut moyen}
+
+Ici, la distance entre $A$ et $B$ est la distance moyenne entre leurs entités :
+\begin{equation}
+    D(A, B) = \frac{1}{|A| \times |B|} \sum_{\bf{x} \in A} \sum_{\bf{y} \in B} d(\bf{x}, \bf{y})
+\end{equation}
+
+\paragraph{Saut maximum}
+
+Cette fois, la distance entre $A$ et $B$ est la distance maximale entre un point de $A$ et un point de $B$ :
+\begin{equation}
+    D(A, B) = \max_{\bf{x} \in A, \bf{y} \in B} d(\bf{x}, \bf{y})
+\end{equation}
+
+\paragraph{Distance de Ward}
+
+Le critère de Ward consiste à minimiser l'augmentation d'inertie lors de la fusion de $A$ et de $B$. L'inertie d'un cluster $C$ est la somme des carrés des distances entre ses entités et son centroïde :
+\begin{equation}
+    I(C) = \sum_{\bf{x} \in C} d(\bf{x}, \frac{1}{|C|} \sum_{\bf{y} \in C} \bf{y})
+\end{equation}
+Le centroïde du cluster $C$ est parfois appellé \textit{centre de gravité}; il est noté $g(C)$ :
+\begin{equation}
+    g(C) = \frac{1}{|C|} \sum_{\bf{y} \in C} \bf{y}
+\end{equation}
+L'augmentation d'inertie lors de la fusion de $A$ et de $B$ est égale à l'inertie de $A \cup B$, retranchée de l'inertie de $A$ et de $B$ (puisque ces deux clusters disparaissent lors de la fusion) :
+\begin{align}
+    \Delta I &= I(A \cup B) - I(A) - I(B) \\
+    &= \sum_{\bf{x} \in A\cup B} d(\bf{x}, g(A \cup B) 
+    - \sum_{\bf{x} \in A} d(\bf{x}, g(A) 
+    - \sum_{\bf{x} \in B} d(\bf{x}, g(B) 
+\end{align}
+
 
 Considérations temportelles ? Complexité de l'algorithme ?
 

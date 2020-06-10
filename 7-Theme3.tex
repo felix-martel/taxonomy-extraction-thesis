@@ -41,7 +41,7 @@ Tant que la file $A$ n'est pas vide, on retire son premier élément $a$, qui se
 Sur ce nuage de point $\cal{D}_a$, on effectue un regroupement hiérarchique, comme décrit dans la section \ref{subsec:te-clustering}. À nouveau, on considère deux choix de paramètres de cet algorithmes : distance euclidienne avec critère de Ward, et distance cosinus avec liaison moyenne. La première fusionne les clusters de façon à minimiser la variance du nouveau cluster créé. À l'étape $t$, notons $\cal{C}_t$ les clusters existant; les clusters $C_1$ et $C_2$ à fusionner sont choisis selon l'équation :
 \begin{equation}
     C_1, C_2 = \argmin_{C_1, C_2 \in \cal{C}_t} 
-    \frac{1}{| C |} \sum_{\bf{e} \in C_1 \cup C_2} \| \bf{e} - \frac{1}{| C |} \sum_{\bf{e'} \in C_1 \cup C_2} \bf{e} \|_2^2 
+    \frac{1}{| C_1 + C_2 |} \sum_{\bf{e} \in C_1 \cup C_2} \| \bf{e} - \frac{1}{| C_1 + C_2 |} \sum_{\bf{e'} \in C_1 \cup C_2} \bf{e'} \|_2^2 
 \end{equation}
 La seconde fusionne les clusters dont les entités ont la distance moyenne la plus faible. On fusionnera donc $C_1$ et $C_2$ tels que :
 \begin{equation}
