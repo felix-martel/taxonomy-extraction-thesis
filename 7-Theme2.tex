@@ -303,8 +303,8 @@ On peut finalement écrire les équations de récurrence pour $\mathbf{s_C}, \ma
     \mathbf{u_C} &= \mathbf{p_C} + \mathbf{s_C}
 \end{align}
 
-Our implementation uses linear programming. We denote $D_C = (\mathbf{s_C}, \mathbf{Q_C}, \mathbf{u_C})$. Clusters are iterated over in a reverse DFS order. For each cluster $C$, we compute and cache $D_C$ using $D_{\text{left}(C)}$ and $D_{\text{right}(C)}$. The reverse DFS order guarantees that all successors of $C$ have already been visited, so $D_{\text{left}(C)}$ and $D_{\text{right}(C)}$ are already cached. After computing $D_C$, we can delete cached values $D_{\text{left}(C)}$ and $D_{\text{right}(C)}$ because no further computation depends on them. The last visited cluster is $\texttt{root}$: when the algorithm ends, the cache contains only $D_\texttt{root} = (\mathbf{s_\texttt{root}}, \mathbf{Q_\texttt{root}}, \mathbf{u_\texttt{root}})$, and the final probability matrix $\mathbf{Q_\texttt{root}}$ can be returned. Its $(i, j)$ coordinate contains the probability of axiom $(t_j \sqsubset t_i)$.
-For a balanced binary tree, this algorithm guarantees a maximum cache size of $O(|\mathcal{T}|^2 \log_2(| \mathcal{C} |))$, with $|\mathcal{T}| \ll | \mathcal{C} |$.
+Pour implémenter cet algorithme efficacement, on utilise la programmation linéaire. On note $D_C = (\mathbf{s_C}, \mathbf{Q_C}, \mathbf{u_C})$ l'ensemble des quantités calculées récursivement. Les clusters sont parcourus dans l'ordre inverse d'un parcours en profondeur, ce qui garantit que, lorsqu'on visite un cluster $C$, tous ses successeurs ont déjà été visités. Pour chaque cluster $C$, soit $C$ est une feuille, auquel cas on calcule $D_C$ à l'aide des formules d'initialisation précédentes; soit $C$ n'est pas une feuille, auquel cas ses deux sous-clusters $\gauche(C)$ et $\droite(C)$ ont déjà été visités et les quantités $D_{\gauche(C)}$ et $D_{\droite(C)}$ sont stockées dans le cache. Dans ce cas, on retire $D_{\gauche(C)}$ et $D_{\droite(C)}$ du cache (chaque cluster est visité une seule fois dans les équations de récurrence, donc plus aucun calcul ne dépend d'eux), on les utilise pour calculer $D_C$ selon les équations de récurrence précédentes, et on ajoute $D_C$ ajoute au cache. Le dernier cluster visité est \texttt{racine} : lorsque l'algorithme termine, le cache contient uniquement $D_\texttt{racine} = (\mathbf{s_\texttt{racine}}, \mathbf{Q_\texttt{racine}}, \mathbf{u_\texttt{racine}})$. On peut alors retourner la matrice de probabilité finale $mathbf{Q_\texttt{racine}}$. Sa coordonnée $(i, j)$ contient la probabilité de l'axiome $(t_j \sqsubset t_i)$.
+Pour un arbre binaire équilibré, cet algorithme garantit un cache de taille maximale $O(|\mathcal{T}|^2 \log_2(| \mathcal{C} |))$, avec $|\mathcal{T}| \ll | \mathcal{C} |$.
 
 
 \subsection{Construction de la taxonomie}
@@ -365,6 +365,15 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
 \end{table}
 
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_HM.eps}
+    \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_SM.eps}
+    \caption{Mesure $F1$ transitive obtenue pour différentes combinaisons de métriques et de critères de liaison, pour la méthode Hard Mapping (\textit{en haut}à et pour la méthode Soft Mapping (\textit{en bas}). Les résultats sont exprimés relativement à la mesure $F1$ moyenne.}
+    \label{fig:taxex-cluparams-HM}
+\end{figure}
+
+
 \subsection{Discussion}
 \label{subsec:te-discussion}
 
@@ -373,6 +382,16 @@ Les bons résultats de TransE peuvent paraître surprenant au regard de la simpl
 
 \section{Hyperparamètres}
 \label{sec:te-hp}
+
+\subsection{Regroupement hiérarchique}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluparams-all.eps}
+    \caption{Mesures $F1$ obtenues pour différentes combinaisons de distances (euclidienne, cosinus, $L_1$) et de critères de liaison (\textit{min} pour saut minimal, \textit{max} pour saut maximal, \textit{moy} pour saut moyen, \textit{ward} pour distance de Ward). Les scores sont moyennés sur tous les modèles de plongement, et calculés selon l'évaluation directe (\textit{en haut}) et transitive (\textit{en bas}), pour les deux variantes Hard Mapping (HM, \textit{à gauche}) et Soft Mapping (SM, \textit{à droite}).}
+    \label{fig:taxex-cluparams-all}
+\end{figure}
+
 \subsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
 \label{subsec:te-hp-beta}
 
@@ -389,6 +408,8 @@ Les bons résultats de TransE peuvent paraître surprenant au regard de la simpl
     \caption{Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
     \label{fig:beta-search-2}
 \end{figure}
+
+\subsection{Seuil de probabilité}
 
 \begin{figure}
     \centering
