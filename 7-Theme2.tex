@@ -44,10 +44,9 @@ Notre point de départ est donc une matrice de dimension $N \times d$, qui peut 
 
 \subsection{Regroupement hiérarchique}
 \label{subsec:te-clustering}
-La première étape consiste à exécuter un algorithme de regroupement (ou \textit{clustering}) hiérarchique agglomératif sur ce nuage de points. 
+La première étape consiste à exécuter un algorithme de regroupement (ou \textit{clustering}) hiérarchique ascendant sur ce nuage de points. 
 On commence avec $N$ clusters singletons, chacun contenant l'une des $N$ entités de départ. À chaque étape, deux des clusters existants sont fusionnés pour former un nouveau cluster. Les clusters à fusionner sont choisis de sorte à minimiser un certain critère : ce critère peut être la distance moyenne entre les entités des clusters, la distance minimale ou maximale entre ces entités, ou la variance du nouveau cluster. 
 L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient toutes les entités; ce cluster est appelé cluster racine. Le résultat de cet algorithme est un arbre binaire, dont la racine est le cluster racine contenant toutes les entités, et dont les feuilles sont les $N$ clusters singletons.
-
 
 On note $\Clusters$ l'ensemble des clusters, $X$ l'arbre de clustering obtenu, et $\texttt{racine}$ la racine de l'arbre – c'est-à-dire, le cluster contenant toutes les entités. On peut écrire $X = (V_X, E_X)$, avec $V_X = \Clusters$ l'ensemble des sommets de $X$, et $E_X = \{(C_i, C_i')\}_{i = 1, 2, \ldots } \subseteq \Clusters^2$ l'ensemble des arêtes de $X$.
 
@@ -62,7 +61,7 @@ Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters
 
 \subsubsection{Critère de fusion}
 
-Plusieurs critères sont envisagés pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut-être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
+Plusieurs critères sont envisagés pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
 
 Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Chaque critère définit une distance $D$ entre les clusters, et choisit de fusionner les clusters $A$ et $B$ qui ont la plus faible distance entre eux. Ainsi, à l'étape $t$, on fusionne :
 \begin{equation}
@@ -95,7 +94,7 @@ Cette fois, la distance entre $A$ et $B$ est la distance maximale entre un point
 
 Le critère de Ward consiste à minimiser l'augmentation d'inertie lors de la fusion de $A$ et de $B$. L'inertie d'un cluster $C$ est la somme des carrés des distances entre ses entités et son centroïde :
 \begin{equation}
-    I(C) = \sum_{\bf{x} \in C} d(\bf{x}, \frac{1}{|C|} \sum_{\bf{y} \in C} \bf{y})
+    I(C) = \sum_{\bf{x} \in C} \left(d\left(\bf{x}, \frac{1}{|C|} \sum_{\bf{y} \in C} \bf{y}\right)\right)^2
 \end{equation}
 Le centroïde du cluster $C$ est parfois appellé \textit{centre de gravité}; il est noté $g(C)$ :
 \begin{equation}
@@ -103,24 +102,36 @@ Le centroïde du cluster $C$ est parfois appellé \textit{centre de gravité}; i
 \end{equation}
 L'augmentation d'inertie lors de la fusion de $A$ et de $B$ est égale à l'inertie de $A \cup B$, retranchée de l'inertie de $A$ et de $B$ (puisque ces deux clusters disparaissent lors de la fusion) :
 \begin{align}
-    \Delta I &= I(A \cup B) - I(A) - I(B) \\
-    &= \sum_{\bf{x} \in A\cup B} d(\bf{x}, g(A \cup B) 
-    - \sum_{\bf{x} \in A} d(\bf{x}, g(A) 
-    - \sum_{\bf{x} \in B} d(\bf{x}, g(B) 
+    \Delta I &= I(A \cup B) - I(A) - I(B) \nonumber \\
+    &= \sum_{\bf{x} \in A\cup B} d(\bf{x}, g(A \cup B) )^2
+    - \sum_{\bf{x} \in A} d(\bf{x}, g(A) )^2
+    - \sum_{\bf{x} \in B} d(\bf{x}, g(B) )^2
+    \label{eq:te-ward-1}
 \end{align}
 
+En pratique, lorsqu'on utilise le critère de Ward, on choisit d'utiliser la distance euclidienne $d_\text{euc}$, ce qui permet de réécrire l'équation \ref{eq:te-ward-1} de la façon suivante :
+\begin{equation}
+    \Delta I = \frac{|A| \times |B|}{|A| + |B|} \left\| g(A) - g(B) \right\|_2^2
+\end{equation}
+En stockant les centroïdes des clusters tout au long de l'algorithme, cette équation permet de calculer le coût de fusion de deux clusters sans devoir recalculer l'inertie de $I(A\cup B)$ à chaque étape. Ainsi, le coût de fusion pour le critère de Ward est finalement :
+\begin{equation}
+    D(A, B) = \frac{|A| \times |B|}{|A| + |B|} \left\| g(A) - g(B) \right\|_2^2
+\end{equation}
 
-Considérations temportelles ? Complexité de l'algorithme ?
-
-Étape non-supervisée
+% Considérations temportelles ? Complexité de l'algorithme ?
+% Étape non-supervisée
 
 
 \subsection{Association type-cluster}
 \label{subsec:te-mapping}
 
-On a d'un côté, une hiérarchie sur des groupes d'entités (les clusters), de l'autre, une liste de types non hiérarchisé; but de l'étape : fusionner ces deux sources d'information, utiliser la structure sur les entités pour créer une structure sur les types. Pour cela, on injecte les types dans l'arbre de clustering, en associant chaque type à un cluster. Pour ce faire, deux méthdoes : 
-- associer à chaque type un unique cluster
-- définir, pour chaque type, une probabilité d'injection, ou un score d'association avec tous les clusters
+
+Au terme du regroupement hiérarchique, on dispose d'un côté d'une hiérarchie sur des groupes d'entités (les clusters), et de l'autre une liste de types non hiérarchisée (les étiquettes du jeu de données). L'idée centrale de cette étape est d'utiliser la structure sur les entités pour créer une structure sur les types. Pour cela, on injecte les types dans l'arbre de clustering : soit en associant à chaque type un unique cluster, qui le représente au mieux; soit en associant à chaque type plusieurs clusters avec des scores d'association. Ces deux méthodes sont exposées dans les sections suivantes.
+
+
+%On a d'un côté, une hiérarchie sur des groupes d'entités (les clusters), de l'autre, une liste de types non hiérarchisé; but de l'étape : fusionner ces deux sources d'information, utiliser la structure sur les entités pour créer une structure sur les types. Pour cela, on injecte les types dans l'arbre de clustering, en associant chaque type à un cluster. Pour ce faire, deux méthdoes : 
+%- associer à chaque type un unique cluster
+%- définir, pour chaque type, une probabilité d'injection, ou un score d'association avec tous les clusters
 
 
 \subsubsection{Méthode 1: \textit{Hard Mapping}}
@@ -220,6 +231,7 @@ Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les p
 Comme le sous-arbre $X[\texttt{racine}]$ est égal à l'arbre complet, on a $P_\texttt{racine}(t' \sqsubset t) = P(t' \sqsubset)$. Si on parvient à exprimer $P_\texttt{racine}$ en fonction de $P_{\gauche(\texttt{racine})}$ et de $P_{\gauche(\texttt{racine})}$
 
 \ldots 
+\todo{Finir la réécriture de la section Soft Mapping dans le vocabulaire des v.a.}
 
 Soit $L = \gauche(C)$ et $R = \droite(C)$ les sous-clusters gauche et droit de $C$. On peut remarquer qu'un successeur de $C$ est soit un successeur de $L$, soit un successeur de $R$, soit $C$ lui-même. Autrement dit, en notant $\sqcup$ l'union disjointe :
 \begin{equation}
