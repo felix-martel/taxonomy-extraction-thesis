@@ -60,6 +60,7 @@ Pour un cluster $C$ donné, on définit $X[C]$ le sous-arbre de racine $C$ comme
 Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters gauche et droit de $C$, et $\succs(C)$ l'ensemble des successeurs de $C$.
 
 \subsubsection{Critère de fusion}
+\label{sec:te-clustering-linkage}
 
 Plusieurs critères sont envisagés pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
 
@@ -71,21 +72,21 @@ La distance $D(A, B)$ peut être vue comme le \textit{coût} associé à la fusi
 
 \paragraph{Saut minimum}
 
-La distance entre $A$ et $B$ est la distance minimale entre un point de $A$ et un point de $B$ :
+La distance entre $A$ et $B$ est la distance \textit{minimale} entre un point de $A$ et un point de $B$ :
 \begin{equation}
     D(A, B) = \min_{\bf{x} \in A, \bf{y} \in B} d(\bf{x}, \bf{y})
 \end{equation}
 
 \paragraph{Saut moyen}
 
-Ici, la distance entre $A$ et $B$ est la distance moyenne entre leurs entités :
+Ici, la distance entre $A$ et $B$ est la distance \textit{moyenne} entre leurs entités :
 \begin{equation}
     D(A, B) = \frac{1}{|A| \times |B|} \sum_{\bf{x} \in A} \sum_{\bf{y} \in B} d(\bf{x}, \bf{y})
 \end{equation}
 
 \paragraph{Saut maximum}
 
-Cette fois, la distance entre $A$ et $B$ est la distance maximale entre un point de $A$ et un point de $B$ :
+Cette fois, la distance entre $A$ et $B$ est la distance \textit{maximale} entre un point de $A$ et un point de $B$ :
 \begin{equation}
     D(A, B) = \max_{\bf{x} \in A, \bf{y} \in B} d(\bf{x}, \bf{y})
 \end{equation}
@@ -147,8 +148,7 @@ $N_t = |e \in \mathcal{D}, type(e) = t|$ le nombre d'entités de type $t$ dans l
 
 La mesure $F_1$ varie entre 0 et 1: 0 indique que le cluster $C$ ne contient aucune entité de type $t$; 1 signifie que le cluster contient uniquement des entités de type $t$ et que toutes les entités de type $t$ sont contenues dans le cluster. 
 
-Ideally, we would map type $t$ to the cluster that maximizes its F-score, \textit{i.e} choose $m^*(t) = \argmax_C F(C, t)$, but then we could have two types mapped to the same cluster. 
-If two types $t_A$ and $t_B$ are mapped to the same cluster $C$, then any type that is mapped to a successor of $C$ will have both $t_A$ and $t_B$ as ancestors, and the resulting taxonomy will not be valid. The mapping thus need to be unambiguous. Formally, this condition means that we need to find a injective mapping between types and clusters $m^* : \mathcal{T} \rightarrow \mathcal{C}$, so that distinct types are mapped to distinct clusters.  
+% Ideally, we would map type $t$ to the cluster that maximizes its F-score, \textit{i.e} choose $m^*(t) = \argmax_C F(C, t)$, but then we could have two types mapped to the same cluster. If two types $t_A$ and $t_B$ are mapped to the same cluster $C$, then any type that is mapped to a successor of $C$ will have both $t_A$ and $t_B$ as ancestors, and the resulting taxonomy will not be valid. The mapping thus need to be unambiguous. Formally, this condition means that we need to find a injective mapping between types and clusters $m^* : \mathcal{T} \rightarrow \mathcal{C}$, so that distinct types are mapped to distinct clusters.  
 
 Idéalement, on souhaiterait associer chaque type $t$ au cluster qui maximise sa mesure $F_1$, et donc choisir $m^*(t) = \argmax_C F(C, t)$, mais on pourrait alors avoir deux types associés au même cluster. Or, si deux types $t_A$ et $t_B$ sont associés au même cluster $C$, alors tout type associé à un successeur de $C$ aurait à la fois $t_A$ et $t_B$ comme prédecesseurs, et la taxonomie résultante serait donc invalide, selon les conditions énoncées en section~\ref{sec:te-problem}. Il faut donc garantir une association univoque entre types et clusters. Formellement, cela signifie que la fonction d'association $m^* : \Types \rightarrow \Clusters$ entre les types et les clusters doit être injective :
 \begin{equation}
@@ -383,7 +383,18 @@ Les bons résultats de TransE peuvent paraître surprenant au regard de la simpl
 \section{Hyperparamètres}
 \label{sec:te-hp}
 
+Cette section discute le choix des principaux hyperparamètres du modèle, c'est-à-dire des paramètres qui ne sont pas appris à partir des données mais fixés avant l'entraînement. Les deux paramètres du regroupement hiérarchique, distance et critère de liaison, sont communs aux méthodes Hard Mapping et Soft Mapping; ils sont traités dans la section suivante. Les deux autres sections sont consacrées à des paramètres spécifiques à Soft Mapping : la base du softmax $\beta$ et le seuil de probabilité $t$.
+
 \subsection{Regroupement hiérarchique}
+
+L'étape de regroupement hiérarchique consiste à regrouper des entités géométriquement proches : cela suppose donc de définir une distance $d$ entre entités. Dans notre cas, on a expérimenté avec trois distances classiques de $\R^n$ : la distance euclidienne,  la distance (ou plus proprement similarité) cosinus, et la distance $L_1$. Cette dernière, parfois nommée distance de Manhattan, s'écrit, pour deux vecteurs $\bf{u} = (u_1, u_2, \ldots, u_n)$ et $\bf{v} = (v_1, v_2, \ldots, v_n)$ de $\R^n$ :
+\begin{equation}
+    \| \bf{u - v} \|_1 = \sum_{i=1}^{n} | u_i - v_i |
+\end{equation}
+
+Le deuxième paramètre du regroupement est le critère de liaison à utiliser. Les critères considérés ici sont détaillés dans la section \ref{sec:te-clustering-linkage} et sont au nombre de quatre : saut minimum, moyen et maximum, et distance de Ward, ce dernier critère étant propre à la distance euclidienne. Cela donne donc 10 combinaisons possibles pour l'étape de regroupement hiérarchique.
+
+On calcule la mesure $F1$ de chacune de ces combinaisons, moyennée sur l'ensemble des modèles de plongement étudiés, pour les deux méthodes Hard Mapping et Soft Mapping, et pour les deux modes d'évaluation direct et transitive. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}. On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode Hard Mapping, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode Soft Mapping, les résultats des deux combinaisons sont très proches. De l'autre côté de la hiérarchie, les combinaisons qui utilisent le critère du saut minimum n'aboutissent à aucun résultat. \todo{expliquer ce résultat}
 
 \begin{figure}[h]
     \centering
