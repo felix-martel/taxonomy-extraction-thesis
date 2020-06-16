@@ -48,6 +48,13 @@ La première étape consiste à exécuter un algorithme de regroupement (ou \tex
 On commence avec $N$ clusters singletons, chacun contenant l'une des $N$ entités de départ. À chaque étape, deux des clusters existants sont fusionnés pour former un nouveau cluster. Les clusters à fusionner sont choisis de sorte à minimiser un certain critère : ce critère peut être la distance moyenne entre les entités des clusters, la distance minimale ou maximale entre ces entités, ou la variance du nouveau cluster. 
 L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient toutes les entités; ce cluster est appelé cluster racine. Le résultat de cet algorithme est un arbre binaire, dont la racine est le cluster racine contenant toutes les entités, et dont les feuilles sont les $N$ clusters singletons.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{img/clustering_tree.png}
+    \caption{Exemple d'arbre de clustering obtenu par regroupement hiérarchique ascendant. La couleur des points représente leur étiquette $y_i$ et n'est pas utilisée lors du regroupement.}
+    \label{fig:clustering_tree}
+\end{figure}
+
 On note $\Clusters$ l'ensemble des clusters, $X$ l'arbre de clustering obtenu, et $\texttt{racine}$ la racine de l'arbre – c'est-à-dire, le cluster contenant toutes les entités. On peut écrire $X = (V_X, E_X)$, avec $V_X = \Clusters$ l'ensemble des sommets de $X$, et $E_X = \{(C_i, C_i')\}_{i = 1, 2, \ldots } \subseteq \Clusters^2$ l'ensemble des arêtes de $X$.
 
 Pour deux clusters $C$ et $C'$, on dit que $C$ est un prédecesseur de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on note $C \preceq C'$. Dans ce cas, on appelle $C'$ un successeur de $C$, noté $C' \succeq C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$. La relation $\prec$ définit un ordre partiel sur l'arbre $X$.
@@ -139,7 +146,7 @@ Au terme du regroupement hiérarchique, on dispose d'un côté d'une hiérarchie
 \label{ssubsec:te-hardmapping}
 
 Pour pouvoir associer les types aux clusters pertinents, il faut mesurer à quel point un cluster $C$ donné représente un type $t$. Pour ce faire, on peut utiliser la précision et le rappel de ce cluster pour $t$. Posons $N_{C,t} = | e \in C, type(e) = t|$ le nombre d'entités de type $t$ contenues dans le cluster $C$,
-$N_t = |e \in \mathcal{D}, type(e) = t|$ le nombre d'entités de type $t$ dans l'ensemble des données, et $N_C = | C |$ le nombre total d'entitésd dans le cluster $C$. On peut alors définir la précision, le rappel et la mesure $F_1$ :
+$N_t = |e \in \mathcal{D}, type(e) = t|$ le nombre d'entités de type $t$ dans l'ensemble des données, et $N_C = | C |$ le nombre total d'entités dans le cluster $C$. On peut alors définir la précision, le rappel et la mesure $F_1$ :
 \begin{align}
     p(C, t) &= \frac{N_{C, t}}{N_C} \\
     r(C, t) &= \frac{N_{C, t}}{N_t} \\
@@ -180,6 +187,18 @@ L'approche précédente aboutit à une fonction de décision binaire : un axiome
 
 Dans cette version, on explore une version lissée de l'approche précédente : l'association entre types et clusters est conservée, mais elle est lissée en remplacant la fonction $\argmax$ par une fonction softmax. Ainsi, un type n'est plus associé à un unique cluster; on lui attribue plutôt un vecteur de probabilité qui mesure combien chaque cluster le répresente bien. Ensuite, comme précédemment, cette association type-cluster est utilisée pour transformer la hiérarchie des clusters en une hiérarchie des types. Par rapport au cas précédent, la condition d'injectivité de l'association disparaît : une étape supplémentaire est nécessaire pour transformer le graphe de subsumption en une taxonomie valide. Ainsi, la discontinuité identifiée précédemment ne disparaît pas, mais elle est déplacée : au lieu d'intervenir lors de l'extraction des axiomes de subsumption, elle apparaît lors de la création de la taxonomie prédite à partir de ces axiomes. 
 
+Dans le cas précédent, on cherchait à déterminer la position optimale $m^*(t)$ de chaque type $t$ dans l'arbre. Ici, on suppose
+
+La première étape est de transformer les mesures $F_1$ en probabilités, à l'aide d'une fonction softmax. Pour un type $t$ et un cluster $C$, on définit un score d'association $\sigma(t, C)$:
+\begin{equation}
+    \sigma(t, C) = \frac{\displaystyle e^{ \beta F(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F(t, C')}}
+\end{equation}
+Pour un type $t$ donné, la somme des scores d'association avec chaque cluster vaut 1 :
+\begin{equation}
+    \forall t \in \cal{T}, \sum_{C \in \cal{C}} \sigma(t, C) = 1
+\end{equation}
+Ce score mesure 
+
 La première étape est de transformer les mesures $F_1$ en probabilités, à l'aide d'une fonction softmax. Pour un type $t$ et un cluster $C$, on définit ainsi la probabilité que le cluster $C$ représente le type $t$ :
 \begin{equation}
     P(m(t) = C) = \frac{\displaystyle e^{ \beta F(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F(t, C')}}
@@ -203,7 +222,9 @@ On définit une famille de variables aléatoire $\cal{Z} = (Z_t)_{t \in \Types}$
 \begin{equation}
     P(Z_t = C) = \sigma(t, C)
 \end{equation}
-On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dans l'arbre de clustering. Contrairement au cas précédent, où on aurait eu $Z_t = \argmax_C F(C, t)$ (à la condition d'injectivité près), ici on accepte que l'associé de $t$ soit incertain. \todo{Justifier l'indépendance}
+On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dans l'arbre de clustering. Contrairement au cas précédent, où on aurait eu $Z_t = \argmax_C F(C, t)$ (à la condition d'injectivité près), ici on accepte que l'associé de $t$ soit incertain.
+
+\todo{Justifier l'indépendance}
 
 Dès lors, on peut interpréter l'événement $t' \sqsubset t$ comme l'événement $Z_t \prec Z_{t'}$, et donc, en utilisant l'indépendances des $Z_t$ : 
 \begin{align}
