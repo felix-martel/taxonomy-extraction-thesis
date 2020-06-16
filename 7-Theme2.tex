@@ -39,6 +39,20 @@ J'appelle classes feuilles les classes qui n'ont pas de sous-classes, c'est-à-d
 
 \section{Méthode proposée}
 \label{sec:te-method}
+
+Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels, et de liens d'inclusion entre groupes d'instance. Ces deux plans sont liés : le pendant dans le plan des instances de l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ est l'affirmation «le groupe des athlètes est inclus dans le groupe des personnes».
+
+Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie sur les groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Inversement, les plongements vectoriels d'entités fournissent un moyen pour créer une hiérarchie sur les groupes d'entités : il suffit pour cela d'appliquer un algorithme de regroupement hiérarchique sur ces plongements. Un tel algorithme regroupe les plongements en groupes, sur la base de leur proximité géométrique; on obtient une division des plongements en groupes géométriquement similaires, eux-même divisés en sous-groupes, et ainsi de suite. L'idée de notre méthode est d'utiliser cette hiérarchie sur les groupes pour induire une hiérarchie sur les types, autrement dit une taxonomie.
+
+La méthode proposée ici se résume donc en trois étapes : d'abord, le regroupement hiérarchique des plongements vectoriels permet d'extraire un arbre de clustering, c'est-à-dire une hiérarchie sur les groupes d'entités (section \ref{subsec:te-clustering}); ensuite, les types des entités sont injectés dans cet arbre de clustering (section \ref{subsec:te-mapping}); enfin, une taxonomie est extraite en combinant les types et la structure d'arbre (section \ref{subsec:te-taxconstruction}).
+
+% création d'une hiérarchie sur des groupes d'entités à partir du regroupement hiérarchique de plongements vectoriels
+
+% Une taxonomie est une hiérarchie sur des types, composée d'axiomes de subsumption $t \sqsubset t'$. Cette hiérarchie sur les types induit naturellement une hiérarchie sur des groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Or le regroupement hiérarchique appliqué aux plongements vectoriels d'entités permet justement d'obtenir une telle hiérarchie sur des groupes : cette méthode consiste à regrouper ensemble des points situés à proximité les uns des autres, puis à regrouper ces groupes entre eux, et ainsi de suite. Lorsqu'on l'applique à des plongements d'entités, on identifie donc des groupes d'entités géométriquement proches – donc sémantiquement similaires, ces groupes étant eux-mêmes subdivisés en sous-groupes, etc. Il reste alors à transformer cette hiérarchie sur des groupes d'entités en une hiérarchie sur les types eux-mêmes
+
+
+% identifie des groupes d'entités géométriquement proches (donc sémantiquement proches), et subdivise ces groupes en sous-groupes
+
 Le préalable à notre méthode est le plongement du graphe dans $\R^d$. Pour cela, on s'appuie sur les travaux préliminaires décrits dans la section~\ref{chap:kge}.
 Notre point de départ est donc une matrice de dimension $N \times d$, qui peut être vue comme un nuage de points dans $\R^d$.
 
@@ -211,7 +225,7 @@ Ce score d'injection $P(m(t) = C)$ peut ensuite être utilisé pour calculer la 
 
 Dès lors, l'axiome $(t' \sqsubset t)$ est lui aussi un événément aléatoire. Cet événement se réalise si, dans l'arbre, \ldots
 
-Note : une idée : et si on notais $Z_t$ la variable aléatoire correspondant à $m(t)$ ? Ça simplifierais peut etre les notations et la compréhension de la méthode. $m(t)$ c'est pas clair ce que ça représente, alors que $Z_t$ ça représente le cluster associé à $t$ (comme dans le hard mapping), sauf qu'on ne sait pas ù est $Z_t$. Intro : «on modélise la situation> (comme c'est une modélisation on est plus comptables de la véracité de nos hypothèses, notamment l'indepndance des $Z_t$)
+Note : une idée : et si on notais $Z_t$ la variable aléatoire correspondant à $m(t)$ ? Ça simplifierais peut etre les notations et la compréhension de la méthode. $m(t)$ c'est pas clair ce que ça représente, alors que $Z_t$ ça représente le cluster associé à $t$ (comme dans le hard mapping), sauf qu'on ne sait pas où est $Z_t$. Intro : «on modélise la situation> (comme c'est une modélisation on est plus comptables de la véracité de nos hypothèses, notamment l'indepndance des $Z_t$)
 
 On définit un score d'association $\sigma(t, C)$:
 \begin{equation}
