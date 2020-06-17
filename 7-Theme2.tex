@@ -355,7 +355,7 @@ Cette somme est un vecteur de dimension $n_T$; sa $i$-ème coordonnée représen
 On peut donc réécrire $\bf{s_C}$ comme :
 \begin{align}
     \mathbf{s_C} &= \mathbf{p_L} + \mathbf{p_R} + (\mathbf{s_L} + \mathbf{s_R}) \nonumber  \\
-     &= (\mathbf{p_L}  + (\mathbf{s_L}) + (\mathbf{p_R} + \mathbf{s_R})
+     &= (\mathbf{p_L}  + \mathbf{s_L}) + (\mathbf{p_R} + \mathbf{s_R})
     \label{eq:l_def}
 \end{align}
 Finalement, on définit la probabilité pour chaque type d'être associé à un successeur non-strict de $C$ : 
@@ -369,7 +369,7 @@ Cela permet de reformuler ainsi l'équation \ref{eq:l_def}:
     \label{eq:l_update}
 \end{equation}
 
-On a désormais nos équations de récurrences : \ref{eq:recursive_q_formula} pour $\bf{Q_C}$, \ref{eq:def_uc} pour $\bf{u_C}$ et \ref{eq:l_update} pour $\bf{s_C}$. Il reste à calculer les cas de base, c'est-à-dire les valeurs de $\bf{Q, u, s}$ pour les clusters feuilles. Si $C$ est une feuille, la probabilité pour un type $t$ d'être associé à un de ses successeurs stricts est nulle, puisque $C$ n'a aucun successeur strict. Pour la même raison, la probabilité pour qu'un axiome de subsumption $t' \sqsubset t$ soit vérifié dans le sous-arbre $X[C]$ est également zéro. Ainsi $\mathbf{s_C}$ et $\mathbf{Q_C}$ sont respectivement nuls pour chaque cluster feuille. Quant à $\bf{u_C}$, sa valeur sur les feuilles peut être calculée par l'équation \ref{eq:def_uc}.
+On a désormais nos équations de récurrences : \ref{eq:recursive_q_formula} pour $\bf{Q_C}$, \ref{eq:def_uc} pour $\bf{u_C}$ et \ref{eq:l_update} pour $\bf{s_C}$. Il reste à calculer les cas de base, c'est-à-dire les valeurs de $\bf{Q, u, s}$ pour les clusters feuilles. Si $C$ est une feuille, la probabilité pour un type $t$ d'être associé à un de ses successeurs stricts est nulle, puisque $C$ n'a aucun successeur strict. Pour la même raison, la probabilité pour qu'un axiome de subsumption $t' \sqsubset t$ soit vérifié dans le sous-arbre $X[C]$ est également zéro. Ainsi $\mathbf{s_C}$ et $\mathbf{Q_C}$ sont tous les deux nuls pour chaque cluster feuille. Quant à $\bf{u_C}$, sa valeur sur les feuilles peut être calculée par l'équation \ref{eq:def_uc}.
 
 On peut finalement écrire les équations de récurrence pour $\mathbf{s_C}, \mathbf{Q_C}, \mathbf{u_C}$:
 \begin{align}
@@ -386,7 +386,7 @@ On peut finalement écrire les équations de récurrence pour $\mathbf{s_C}, \ma
     \mathbf{u_C} &= \mathbf{p_C} + \mathbf{s_C}
 \end{align}
 
-Pour implémenter cet algorithme efficacement, on utilise la programmation linéaire. On note $D_C = (\mathbf{s_C}, \mathbf{Q_C}, \mathbf{u_C})$ l'ensemble des quantités calculées récursivement. Les clusters sont parcourus dans l'ordre inverse d'un parcours en profondeur, ce qui garantit que, lorsqu'on visite un cluster $C$, tous ses successeurs ont déjà été visités. Pour chaque cluster $C$, soit $C$ est une feuille, auquel cas on calcule $D_C$ à l'aide des formules d'initialisation précédentes; soit $C$ n'est pas une feuille, auquel cas ses deux sous-clusters $\gauche(C)$ et $\droite(C)$ ont déjà été visités et les quantités $D_{\gauche(C)}$ et $D_{\droite(C)}$ sont stockées dans le cache. Dans ce cas, on retire $D_{\gauche(C)}$ et $D_{\droite(C)}$ du cache (chaque cluster est visité une seule fois dans les équations de récurrence, donc plus aucun calcul ne dépend d'eux), on les utilise pour calculer $D_C$ selon les équations de récurrence précédentes, et on ajoute $D_C$ ajoute au cache. Le dernier cluster visité est \texttt{racine} : lorsque l'algorithme termine, le cache contient uniquement $D_\texttt{racine} = (\mathbf{s_\texttt{racine}}, \mathbf{Q_\texttt{racine}}, \mathbf{u_\texttt{racine}})$. On peut alors retourner la matrice de probabilité finale $mathbf{Q_\texttt{racine}}$. Sa coordonnée $(i, j)$ contient la probabilité de l'axiome $(t_j \sqsubset t_i)$.
+Pour implémenter cet algorithme efficacement, on utilise la programmation linéaire. On note $D_C = (\mathbf{s_C}, \mathbf{Q_C}, \mathbf{u_C})$ l'ensemble des quantités calculées récursivement. Les clusters sont parcourus dans l'ordre inverse d'un parcours en profondeur, ce qui garantit que, lorsqu'on visite un cluster $C$, tous ses successeurs ont déjà été visités. Pour chaque cluster $C$, soit $C$ est une feuille, auquel cas on calcule $D_C$ à l'aide des formules d'initialisation précédentes; soit $C$ n'est pas une feuille, auquel cas ses deux sous-clusters $\gauche(C)$ et $\droite(C)$ ont déjà été visités et les quantités $D_{\gauche(C)}$ et $D_{\droite(C)}$ sont stockées dans le cache. Dans ce cas, on retire $D_{\gauche(C)}$ et $D_{\droite(C)}$ du cache (chaque cluster est visité une seule fois dans les équations de récurrence, donc plus aucun calcul ne dépend d'eux), on les utilise pour calculer $D_C$ selon les équations de récurrence précédentes, et on ajoute $D_C$ ajoute au cache. Le dernier cluster visité est \texttt{racine} : lorsque l'algorithme termine, le cache contient uniquement $D_\texttt{racine} = (\mathbf{s_\texttt{racine}}, \mathbf{Q_\texttt{racine}}, \mathbf{u_\texttt{racine}})$. On peut alors retourner la matrice de probabilité finale $\mathbf{Q_\texttt{racine}}$. Sa coordonnée $(i, j)$ contient la probabilité de l'axiome $(t_j \sqsubset t_i)$.
 Pour un arbre binaire équilibré, cet algorithme garantit un cache de taille maximale $O(|\mathcal{T}|^2 \log_2(| \mathcal{C} |))$, avec $|\mathcal{T}| \ll | \mathcal{C} |$.
 
 
@@ -425,10 +425,10 @@ Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le 
 
 L'ontologie DBpédia comporte un ensemble de classes et de sous-classes qui forment un arbre dont on peu trouver le détail à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{http://mappings.dbpedia.org/server/ontology/classes/}. Comme on peut le voir, toutes les classes héritent d'une seule classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une sous-classe est 6. On peut difficilement utiliser toute l'ontologie pour le clustering, car certaines classes très spécifiques contiennent trop peu d'éléments [par exemple, seulement 7 éléments sont de type \texttt{dbo:Star}). On cherche donc à extraire un sous-arbre qui soit (a) suffisamment profond pour modéliser une base de connaissance du monde réel et tel que (b) chaque classe contienne un nombre minimal d'éléments. 
 
-Pour cela, on fixe la profondeur maximale à $p_\max=3$, le nombre maximal de sous-classe par classe à $n_c=7$ et le nombre minimal d'éléments par classe à $n_e=500$. En partant de la classe racine \texttt{owl:Thing}, on ajoute récursivement les sous-classes $S$ d'une classe $C$, par ordre décroissant d'effectif (on commence par ajouter les sous-classes qui contiennent le plus d'éléments), à condition que : 
+Pour cela, on fixe la profondeur maximale à $p_{\max}=3$, le nombre maximal de sous-classe par classe à $n_c=7$ et le nombre minimal d'éléments par classe à $n_e=500$. En partant de la classe racine \texttt{owl:Thing}, on ajoute récursivement les sous-classes $S$ d'une classe $C$, par ordre décroissant d'effectif (on commence par ajouter les sous-classes qui contiennent le plus d'éléments), à condition que : 
 \begin{itemize}
     \item $S$ contienne au moins $n_e$ entités
-    \item la profondeur de $S$ soit au plus $p_\max$
+    \item la profondeur de $S$ soit au plus $p_{\max}$
     \item $C$ ait moins de $n_c$ sous-classes
 \end{itemize}
 
@@ -442,7 +442,7 @@ J'appelle classes feuilles les classes qui n'ont pas de sous-classes, c'est-à-d
 \subsection{Méthode d'évaluation}
 \label{subsec:te-evaluation}
 
-On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus. La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb (ref vers la section Revue de littérature). 
+On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus – le choix de ces deux combinaisons de paramètres est discuté dans la section \ref{sec:te-hp}. La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb (ref vers la section Revue de littérature). 
 
 Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpédia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédecesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
 
@@ -508,8 +508,38 @@ On observe que les deux meilleures combinaisons sont, dans tous les cas, la dist
     \label{fig:taxex-cluparams-all}
 \end{figure}
 
-\subsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
+\subsection{Base \texorpdfstring{$\beta$}{beta} du softmax et seuil de probabilité \texorpdfstring{$\rho$}{rho}}
 \label{subsec:te-hp-beta}
+
+Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $\rho$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(t' \sqsubset t)$ qui vérifient $P(t' \sqsubset t) > \rho$ sont conservés et ajoutés au graphe acyclique $G$.
+
+Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|cr|cr|cr|}
+    \hline
+$\beta$	&	No1	&	P	&	No2	&	P	&	No3	&	P  \\ 
+\hline
+1	&	Agent	&	0.000355	&	Event	&	0.000346	&	Species	&	0.000344  \\ 
+2	&	Agent	&	0.000391	&	Event	&	0.00037	&	Species	&	0.000361  \\ 
+5	&	Event	&	0.000698	&	Agent	&	0.000676	&	Species	&	0.000524  \\ 
+10	&	Event	&	0.018706	&	SportsSeason	&	0.006803	&	Document	&	0.005722  \\ 
+15	&	Agent	&	0.01822	&	Event	&	0.016687	&	Species	&	0.010569  \\ 
+20	&	Place	&	0.009652	&	NaturalPlace	&	0.004197	&	Agent	&	0.003049  \\ 
+30	&	Place	&	0.09328	&	NaturalPlace	&	0.026012	&	Volcano	&	0.004661  \\ 
+50	&	Place	&	0.724599	&	NaturalPlace	&	0.359532	&	ArchitecturalStructure	&	0.008051  \\ 
+75	&	Place	&	0.870607	&	NaturalPlace	&	0.665028	&	ArchitecturalStructure	&	0.016576  \\ 
+100	&	Place	&	0.92975	&	NaturalPlace	&	0.832029	&	ArchitecturalStructure	&	0.007793   \\ 
+\hline
+    \end{tabular}
+    \caption{Caption}
+    \label{tab:my_label}
+\end{table}
+
+Pour évaluer ces deux paramètres, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ et de $\rho$.
+
+
 
 \begin{figure}
     \centering
