@@ -27,7 +27,14 @@ Dans le problème de l'extraction de taxonomie, on est amené à manipuler des d
 
 Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie sur les groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Inversement, les plongements vectoriels d'entités fournissent un moyen pour créer une hiérarchie sur les groupes d'entités : il suffit pour cela d'appliquer un algorithme de regroupement hiérarchique sur ces plongements. Un tel algorithme regroupe les plongements en groupes, sur la base de leur proximité géométrique; on obtient une division des plongements en groupes géométriquement similaires, eux-même divisés en sous-groupes, et ainsi de suite. L'idée de notre méthode est d'utiliser cette hiérarchie sur les groupes pour induire une hiérarchie sur les types, autrement dit une taxonomie.
 
-La méthode proposée ici se résume donc en trois étapes : d'abord, on effectue un regroupement hiérarchique des plongements vectoriels afin d'extraire un arbre de clustering, c'est-à-dire une hiérarchie sur les groupes d'entités (section \ref{subsec:te-clustering}); ensuite, les types des entités sont injectés dans cet arbre de clustering (section \ref{subsec:te-mapping}); enfin, une taxonomie est extraite en combinant les types et la structure d'arbre (section \ref{subsec:te-taxconstruction}).
+\begin{figure}[h]
+    \centering
+    \input{fig/te-summary}
+    \caption[Principe général de l'extraction de taxonomie]{Principe général de la méthode d'extraction de taxonomie : (1) les entités du graphes sont plongées dans un espace vectoriel, (2) ces plongements vectoriels sont regroupées hiérarchiquement, (3) les types des entités sont injectés dans la hiérarchie, puis finalement (4) l'association de la hiérarchie et des types est transformée en taxonomie.}
+    \label{fig:te-summary}
+\end{figure}
+
+La méthode proposée ici se résume donc en trois étapes : d'abord, on effectue un regroupement hiérarchique des plongements vectoriels afin d'extraire un arbre de clustering, c'est-à-dire une hiérarchie sur les groupes d'entités (section \ref{subsec:te-clustering}); ensuite, les types des entités sont injectés dans cet arbre de clustering (section \ref{subsec:te-mapping}); enfin, une taxonomie est extraite en combinant les types et la structure d'arbre (section \ref{subsec:te-taxconstruction}). 
 
 % création d'une hiérarchie sur des groupes d'entités à partir du regroupement hiérarchique de plongements vectoriels
 
@@ -409,24 +416,37 @@ Une fois les types associés aux clusters, la taxonomie est construite en transf
     \Tpred = (\cal{T}, \{t' \sqsubset t : m(t) \prec m(t') \text{ et } \forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T}) \})
     \label{eq:te-extract-tax-from-mapping}
 \end{equation}
+
+\begin{figure}[h]
+    \centering
+    \input{fig/te-hm-extraction}
+    \caption[Extraction de taxonomie selon la méthode Hard Mapping]{Extraction de taxonomie à partir d'un arbre de clustering étiquetté (méthode Hard Mapping).}
+    \label{fig:te-hm-extraction}
+\end{figure}
+
+
 Pour rappel, $m(\cal{T})$ désigne l'image de $\cal{T}$ par $m$, c'est-à-dire l'ensemble des clusters qui sont associés à un type :
 \begin{equation}
     m(\cal{T}) = \{ C \in \cal{C}, \exists t \in \cal{T}, m(t) = C \}
 \end{equation}
-Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$, et on remonte vers la racine en cherchant le premier prédecesseur de $m(t')$ qui soit associé à un type. Si un tel prédecesseur $m(t)$ existe, on ajoute à $\Tpred$ l'axiome de subsumption $t' \sqsubset t$.
+Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$, et on remonte vers la racine en cherchant le premier prédecesseur de $m(t')$ qui soit associé à un type. Si un tel prédecesseur $m(t)$ existe, on ajoute à $\Tpred$ l'axiome de subsumption $t' \sqsubset t$. Ce processus est décrit à la figure \ref{fig:te-hm-extraction}.
+
+
 
 Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extraie pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
+    \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes (méthode Soft Mapping) : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis les cycles sont éliminés en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
+    \label{fig:softmapping-extraction}
+\end{figure}
 
 Pour cela, on construit un graphe $G$ des axiomes à conserver. Chaque axiome extrait est examiné, par ordre de probabilité décroissante. Pour chaque axiome $\alpha$, si ajouter $\alpha$ à $G$ crée un cycle, on rejete $\alpha$. Sinon, on l'ajoute effectivement à $G$. Par construction, le graphe $G$ ainsi obtenu est un graphe orienté acyclique (ou DAG en anglais, pour \textit{direct acyclic graph}) : il est bien acyclique car le graphe de départ est vide donc acyclique, et car il reste acyclique à chaque étape; il est orienté car l'axiome de subsumption $t \sqsubset t'$ est différent de l'axiome inverse $t' \sqsubset t$, il y a donc bien une orientation des arêtes de $G$. 
 
 Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le plus petit graphe $G_{red}$ tel qu'il existe un chemin de $t$ vers $t'$ dans $G_{red}$ si et seulement si il existe un chemin de $t$ vers $t'$ dans $G_{red}$. Enfin, pour tout type $t$ qui a un degré entrant supérieur à 1, c'est-à-dire qui est impliqué dans au moins deux axiomes $t \sqsubset t'$ et $t\sqsubset t''$, on supprime tous les axiomes de la forme $t \sqsubset t'$ à l'exception de celui de probabilité maximale. Le résultat est un la taxonomie extraite $\Tpred$. Le processus est représenté à la figure \ref{fig:softmapping-extraction}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
-    \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis les cycles sont éliminés en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
-    \label{fig:softmapping-extraction}
-\end{figure}
+
 
 \section{Évaluation et discussion}
 \label{sec:te-evaluation}
@@ -566,19 +586,21 @@ On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs 
 
 Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
 
+
 \subsubsection{Seuil de probabilité}
 
-Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction selon les métriques présentées dans la section précédente : précision, rappel, mesure $F_1$. Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$ toutefois, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. Dans ces valeurs de $t$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on éliminé mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
-
-\begin{figure}
+\begin{figure}[h]
     \centering
-    \includegraphics{fig/plot/threshold_exp.eps}
+    \includegraphics[width=0.7\textwidth]{fig/plot/threshold_exp.eps}
     \caption[Influence du paramètre $t$]{
     Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
     \label{fig:beta-search-2}
 \end{figure}
 
+Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction selon les métriques présentées dans la section précédente : précision, rappel, mesure $F_1$. Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. En effet, pour $t > 0.7$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on élimine mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
 
+
+\iffalse {
 
 \begin{figure}
     \centering
@@ -586,5 +608,6 @@ Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes 
     \caption[Influence des paramètres $t$ et $\beta$]{Influence des hyperparamètres $t$ et $\beta$ pour la méthode «soft mapping». À gauche, la précision, rappel et mesure $F1$ obtenus par évaluation transitive pour différentes valeurs de $t$ dans $[0, 1]$, et $\beta = 100$. À droite, les mesures $F1$ obtenues pour différentes valeurs du paramètre $\beta$, et pour trois différents seuils : le seuil optimal $t^*(\beta)$ et deux seuils fixes $t=0,1$ et $t=0,5$. Les scores affichés sont obtenus en moyennant les résultats obtenus sur cinq sous-taxonomies de DBpedia, et exprimées comme une fraction du score optimal.
     }
     \label{fig:t-search-1}
-\end{figure}
+\end{figure}}
+\fi 
 
