@@ -519,15 +519,15 @@ On observe que les deux meilleures combinaisons sont, dans tous les cas, la dist
     \label{fig:taxex-cluparams-all}
 \end{figure}
 
-\subsection{Base \texorpdfstring{$\beta$}{beta} du softmax et seuil de probabilité \texorpdfstring{$\rho$}{rho}}
+\subsection{Base du softmax et seuil de probabilité}
 \label{subsec:te-hp-beta}
 
-Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $\rho$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(t' \sqsubset t)$ qui vérifient $P(t' \sqsubset t) > \rho$ sont conservés et ajoutés au graphe acyclique $G$.
+Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$.
 
 
 \subsubsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
 
-Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. 
+Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. % TODO: expliquer pourquoi?
 
 \begin{table}[h]
     \centering
@@ -553,27 +553,28 @@ $\beta$	&	classe	&	$P$	&	classe	&	$P$	&	classe	&	$P$  \\
 \end{table}
 
 
-Pour généraliser ces observations, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $\rho$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $\rho^*(\beta)$. On moyenne alors les résultats obtenus sur les cinq sous-taxonomies. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, \rho) \in [0, 200] \times [0, 1]$ à la moyenne des mesures $F_1$ obtenues sur les cinq tâches d'extraction de taxonomie pour ce choix de paramètres.
+Pour généraliser ces observations, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On moyenne alors les résultats obtenus sur les cinq sous-taxonomies. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$ à la moyenne des mesures $F_1$ obtenues sur les cinq tâches d'extraction de taxonomie pour ce choix de paramètres.
 
 \begin{figure}[h]
     \centering
     \includegraphics{fig/plot/average_beta_vs_best.eps}
-    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $\rho^*(\beta)$ et pour deux seuils fixes $\rho=0.1$ et $\rho=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
+    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
     \label{fig:beta-search-1}
 \end{figure}
 
-On trace alors les résultats obtenus, pour trois valeurs de $\rho$ : deux valeurs fixes, $\rho = 0.1$ et $\rho = 0.5$, et la valeur optimale $\rho = \rho^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $\rho$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
+On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
 
-Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $\rho$. 
-
+Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
 
 \subsubsection{Seuil de probabilité}
 
+Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction selon les métriques présentées dans la section précédente : précision, rappel, mesure $F_1$. Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$ toutefois, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. Dans ces valeurs de $t$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on éliminé mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
 
 \begin{figure}
     \centering
     \includegraphics{fig/plot/threshold_exp.eps}
-    \caption[Influence du paramètre $t$]{Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
+    \caption[Influence du paramètre $t$]{
+    Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
     \label{fig:beta-search-2}
 \end{figure}
 
