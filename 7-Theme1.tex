@@ -126,7 +126,7 @@ Soit $\KG$ un graphe de connaissance ayant $n$ entités et $m$ relations, on not
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{img/tenseur_adjacence.png}
-    \caption{Représentation d'un graphe de connaissance $\KG$ sous forme de tenseur d'adjacence $\cal{T}$.}
+    \caption[Représentation de graphe sous forme de tenseur d'adjacence]{Représentation d'un graphe de connaissance $\KG$ sous forme de tenseur d'adjacence $\cal{T}$.}
     \label{fig:kge-algebric-overview}
 \end{figure}
 
@@ -343,7 +343,7 @@ Ce qui revient à dire que la relation «être capital de» se traduit géométr
 \begin{figure}
     \centering
     \input{fig/transe-intuition}
-    \caption{Modèle de plongement TransE. La relation \texttt{dbo:capital} est représentée par une translation, en rouge, qui relie les plongements des sujets aux plongement des objets.}
+    \caption[Principe du modèle TransE]{Modèle de plongement TransE. La relation \texttt{dbo:capital} est représentée par une translation, en rouge, qui relie les plongements des sujets aux plongement des objets.}
     \label{fig:transe-intuition}
 \end{figure}
 
@@ -370,7 +370,7 @@ La force de TransE réside dans sa simplicité théorique et son faible nombre d
 \begin{figure}[h]
     \centering
     \input{fig/transe-limitation}
-    \caption{Limites du modèle TransE, pour les relations qui ne sont pas \textit{one-to-one}.}
+    \caption[Limites du modèle TransE]{Limites du modèle TransE, pour les relations qui ne sont pas \textit{one-to-one}.}
     \label{fig:transe-limitation}
 \end{figure}
 
@@ -489,7 +489,7 @@ On peut donc voir le modèle comme ayant un espace générique $\R^d$ dans leque
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{img/transd_schema.png}
-    \caption{(brouillon) Représentation du modèle TransD, avec à gauche l'espace des plongements $\bf{e}$, et à droite l'espace des plongements transformés $M_{e, r} \cdot \bf{e}$ (tiré de \cite{transd}).}
+    \caption[Principe du modèle TransD]{(brouillon) Représentation du modèle TransD, avec à gauche l'espace des plongements $\bf{e}$, et à droite l'espace des plongements transformés $M_{e, r} \cdot \bf{e}$ (tiré de \cite{transd}).}
     \label{fig:transd-schema}
 \end{figure}
 
@@ -567,7 +567,7 @@ Cette architecture est représentée à la figure \ref{fig:rdf2vec-cbow}.
 \begin{figure}[h]
     \centering
     \input{fig/rdf2vec-cbow}
-    \caption{L'architecture du modèle RDF2Vec dans sa variante C-BoW.}
+    \caption[Architecture de RDF2Vec-CBoW]{L'architecture du modèle RDF2Vec dans sa variante C-BoW.}
     \label{fig:rdf2vec-cbow}
 \end{figure}
 
@@ -588,7 +588,7 @@ On moyenne alors cette probabilité pour tous les éléments du contexte, pour c
 \begin{figure}[h]
     \centering
     \input{fig/rdf2vec-skipgram}
-    \caption{L'architecture du modèle RDF2Vec dans sa variante Skip-Gram.}
+    \caption[Architecture de RDF2Vec-Skip-Gram]{L'architecture du modèle RDF2Vec dans sa variante Skip-Gram.}
     \label{fig:rdf2vec-skipgram}
 \end{figure}
 
