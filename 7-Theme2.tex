@@ -287,7 +287,18 @@ En utilisant cette décomposition et l'indépendance des $Z_t$, on peut écrire 
     &= \sum_{\substack{C_A, C_B \in \mathcal{C} \\ C_A \prec C_B}} P(Z_{t }= C_A)\cdot P(Z_{t'} = C_B) \\
     &= \sum_{\substack{C_A, C_B \in \mathcal{C} \\ C_A \prec C_B}} \sigma(t, C_A) \cdot \sigma(t', C_B)
 \end{align}
-On obtient donc une formule qui attribue une probabilité à chaque axiome de subsumption en fonction des scores d'association type-cluster. Par rapport au cas précédent, la validité d'un axiome n'est plus évaluée de manière binaire, mais peut prendre n'importe quelle valeur entre 0 et 1. Cela permet, entre autres, plus de souplesse dans l'étape suivante de reconstruction de taxonomie : en éliminant les axiomes trop incertains, on minimise le nombre d'axiomes faux qui sont extraits, quitte à ne pas extraire certains axiomes vrais; inversement, en conservant des axiomes incertains, on extrait davantage d'axiomes, au risque d'extraire certains axiomes faux.% Ce compromis entre faux négatifs et faux positifs dépend 
+On obtient donc une formule qui attribue une probabilité à chaque axiome de subsumption en fonction des scores d'association type-cluster. Par rapport au cas précédent, la validité d'un axiome n'est plus évaluée de manière binaire, mais peut prendre n'importe quelle valeur entre 0 et 1. Cela permet, entre autres, plus de souplesse dans l'étape suivante de reconstruction de taxonomie : en éliminant les axiomes trop incertains, on minimise le nombre d'axiomes faux qui sont extraits, quitte à ne pas extraire certains axiomes vrais; inversement, en conservant des axiomes incertains, on extrait davantage d'axiomes, au risque d'extraire certains axiomes faux.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/softmapping.jpg}
+    \caption[Principe de la méthode Soft Mapping]{(brouillon) Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
+    \label{fig:te-softmapping-example}
+\end{figure}
+
+Un exemple de calcul est illustré à la figure \ref{fig:te-softmapping-example}, dans le cas de deux classes $A$ et $B$ et d'un arbre de clustering de taille 4 et de profondeur 2.
+
+% Ce compromis entre faux négatifs et faux positifs dépend 
 % On pourra alors, dans l'étape de reconstruction de taxonomie, éliminer les axiomes trop incertains si l'on souhaite minimiser le nombre de faux positifs, ou au contraire garder des axiomes incertains si l'on veut minimiser le nombre de faux négatifs.
 \paragraph{Formulation récursive}
 
@@ -513,40 +524,51 @@ On observe que les deux meilleures combinaisons sont, dans tous les cas, la dist
 
 Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $\rho$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(t' \sqsubset t)$ qui vérifient $P(t' \sqsubset t) > \rho$ sont conservés et ajoutés au graphe acyclique $G$.
 
-Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau
+
+\subsubsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
+
+Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. 
 
 \begin{table}[h]
     \centering
+    \caption[Prédiction de superclasses pour différentes valeurs de $\beta$]{Les trois superclasses les plus probables de \dbo{Mountain}, avec les probabilités associées, pour différentes valeurs de $\beta$ entre $1$ et $100$ (une ligne pour chaque valeur de $\beta$).}
     \begin{tabular}{|l|cr|cr|cr|}
     \hline
-$\beta$	&	No1	&	P	&	No2	&	P	&	No3	&	P  \\ 
+    & \multicolumn{2}{c|}{1} & \multicolumn{2}{c|}{2} & \multicolumn{2}{c|}{3} \\
+$\beta$	&	classe	&	$P$	&	classe	&	$P$	&	classe	&	$P$  \\ 
 \hline
-1	&	Agent	&	0.000355	&	Event	&	0.000346	&	Species	&	0.000344  \\ 
-2	&	Agent	&	0.000391	&	Event	&	0.00037	&	Species	&	0.000361  \\ 
-5	&	Event	&	0.000698	&	Agent	&	0.000676	&	Species	&	0.000524  \\ 
-10	&	Event	&	0.018706	&	SportsSeason	&	0.006803	&	Document	&	0.005722  \\ 
-15	&	Agent	&	0.01822	&	Event	&	0.016687	&	Species	&	0.010569  \\ 
-20	&	Place	&	0.009652	&	NaturalPlace	&	0.004197	&	Agent	&	0.003049  \\ 
-30	&	Place	&	0.09328	&	NaturalPlace	&	0.026012	&	Volcano	&	0.004661  \\ 
-50	&	Place	&	0.724599	&	NaturalPlace	&	0.359532	&	ArchitecturalStructure	&	0.008051  \\ 
-75	&	Place	&	0.870607	&	NaturalPlace	&	0.665028	&	ArchitecturalStructure	&	0.016576  \\ 
-100	&	Place	&	0.92975	&	NaturalPlace	&	0.832029	&	ArchitecturalStructure	&	0.007793   \\ 
+1	&	Agent	&	0.000	&	Event	&	0.000	&	Species	&	0.000  \\ 
+2	&	Agent	&	0.000	&	Event	&	0.000	&	Species	&	0.000  \\ 
+5	&	Event	&	0.001	&	Agent	&	0.001	&	Species	&	0.001  \\ 
+10	&	Event	&	0.019	&	SportsSeason	&	0.007	&	Document	&	0.006  \\ 
+15	&	Agent	&	0.018	&	Event	&	0.017	&	Species	&	0.011  \\ 
+20	&	Place	&	0.010	&	NaturalPlace	&	0.004	&	Agent	&	0.003  \\ 
+30	&	Place	&	0.093	&	NaturalPlace	&	0.026	&	Volcano	&	0.005  \\ 
+50	&	Place	&	0.725	&	NaturalPlace	&	0.360	&	ArchitecturalStructure	&	0.008  \\ 
+75	&	Place	&	0.871	&	NaturalPlace	&	0.665	&	ArchitecturalStructure	&	0.017  \\ 
+100	&	Place	&	0.930	&	NaturalPlace	&	0.832	&	ArchitecturalStructure	&	0.008  \\ 
 \hline
     \end{tabular}
-    \caption{Caption}
-    \label{tab:my_label}
+    \label{tab:hp-most-prob-axioms}
 \end{table}
 
-Pour évaluer ces deux paramètres, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ et de $\rho$.
 
+Pour généraliser ces observations, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $\rho$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $\rho^*(\beta)$. On moyenne alors les résultats obtenus sur les cinq sous-taxonomies. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, \rho) \in [0, 200] \times [0, 1]$ à la moyenne des mesures $F_1$ obtenues sur les cinq tâches d'extraction de taxonomie pour ce choix de paramètres.
 
-
-\begin{figure}
+\begin{figure}[h]
     \centering
     \includegraphics{fig/plot/average_beta_vs_best.eps}
-    \caption[Influence du paramètre $\beta$]{Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
+    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $\rho^*(\beta)$ et pour deux seuils fixes $\rho=0.1$ et $\rho=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
     \label{fig:beta-search-1}
 \end{figure}
+
+On trace alors les résultats obtenus, pour trois valeurs de $\rho$ : deux valeurs fixes, $\rho = 0.1$ et $\rho = 0.5$, et la valeur optimale $\rho = \rho^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $\rho$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
+
+Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $\rho$. 
+
+
+\subsubsection{Seuil de probabilité}
+
 
 \begin{figure}
     \centering
@@ -555,7 +577,7 @@ Pour évaluer ces deux paramètres, on construit aléatoirement cinq sous-taxono
     \label{fig:beta-search-2}
 \end{figure}
 
-\subsection{Seuil de probabilité}
+
 
 \begin{figure}
     \centering
