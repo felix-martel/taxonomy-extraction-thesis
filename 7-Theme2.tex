@@ -9,21 +9,23 @@ introduction et présentation générale \ldots
 \label{sec:te-problem}
 Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
 
-On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubseteq t_i')\}_{i=1, \ldots}$. Dans un axiome $t \sqsubseteq t'$, $t$ est appelé un \textit{sous-type} de $t'$, et $t'$ un \textit{supertype} de $t$; l'axiome signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubseteq t_1 \sqsubseteq \ldots \sqsubseteq t_k \sqsubseteq t_0$.
+On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubseteq t_i')\}_{i=1, \ldots}$. Un axiome $t \sqsubseteq t'$, $t$ signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Dans ce cas, on dit que $t$ est un \textit{sous-type} de $t'$, et que $t'$ est un \textit{supertype} de $t$.
+Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubseteq t_1 \sqsubseteq \ldots \sqsubseteq t_k \sqsubseteq t_0$.
 
-Comme données d'entraînement, on suppose avoir accès à un jeu de données $\cal{D} = \{ (\mathbf{e_i}, t_i) \}_{i=1, \ldots, N}$, constitué de $N$ paires $(\bf{e_i}, t_i) \in \R^d \times \cal{T}$ où $\bf{e_i}$ représente le plongement vectoriel de l'entité $e_i$, et $t_i$ son type. 
 
-Pourquoi ?
-extraire l'information taxonomique contenue dans la géométrie des plongements vectoriels
-éviter d'exploiter des co-occurrences présentes dans les données, qui peuvent être causées par le fait que l'on a eu accès à une taxonomie lors de la création du graphe.
+L'objectif est d'extraire l'information taxonomique contenue dans la géométrie des plongements vectoriels du graphe. On suppose donc avoir accès à un jeu de données $\cal{D} = \{ (\mathbf{e_i}, t_i) \}_{i=1, \ldots, N}$, constitué de $N$ plongements vectoriels typés, c'est-à-dire de $N$ paires $(\bf{e_i}, t_i) \in \R^d \times \cal{T}$ où $\bf{e_i}$ représente le plongement vectoriel de l'entité $e_i$, et $t_i$ son type. 
 
-Relâcher cette contrainte : donne accès au graphe complet, et pas seulement aux embeddings + avoir accès aux co-occurences. Dans ce cas, beaucoup plus d'information = donne la possibilité d'extraire une taxonomie plus riche, cf chapitre suivant.
+% Pourquoi ? extraire l'information taxonomique contenue dans la géométrie des plongements vectoriels + éviter d'exploiter des co-occurrences présentes dans les données, qui peuvent être causées par le fait que l'on a eu accès à une taxonomie lors de la création du graphe.
+% Relâcher cette contrainte : donne accès au graphe complet, et pas seulement aux embeddings + avoir accès aux co-occurences. Dans ce cas, beaucoup plus d'information = donne la possibilité d'extraire une taxonomie plus riche, cf chapitre suivant.
 
 
 \section{Méthode proposée}
 \label{sec:te-method}
 
-Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels, et de liens d'inclusion entre groupes d'instance. Ces deux plans sont liés : le pendant dans le plan des instances de l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ est l'affirmation «le groupe des athlètes est inclus dans le groupe des personnes».
+Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels, et de liens d'inclusion entre groupes d'instance. Ces deux plans sont liés : les entités sont liées aux types par la relation \texttt{rdf:type}, ce qui permet de représenter un type dans l'espace des entités par l'ensemble des instances de ce type, et de traduire l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ par une relation d'inclusion entre les instances de \dbo{Athlete} et celles de \dbo{Person}. En pratique, cette liaison est imparfaite : il y a des entités dont les types sont inconnus, erronés ou arbitraires.
+
+%entités qui possèdent ce type, et donc de traduire l'axiome 
+%le pendant dans le plan des instances de l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ est l'affirmation «le groupe des athlètes est inclus dans le groupe des personnes».
 
 Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie sur les groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Inversement, les plongements vectoriels d'entités fournissent un moyen pour créer une hiérarchie sur les groupes d'entités : il suffit pour cela d'appliquer un algorithme de regroupement hiérarchique sur ces plongements. Un tel algorithme regroupe les plongements en groupes, sur la base de leur proximité géométrique; on obtient une division des plongements en groupes géométriquement similaires, eux-même divisés en sous-groupes, et ainsi de suite. L'idée de notre méthode est d'utiliser cette hiérarchie sur les groupes pour induire une hiérarchie sur les types, autrement dit une taxonomie.
 
@@ -59,24 +61,35 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
     \label{fig:clustering_tree}
 \end{figure}
 
+\subsubsection{Notations}
+
+On note $\Clusters$ l'ensemble des clusters, $X$ l'arbre de clustering obtenu, et $\texttt{racine}$ la racine de l'arbre – c'est-à-dire, le cluster contenant toutes les entités. On peut écrire $X = (V_X, E_X)$, avec $V_X = \Clusters$ l'ensemble des sommets de $X$, et $E_X = \{(C_i, C_i')\}_{i = 1, 2, \ldots } \subseteq \Clusters^2$ l'ensemble des arêtes de $X$.
+
+Pour deux clusters $C$ et $C'$, on dit que $C$ est un prédecesseur de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on note $C \preceq C'$. Dans ce cas, on appelle $C'$ un successeur de $C$, noté $C' \succeq C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$. La relation $\prec$ définit un ordre partiel sur l'arbre $X$.
+
+Pour un cluster $C$ donné, on définit $X[C]$ le sous-arbre de racine $C$ comme l'arbre contenant $C$ et tous ses successeurs:
+\begin{equation}
+    X[C] = (\{C' \in \Clusters : C' \succeq C\}, \{(C_1, C_2) \in E_X : C_2 \succ C_1 \succeq C\})
+\end{equation}
+
+Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters gauche et droit de $C$, et $\succs(C)$ l'ensemble des successeurs de $C$.
 
 \subsubsection{Critère de fusion}
 \label{sec:te-clustering-linkage}
 
 Plusieurs critères sont envisagés pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
 
-Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Chaque critère définit une distance $D$ entre les clusters, et choisit de fusionner les clusters $A$ et $B$ qui ont la plus faible distance entre eux. Ainsi, à l'étape $t$, on détermine les deux clusters à fusionner selon la formule :
+Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Un critère de fusion est en réalité une distance $D$ entre les clusters, ou, vu autrement, un \textit{coût} de fusion; à chaque étape, on fusionne les clusters $A$ et $B$ qui ont la plus faible distance entre eux (autrement dit, le coût de fusion le plus faible). Ainsi, à l'étape $t$, on détermine les deux clusters à fusionner selon la formule :
 \begin{equation}
     A_t, B_t = \argmin_{A, B \in \cal{C}_t} D(A, B)
 \end{equation}
-
 On crée alors un nouveau cluster $C_{t+1} = A_t \cup B_t$, et on retire les clusters $A_t$ et $B_t$; le nouvel ensemble de clusters s'écrit donc :
 \begin{equation}
     \cal{C}_{t+1} = \{ A_t \cup B_t \} \cup \cal{C}_t \setminus \{ A_t, B_t \}
 \end{equation}
 Et on ajoute à l'arbre de clustering les arêtes $(A_t, C_{t+1})$ et $(B_t, C_{t+1})$.
 
-La distance $D(A, B)$ peut être vue comme le \textit{coût} associé à la fusion de $A$ et $B$. 
+
 
 \begin{algorithm}
 \KwInput{un nuage de points $\{\bf{e}_1, \bf{e}_2, \ldots, \bf{e}_N$\}}
@@ -155,18 +168,7 @@ En stockant les centroïdes des clusters tout au long de l'algorithme, cette éq
 % Étape non-supervisée
 
 
-\subsubsection{Notations}
 
-On note $\Clusters$ l'ensemble des clusters, $X$ l'arbre de clustering obtenu, et $\texttt{racine}$ la racine de l'arbre – c'est-à-dire, le cluster contenant toutes les entités. On peut écrire $X = (V_X, E_X)$, avec $V_X = \Clusters$ l'ensemble des sommets de $X$, et $E_X = \{(C_i, C_i')\}_{i = 1, 2, \ldots } \subseteq \Clusters^2$ l'ensemble des arêtes de $X$.
-
-Pour deux clusters $C$ et $C'$, on dit que $C$ est un prédecesseur de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on note $C \preceq C'$. Dans ce cas, on appelle $C'$ un successeur de $C$, noté $C' \succeq C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$. La relation $\prec$ définit un ordre partiel sur l'arbre $X$.
-
-Pour un cluster $C$ donné, on définit $X[C]$ le sous-arbre de racine $C$ comme l'arbre contenant $C$ et tous ses successeurs:
-\begin{equation}
-    X[C] = (\{C' \in \Clusters : C' \succeq C\}, \{(C_1, C_2) \in E_X : C_2 \succ C_1 \succeq C\})
-\end{equation}
-
-Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters gauche et droit de $C$, et $\succs(C)$ l'ensemble des successeurs de $C$.
 
 \subsection{Association type-cluster}
 \label{subsec:te-mapping}
