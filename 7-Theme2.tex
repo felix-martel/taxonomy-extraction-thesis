@@ -65,19 +65,25 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
 
 On note $\Clusters$ l'ensemble des clusters, $X$ l'arbre de clustering obtenu, et $\texttt{racine}$ la racine de l'arbre – c'est-à-dire, le cluster contenant toutes les entités. On peut écrire $X = (V_X, E_X)$, avec $V_X = \Clusters$ l'ensemble des sommets de $X$, et $E_X = \{(C_i, C_i')\}_{i = 1, 2, \ldots } \subseteq \Clusters^2$ l'ensemble des arêtes de $X$.
 
-Pour deux clusters $C$ et $C'$, on dit que $C$ est un prédecesseur de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on note $C \preceq C'$. Dans ce cas, on appelle $C'$ un successeur de $C$, noté $C' \succeq C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$. La relation $\prec$ définit un ordre partiel sur l'arbre $X$.
+Pour deux clusters $C$ et $C'$, on dit que $C$ est un \textit{prédecesseur} de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on a alors $C \subseteq C'$. Dans ce cas, on appelle $C'$ un \textit{successeur} de $C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$. La relation $\subset$ définit un ordre partiel sur l'arbre $X$.
+
+Puisque $X$ est une hiérarchie sur $\Clusters$, il vérifie la propriété suivante :
+\begin{equation}
+    \forall C_1, C_2 \in X, C_1 \cap C_2 \neq \emptyset \implies (C_1 \subseteq C_2 \lor C_2 \subseteq C_1)
+\end{equation}
+Dit autrement, deux clusters sont soit disjoints, soit inclus l'un dans l'autre.
 
 Pour un cluster $C$ donné, on définit $X[C]$ le sous-arbre de racine $C$ comme l'arbre contenant $C$ et tous ses successeurs:
 \begin{equation}
-    X[C] = (\{C' \in \Clusters : C' \succeq C\}, \{(C_1, C_2) \in E_X : C_2 \succ C_1 \succeq C\})
+    X[C] = (\{C' \in \Clusters : C' \subseteq C\}, \{(C_1, C_2) \in E_X : C_2 \subset C_1 \subseteq C\})
 \end{equation}
 
-Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters gauche et droit de $C$, et $\succs(C)$ l'ensemble des successeurs de $C$.
+Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters gauche et droit de $C$, $\succs(C)$ l'ensemble des successeurs de $C$, et $\succs(C)^*$ l'ensemble des successeurs stricts de $C$.
 
 \subsubsection{Critère de fusion}
 \label{sec:te-clustering-linkage}
 
-Plusieurs critères sont envisagés pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
+Plusieurs critères sont envisageables pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
 
 Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Un critère de fusion est en réalité une distance $D$ entre les clusters, ou, vu autrement, un \textit{coût} de fusion; à chaque étape, on fusionne les clusters $A$ et $B$ qui ont la plus faible distance entre eux (autrement dit, le coût de fusion le plus faible). Ainsi, à l'étape $t$, on détermine les deux clusters à fusionner selon la formule :
 \begin{equation}
@@ -277,10 +283,10 @@ On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dan
 \todo{Justifier l'indépendance}
 
 On peut alors interpréter l'axiome $t' \sqsubset t$ comme un événement aléatoire, qui s'exprime en fonction des événements $(Z_t = C)$ et $(Z_{t'} = C)$, pour tous $C \in \Clusters$.
-En effet, l'axiome $t' \sqsubset t$ signifie que les entités de type $t'$ sont également de type $t$, et donc que le cluster $Z_{t'}$ représentant $t'$ est un sous-cluster (immédiat ou non) de $Z_t$ le cluster représentant $t$, ce qui se traduit mathématiquement par la relation $(Z_{t} \prec Z_{t'})$.
-Or l'événement $(Z_{t} \prec Z_{t'})$ peut se décomposer en union disjointe d'événements $(Z_t = C, Z_{t'} = C')$ pour toutes les paires de clusters $C, C'$ telles que $C \prec C'$ :
+En effet, l'axiome $t' \sqsubset t$ signifie que les entités de type $t'$ sont également de type $t$, et donc que le cluster $Z_{t'}$ représentant $t'$ est un sous-cluster (immédiat ou non) de $Z_t$ le cluster représentant $t$, ce qui se traduit mathématiquement par la relation $(Z_{t'} \subset Z_{t})$.
+Pour exprimer l'événement $(Z_{t'} \subset Z_{t})$, il suffit d'examiner toutes les valeurs possibles de $Z_t$ et $Z_{t'}$, et de ne considérer que les cas ou l'un est inclus dans l'autre. On peut donc décomposer $(Z_{t'} \subset Z_{t})$  en union disjointe d'événements $(Z_t = C, Z_{t'} = C')$ pour toutes les paires de clusters $C, C'$ telles que $C' \subset C$ :
 \begin{equation}
-    (Z_t \prec Z_{t'}) = \bigsqcup_{\substack{C, C' \in \mathcal{C} \\ C \prec C'}} (Z_t = C, Z_{t'} = C')
+    (Z_{t'} \subset Z_{t}) = \bigsqcup_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} (Z_t = C, Z_{t'} = C')
 \end{equation}
 %
 %correspond au cas où le cluster représentant $t'$ est un successeur du cluster représentant $t$.
@@ -291,10 +297,10 @@ En utilisant cette décomposition et l'indépendance des $Z_t$, on peut écrire 
 % Dès lors, on peut interpréter l'événement $t' \sqsubset t$ comme l'événement $Z_t \prec Z_{t'}$, et donc, en utilisant l'indépendances des $Z_t$ : 
 \begin{align}
     \label{eq:softmapping_2}
-    P(t' \sqsubset t) &= P(Z_t \prec Z_{t'}) \\
-    &= \sum_{\substack{C_A, C_B \in \mathcal{C} \\ C_A \prec C_B}} P(Z_{t }= C_A, Z_{t'} = C_B) \nonumber \\
-    &= \sum_{\substack{C_A, C_B \in \mathcal{C} \\ C_A \prec C_B}} P(Z_{t }= C_A)\cdot P(Z_{t'} = C_B) \\
-    &= \sum_{\substack{C_A, C_B \in \mathcal{C} \\ C_A \prec C_B}} \sigma(t, C_A) \cdot \sigma(t', C_B)
+    P(t' \sqsubset t) &= P(Z_{t'} \subset Z_{t}) \\
+    &= \sum_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} P(Z_{t }= C, Z_{t'} = C') \nonumber \\
+    &= \sum_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} P(Z_{t }= C)\cdot P(Z_{t'} = C') \\
+    &= \sum_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} \sigma(t, C) \cdot \sigma(t', C')
 \end{align}
 On obtient donc une formule qui attribue une probabilité à chaque axiome de subsumption en fonction des scores d'association type-cluster. Par rapport au cas précédent, la validité d'un axiome n'est plus évaluée de manière binaire, mais peut prendre n'importe quelle valeur entre 0 et 1. Cela permet, entre autres, plus de souplesse dans l'étape suivante de reconstruction de taxonomie : en éliminant les axiomes trop incertains, on minimise le nombre d'axiomes faux qui sont extraits, quitte à ne pas extraire certains axiomes vrais; inversement, en conservant des axiomes incertains, on extrait davantage d'axiomes, au risque d'extraire certains axiomes faux.
 
@@ -311,15 +317,15 @@ Un exemple de calcul est illustré à la figure \ref{fig:te-softmapping-example}
 % On pourra alors, dans l'étape de reconstruction de taxonomie, éliminer les axiomes trop incertains si l'on souhaite minimiser le nombre de faux positifs, ou au contraire garder des axiomes incertains si l'on veut minimiser le nombre de faux négatifs.
 \paragraph{Formulation récursive}
 
-Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les paires de clusters, on peut concevoir un algorithme récursif de type «diviser pour régner». Pour cela, il nous faut exprimer $P(t' \sqsubset t)$ sous forme récursive. On introduit donc une nouvelle quantité,  $P_C(t' \sqsubset t)$ : c'est, comme dans l'équation~\ref{eq:softmapping_2}, la probabilité de l'événement $t' \sqsubset t$ (c'est-à-dire de l'événément $Z_t \prec Z_{t'}$), mais restreint au cas où $Z_t$ et $Z_{t'}$ appartienent au sous-arbre $X[C]$.
+Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les paires de clusters, on peut concevoir un algorithme récursif de type «diviser pour régner». Pour cela, il nous faut exprimer $P(t' \sqsubset t)$ sous forme récursive. On introduit donc une nouvelle quantité,  $P_C(t' \sqsubset t)$ : c'est, comme dans l'équation~\ref{eq:softmapping_2}, la probabilité de l'événement $t' \sqsubset t$ (c'est-à-dire de l'événément $Z_{t'} \subset Z_{t}$), mais restreint au cas où $Z_t$ et $Z_{t'}$ appartienent au sous-arbre $X[C]$.
 \begin{equation}
-    P_C(t' \sqsubset t) = P(Z_t \prec Z_{t'} \land Z_t, Z_{t'} \in X[C])
+    P_C(t' \sqsubset t) = P(Z_{t'} \subset Z_{t} \land Z_t, Z_{t'} \in X[C])
 \end{equation}
 
-Or appartenir au sous-arbre $X[C]$ est équivalent à être un successeur de $C$, on peut donc réécrire l'événement $(Z_t \prec Z_{t'}) \land (Z_t, Z_{t'} \in X[C])$ sous la forme $C \preceq Z_t \prec Z_{t'}$. D'où :
+Or appartenir au sous-arbre $X[C]$ est équivalent à être un successeur de $C$, on peut donc réécrire l'événement $(Z_{t'} \subset Z_{t}) \land (Z_t, Z_{t'} \in X[C])$ sous la forme $Z_{t'} \subset Z_{t} \subseteq C$. D'où :
 \begin{align}
-    P_C(t' \sqsubset t) &= P(C \preceq Z_t \prec Z_{t'}) \nonumber \\
-    &= \sum_{\substack{C_A, C_B \in \succs(C) \\  C_A \prec C_B}} P(Z_t = C_A)\cdot P(Z_{t'} = C_B) \label{eq:proba_subsumption}
+    P_C(t' \sqsubset t) &= P(Z_{t'} \subset Z_{t} \subseteq C) \nonumber \\
+    &= \sum_{\substack{C, C' \in \succs(C) \\  C' \subset C}} P(Z_t = C)\cdot P(Z_{t'} = C) \label{eq:proba_subsumption}
 \end{align}
 
 
@@ -331,7 +337,7 @@ Or appartenir au sous-arbre $X[C]$ est équivalent à être un successeur de $C$
 %     \label{eq:proba_subsumption}
 % \end{align}
 
-Comme le sous-arbre $X[\texttt{racine}]$ est égal à l'arbre complet, on a $P_\texttt{racine}(t' \sqsubset t) = P(t' \sqsubset t)$, et $P(t' \sqsubset t)$ est la quantité que l'on cherche à calculer. De plus, si $C$ est une feuille, alors le sous-arbre $X[C]$ contient un unique élément, il est donc impossible d'avoir $C \preceq Z_t \prec Z_{t'}$, et donc $P_C(t' \sqsubset t) = 0$ quels que soit $t$ et $t'$. 
+Comme le sous-arbre $X[\texttt{racine}]$ est égal à l'arbre complet, on a $P_\texttt{racine}(t' \sqsubset t) = P(t' \sqsubset t)$, et $P(t' \sqsubset t)$ est la quantité que l'on cherche à calculer. De plus, si $C$ est une feuille, alors le sous-arbre $X[C]$ contient un unique élément, il est donc impossible d'avoir $Z_{t'} \subset Z_{t} \subseteq C$, et donc $P_C(t' \sqsubset t) = 0$ quels que soit $t$ et $t'$. 
 Ainsi, on connait la valeur de $P_C$ sur les feuilles de l'arbre, et on souhaite calculer $P_\texttt{racine}$ : il suffit pour cela d'exprimer $P_C$ en fonction de $P_{\gauche(C)}$ et $P_{\droite(C)}$. On pourra alors calculer $P_\texttt{racine}(t \sqsubset t')$ récursivement, et on aura donc les probabilités $P(t \sqsubset t')$ recherchées.
 % \ldots 
 % \todo{Finir la réécriture de la section Soft Mapping dans le vocabulaire des v.a.}
@@ -344,30 +350,30 @@ En suivant cette observation, on peut donc partager la somme~\ref{eq:proba_subsu
 \begin{align}
 P_{C}(t' \sqsubset t) = 
 &
-\sum_{\substack{C_A, C_B \in \succs(L) \\  C_A \prec C_B}} P(Z_t = C_A)\cdot P(Z_{t'} = C_B) 
+\sum_{\substack{C_A, C_B \in \succs(L) \\  C_B \subset C_A}} P(Z_t = C_A)\cdot P(Z_{t'} = C_B) 
 \nonumber \\ 
 &+ 
-\sum_{\substack{C_A, C_B \in \succs(R) \\  C_A \prec C_B}} P(Z_t = C_A)\cdot P(Z_{t'} = C_B) 
+\sum_{\substack{C_A, C_B \in \succs(R) \\  C_B \subset C_A}} P(Z_t = C_A)\cdot P(Z_{t'} = C_B) 
 \nonumber \\
-&+ \displaystyle \sum_{C_B \colon C \prec C_B} P(Z_t = C) \cdot P(Z_{t'} = C_B) \nonumber \\
-= {} & P_{L}(t' \sqsubset t) + P_{R}(t' \sqsubset t)  + P(Z_t=C)\cdot\sum_{\substack{C_B \colon \\ C\prec C_B}} P(Z_{t'} = C_B)
+&+ \displaystyle \sum_{C' \colon C' \subset C} P(Z_t = C) \cdot P(Z_{t'} = C_B) \nonumber \\
+= {} & P_{L}(t' \sqsubset t) + P_{R}(t' \sqsubset t)  + P(Z_t=C)\cdot\sum_{\substack{C' \colon \\ C' \subset C}} P(Z_{t'} = C_B)
 \label{eq:proba_over_subtree}
 \end{align}
 
 Cette équation fait apparaître le lien recherché entre $P_C$ d'un côté, et $P_L$ et $P_R$ de l'autre. On l'écrire de façon plus concise sous forme matricielle. Pour cela, définissons $n_T = | \mathcal{T} |$ le nombre de types distincts, $\mathbf{Q_C}$ une matrice de dimension $n_T \times n_T$ telle que sa coordonnée $(i, j)$ contienne $P_C(t_j \sqsubset t_i)$, et $\mathbf{p_C} = \left(P(Z_{t_i} = C)\right)_{i = 1, \ldots, n_T}$ le vecteur de probabilité du cluster $C$, de dimension $n_T$. 
 
-Avec ces notations, notre objectif est de calculer $\bf{Q_\texttt{racine}}$, et donc d'obtenir une formule récursive reliant $\bf{Q_C}$ à $\bf{Q_L}$ et $\bf{Q_R}$. L'équation \ref{eq:proba_over_subtree} se réécrit :
+Avec ces notations, notre objectif est de calculer $\bf{Q_\texttt{racine}}$, et donc d'obtenir une formule récursive reliant $\bf{Q_C}$ à $\bf{Q_L}$ et $\bf{Q_R}$. L'équation \ref{eq:proba_over_subtree} se réécrit matriciellement :
 \begin{align}
-    \mathbf{Q_C} &= \mathbf{Q_L} + \mathbf{Q_R} + \mathbf{p_C} \cdot \left(\sum_{C' \colon C \prec C'} \mathbf{p_{C'}} \right)^\top 
+    \mathbf{Q_C} &= \mathbf{Q_L} + \mathbf{Q_R} + \mathbf{p_C} \cdot \left(\sum_{C' \colon C' \subset C} \mathbf{p_{C'}} \right)^\top 
     \label{eq:recursive_q_formula}
 \end{align}
 
-À ce stade, l'équation \ref{eq:recursive_q_formula} est proche de la formulation récursive cherchée, mais il reste encore à éliminer la somme $\sum_{C' \colon C \prec C'} \mathbf{p_{C'}}$, parce qu'elle dépend de tous les successeurs stricts de $C$, et pas seulement de $C, L$ ou $R$. On note donc $\bf{s_C}$ cette somme :
+À ce stade, l'équation \ref{eq:recursive_q_formula} est proche de la formulation récursive cherchée, mais il reste encore à éliminer la somme $\sum_{C' \colon C' \subset C} \mathbf{p_{C'}}$, parce qu'elle dépend de tous les successeurs stricts de $C$, et pas seulement de $C, L$ ou $R$. On note donc $\bf{s_C}$ cette somme :
 \begin{align}
-    \bf{s_C} &= \sum_{C' \colon C \prec C'} \mathbf{p_{C'}} \nonumber \\
+    \bf{s_C} &= \sum_{C' \colon C' \subset C} \mathbf{p_{C'}} \nonumber \\
             &= \sum_{C' \in \succs(C)^*} \mathbf{p_{C'}}
 \end{align}
-Cette somme est un vecteur de dimension $n_T$; sa $i$-ème coordonnée représente la probabilité pour le type $t_i$ d'être associé à un successeur strict de $C$, c'est-à-dire $P(Z_{t_i} \succ C)$. Or un successeur strict de $C$ est soit $L$ ou $R$, soit un successeur strict de $L$ ou $R$, ce qui s'exprime mathématiquement par :
+Cette somme est un vecteur de dimension $n_T$; sa $i$-ème coordonnée représente la probabilité pour le type $t_i$ d'être associé à un successeur strict de $C$, c'est-à-dire $P(Z_{t_i} \subset C)$. Or un successeur strict de $C$ est soit $L$ ou $R$, soit un successeur strict de $L$ ou $R$, ce qui s'exprime mathématiquement par :
 \begin{equation}
     \succs(C)^* = \{L\} \sqcup \{R\} \sqcup \succs(L)^* \sqcup \succs(R)^*
 \end{equation}
@@ -396,12 +402,12 @@ On peut finalement écrire les équations de récurrence pour $\mathbf{s_C}, \ma
     \mathbf{Q_C} &=
     \begin{cases}
       \mathbf{0}_{n_T,n_T} & \text{si $C$ est une feuille}\\
-      \mathbf{p_C} \cdot \mathbf{s_C}^\top + \mathbf{Q_\text{left$(C)$}} + \mathbf{Q_\text{right$(C)$}} & \text{sinon}
+      \mathbf{p_C} \cdot \mathbf{s_C}^\top + \mathbf{Q_\text{gauche$(C)$}} + \mathbf{Q_\text{droite$(C)$}} & \text{sinon}
     \end{cases}  \\
   \mathbf{s_C} &=
     \begin{cases}
       \mathbf{0}_{n_T} & \text{si $C$ est une feuille}\\
-      \mathbf{u_\text{left$(C)$}} + \mathbf{u_\text{right$(C)$}} & \text{sinon}
+      \mathbf{u_\text{gauche$(C)$}} + \mathbf{u_\text{droite$(C)$}} & \text{sinon}
     \end{cases}  \\
     \mathbf{u_C} &= \mathbf{p_C} + \mathbf{s_C}
 \end{align}
@@ -413,9 +419,9 @@ Pour un arbre binaire équilibré, cet algorithme garantit un cache de taille ma
 \subsection{Construction de la taxonomie}
 \label{subsec:te-taxconstruction}
 
-Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode \textit{Hard Mapping}, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t) \prec m(t')$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
+Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode \textit{Hard Mapping}, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t') \subset m(t)$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
 \begin{equation}
-    \Tpred = (\cal{T}, \{t' \sqsubset t : m(t) \prec m(t') \text{ et } \forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T}) \})
+    \Tpred = (\cal{T}, \{t' \sqsubset t : m(t') \subset m(t) \text{ et } \forall C \in \cal{C}, m(t') \preceq C \preceq m(t) \implies C \notin m(\cal{T}) \})
     \label{eq:te-extract-tax-from-mapping}
 \end{equation}
 
@@ -435,7 +441,7 @@ Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$,
 
 
 
-Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extraie pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
+Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
 
 \begin{figure}
     \centering
@@ -587,6 +593,8 @@ Pour généraliser ces observations, on construit aléatoirement cinq sous-taxon
 On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
 
 Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
+
+Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne supérieure à 95\% de la mesure $F_1$ optimale. C'est donc ces valeurs des paramètres que l'on utilisera par défaut, et qui ont servi pour les résultats présentés à la section précédente.
 
 
 \subsubsection{Seuil de probabilité}
