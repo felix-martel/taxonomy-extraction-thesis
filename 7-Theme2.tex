@@ -518,7 +518,7 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
     \end{adjustwidth}
 \end{table}
 
-
+\iffalse {
 \begin{figure}
     \centering
     \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_HM.eps}
@@ -526,6 +526,9 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
     \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesure $F1$ transitive obtenue pour différentes combinaisons de métriques et de critères de liaison, pour la méthode Hard Mapping (\textit{en haut}à et pour la méthode Soft Mapping (\textit{en bas}). Les résultats sont exprimés relativement à la mesure $F1$ moyenne.}
     \label{fig:taxex-cluparams-HM}
 \end{figure}
+}
+\fi
+
 
 
 \subsection{Discussion}
@@ -612,6 +615,7 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
 
 \subsubsection{Seuil de probabilité}
 
+\iffalse {
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{fig/plot/threshold_exp.eps}
@@ -619,8 +623,28 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
     Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
     \label{fig:beta-search-2}
 \end{figure}
+}
+\fi 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{fig/plot/img_threshold_hexploration.png}
+    \caption[Influence du seuil de probabilité sur l'extraction de taxonomie]{Précision, rappel et mesure $F_1$ mesurés sur cinq sous-taxonomies, pour différentes valeurs du seuil $t$. Chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
+    \label{fig:threshold-search-1}
+\end{figure}
 
-Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction selon les métriques présentées dans la section précédente : précision, rappel, mesure $F_1$. Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. En effet, pour $t > 0.7$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on élimine mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
+Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
+%
+Les résultats sont représentés dans la figure \ref{fig:threshold-search-1}. % : chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir $y=1$ pour $t = 0$.
+%
+En moyenne, on observe les effets suivants : la précision augmente avec $t$, tandis que le rappel diminue. Ces deux effets étaient attendus : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue.
+%
+De plus, l'augmentation de la précision est insuffisante pour compenser la diminution du rappel, ce qui implique que la mesure $F_1$ diminue également avec $t$. 
+
+Toutefois, ces premières observations doivent être nuancées, car on observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autre, le rappel est assez stable dans l'intervale $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$.
+
+Cette hétérogénéité des comportements rend difficile le choix définitif d'une valeur pour $t$; toutefois, choisir une valeur basse telle que $t = 0.1$ paraît donner les meilleurs résultats en moyenne.
+
+%Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. En effet, pour $t > 0.7$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on élimine mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
 
 
 \iffalse {
