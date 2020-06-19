@@ -9,8 +9,8 @@ introduction et présentation générale \ldots
 \label{sec:te-problem}
 Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
 
-On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubseteq t_i')\}_{i=1, \ldots}$. Un axiome $t \sqsubseteq t'$, $t$ signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Dans ce cas, on dit que $t$ est un \textit{sous-type} de $t'$, et que $t'$ est un \textit{supertype} de $t$.
-Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubseteq t_1 \sqsubseteq \ldots \sqsubseteq t_k \sqsubseteq t_0$.
+On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubset t_i')\}_{i=1, \ldots}$. Un axiome $t \sqsubset t'$, $t$ signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Dans ce cas, on dit que $t$ est un \textit{sous-type} de $t'$, et que $t'$ est un \textit{supertype} de $t$.
+Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubset t_1 \sqsubset \ldots \sqsubset t_k \sqsubset t_0$.
 
 
 L'objectif est d'extraire l'information taxonomique contenue dans la géométrie des plongements vectoriels du graphe. On suppose donc avoir accès à un jeu de données $\cal{D} = \{ (\mathbf{e_i}, t_i) \}_{i=1, \ldots, N}$, constitué de $N$ plongements vectoriels typés, c'est-à-dire de $N$ paires $(\bf{e_i}, t_i) \in \R^d \times \cal{T}$ où $\bf{e_i}$ représente le plongement vectoriel de l'entité $e_i$, et $t_i$ son type. 
@@ -284,7 +284,7 @@ On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dan
 
 On peut alors interpréter l'axiome $t' \sqsubset t$ comme un événement aléatoire, qui s'exprime en fonction des événements $(Z_t = C)$ et $(Z_{t'} = C)$, pour tous $C \in \Clusters$.
 En effet, l'axiome $t' \sqsubset t$ signifie que les entités de type $t'$ sont également de type $t$, et donc que le cluster $Z_{t'}$ représentant $t'$ est un sous-cluster (immédiat ou non) de $Z_t$ le cluster représentant $t$, ce qui se traduit mathématiquement par la relation $(Z_{t'} \subset Z_{t})$.
-Pour exprimer l'événement $(Z_{t'} \subset Z_{t})$, il suffit d'examiner toutes les valeurs possibles de $Z_t$ et $Z_{t'}$, et de ne considérer que les cas ou l'un est inclus dans l'autre. On peut donc décomposer $(Z_{t'} \subset Z_{t})$  en union disjointe d'événements $(Z_t = C, Z_{t'} = C')$ pour toutes les paires de clusters $C, C'$ telles que $C' \subset C$ :
+Pour exprimer l'événement $(Z_{t'} \subset Z_{t})$, il suffit d'examiner les valeurs possibles de $Z_t$ et $Z_{t'}$, et de ne considérer que les cas ou l'un est inclus dans l'autre. On peut donc décomposer $(Z_{t'} \subset Z_{t})$  en union disjointe d'événements $(Z_t = C, Z_{t'} = C')$ pour toutes les paires de clusters $C, C'$ telles que $C' \subset C$ :
 \begin{equation}
     (Z_{t'} \subset Z_{t}) = \bigsqcup_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} (Z_t = C, Z_{t'} = C')
 \end{equation}
@@ -446,7 +446,7 @@ Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsum
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
-    \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes (méthode Soft Mapping) : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis les cycles sont éliminés en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
+    \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes (méthode Soft Mapping) : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis le graphe est transformé en arbre en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
     \label{fig:softmapping-extraction}
 \end{figure}
 
@@ -462,26 +462,32 @@ Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le 
 \subsection{Données}
 \label{sec:te-data}
 
-L'ontologie DBpédia comporte un ensemble de classes et de sous-classes qui forment un arbre dont on peu trouver le détail à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{http://mappings.dbpedia.org/server/ontology/classes/}. Comme on peut le voir, toutes les classes héritent d'une seule classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une sous-classe est 6. On peut difficilement utiliser toute l'ontologie pour le clustering, car certaines classes très spécifiques contiennent trop peu d'éléments [par exemple, seulement 7 éléments sont de type \texttt{dbo:Star}). On cherche donc à extraire un sous-arbre qui soit (a) suffisamment profond pour modéliser une base de connaissance du monde réel et tel que (b) chaque classe contienne un nombre minimal d'éléments. 
-
-Pour cela, on fixe la profondeur maximale à $p_{\max}=3$, le nombre maximal de sous-classe par classe à $n_c=7$ et le nombre minimal d'éléments par classe à $n_e=500$. En partant de la classe racine \texttt{owl:Thing}, on ajoute récursivement les sous-classes $S$ d'une classe $C$, par ordre décroissant d'effectif (on commence par ajouter les sous-classes qui contiennent le plus d'éléments), à condition que : 
+Comme dans le chapitre précédent, on utilise le graphe DBpédia, dans sa version de 2016-10. En plus du graphe de connaissances proprement dit, DBpédia dispose d'une ontologie\footnote{qui peut être consultée à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{mappings.dbpedia.org/server/ontology/classes/} dans une version légèrement mise à jour, ou téléchargée au format OWL à l'adresse \href{http://downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}{downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}}, qui contient 455 classes ayant au moins une instance. Toutes les classes héritent d'une classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une classe est 6. Pour évaluer notre approche, on n'utilise pas toute l'ontologie DBpédia, mais une version simplifiée restreinte aux classes fréquentes. %(à discuter)
+%On extrait donc un sous-arbre de la taxonomie DBpédia complète, constituée de classes suffisamment fréquentes.
+Pour extraire cette sous-taxonomie, on fixe la profondeur maximale à $p_{\max}=3$, le nombre maximal de sous-classe par classe à $n_c=7$ et le nombre minimal d'éléments par classe à $n_e=500$. En partant de la classe racine \texttt{owl:Thing}, on ajoute récursivement les sous-classes $S$ d'une classe $C$, par ordre décroissant d'effectif (on commence par ajouter les sous-classes qui contiennent le plus d'éléments), à condition que : 
 \begin{itemize}
     \item $S$ contienne au moins $n_e$ entités
     \item la profondeur de $S$ soit au plus $p_{\max}$
     \item $C$ ait moins de $n_c$ sous-classes
 \end{itemize}
 
-Le détail de la taxonomie restreinte ainsi obtenue est présenté en annexe \todo{Ajouter la référence en annexe}. Elle contient 7 classes de niveau 1, qui sont `Agent`, `Event`, `MeanOfTransportation`, `Place`, `Species`, `SportsSeason`, `Work`, 25 classes de niveau 2, et 52 classes de niveau 3. 
+Cette taxonomie sera nommée par la suite \textsc{DBpédia-Fréq}. Elle contient sept classes de niveau 1, qui sont \texttt{Agent}, \texttt{Event}, \texttt{MeanOfTransportation}, \texttt{Place}, \texttt{Species}, \texttt{SportsSeason}, \texttt{Work}; 25 classes de niveau 2, et 52 classes de niveau 3. Cette taxonomie, quoique simplifiée, couvre 75\% des triplets \texttt{rdf:type} de DBpédia. Les valeurs des paramètres $p_{\max}, n_c, n_e$ ont été choisis empiriquement de sorte à atteindre ce seuil de couverture. 
 
-J'appelle classes feuilles les classes qui n'ont pas de sous-classes, c'est-à-dire qu'elles sont les plus spécifiques pour qualifier une entité. Les classes feuilles peuvent être de niveau 2, comme par exemple `MeanOfTransportation/Aircraft` ou  `Work/TelevisionEpisode`, mais la plupart sont de niveau 3 (`Agent/Person/Artist` ou `Work/WrittenWork/Comic`). Au total, il y a 64 classes feuilles distinctes.
+Une fois que l'on dispose de cette taxonomie de référence \textsc{DBpédia-Fréq}, on prélève aléatoirement dans le graphe des instances de chacune des classes de la taxonomie; on obtient un jeu de données $\cal{D}$ comportant $N = 51 418$ instances, chacune étant ensuite représentée par un plongement vectoriel de dimension $d=50$. L'objectif est alors de reconstituer \textsc{DBpédia-Fréq} à partir de $\cal{D}$.
 
-À partir de cette taxonomie, on tire pour chaque classe feuille un ensemble d'instances DBpédia qui y appartienne. On obtient alors $N=51 418$  instances. Chaque instance est représentée par son plongement, de dimension $d=50$. Le jeu de données consiste donc en une matrice réelle de dimension $51 418 \times 50$.
+
+%L'ontologie DBpédia comporte un ensemble de classes et de sous-classes qui forment un arbre dont on peu trouver le détail à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{http://mappings.dbpedia.org/server/ontology/classes/}. Comme on peut le voir, toutes les classes héritent d'une seule classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une sous-classe est 6. On peut difficilement utiliser toute l'ontologie pour le clustering, car certaines classes très spécifiques contiennent trop peu d'éléments [par exemple, seulement 7 éléments sont de type \texttt{dbo:Star}). On cherche donc à extraire un sous-arbre qui soit (a) suffisamment profond pour modéliser une base de connaissance du monde réel et tel que (b) chaque classe contienne un nombre minimal d'éléments. 
+
+
+
+% À partir de cette taxonomie, on tire pour chaque classe feuille un ensemble d'instances DBpédia qui y appartienne. On obtient alors $N=51 418$  instances. Chaque instance est représentée par son plongement, de dimension $d=50$. Le jeu de données consiste donc en une matrice réelle de dimension $51 418 \times 50$.
 
 
 \subsection{Méthode d'évaluation}
 \label{subsec:te-evaluation}
 
-On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus – le choix de ces deux combinaisons de paramètres est discuté dans la section \ref{sec:te-hp}. La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb (ref vers la section Revue de littérature). 
+On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, TransD, TransH, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait avec un des quatre critères de liaison cités (saut minimum, moyen, maximum, critère de Ward) et l'une des trois distances suivantes : euclidienne, cosinus, $L_1$. % soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus – le choix de ces deux combinaisons de paramètres est discuté dans la section \ref{sec:te-hp}. 
+La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb (ref vers la section Revue de littérature); pour cette méthode également, on expérimente avec les distances euclidienne, cosinus et $L_1$. 
 
 Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpédia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédecesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
 
@@ -491,7 +497,10 @@ Ces deux modes d'évaluation – directe et transitive – sont nécessaires pou
 \subsection{Résultats}
 \label{subsec:te-results}
 
-Les résultats sont présentés dans le tableau \ref{tab:te-results}. La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supérieurs à \textit{Hard Mapping} (HM) et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. Les modèles qui obtiennent un $F1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidiene, HM avec TransE et la distance euclidienne. 
+Les résultats sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-beta}). On compare ces résultats avec la méthode TIEmb (ref), qui a été présentée dans la section (ref). Là encore, on présente les résultats pour deux métriques : distance cosinus et distance euclidienne. Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont présentés en annexe.
+
+La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supérieurs à \textit{Hard Mapping} (HM) et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. Les modèles qui obtiennent un $F1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidiene, HM avec TransE et la distance euclidienne. 
+
 
 Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérachie entre modèle est nette : TransE obtient les meilleurs résultats, quel que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
 
@@ -501,8 +510,12 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
     \centering
     \caption[Évaluation de trois méthodes d'extraction de taxonomie]{
     Évaluation de notre approche et de TIEmb sur \textsc{DBpedia-Freq}, pour différents modèles de plongement. $p, r, F1$ désignent respectivement la précision, le rappel et la mesure $F1$. \textit{cos} et \textit{euc} indiquent les distances cosinus et euclidienne. Les résultats de la section \textit{Moyenne} sont obtenus en calculant la moyenne des évaluations directe et transitive.}
-    \input{data/table_results}
-    \label{tab:te-results}
+    \begin{adjustwidth}{-1in}{-1in}
+        \begin{center}
+            \input{data/table_results}
+            \label{tab:te-results} 
+        \end{center}
+    \end{adjustwidth}
 \end{table}
 
 
@@ -528,7 +541,7 @@ Cette section discute le choix des principaux hyperparamètres du modèle, c'est
 
 \subsection{Regroupement hiérarchique}
 
-L'étape de regroupement hiérarchique consiste à regrouper des entités géométriquement proches : cela suppose donc de définir une distance $d$ entre entités. Dans notre cas, on a expérimenté avec trois distances classiques de $\R^n$ : la distance euclidienne,  la distance (ou plus proprement dissimilarité) cosinus, et la distance $L_1$. Cette dernière, parfois nommée distance de Manhattan, s'écrit, pour deux vecteurs $\bf{u} = (u_1, u_2, \ldots, u_n)$ et $\bf{v} = (v_1, v_2, \ldots, v_n)$ de $\R^n$ :
+L'étape de regroupement hiérarchique consiste à regrouper des entités géométriquement proches : cela suppose donc de définir une distance $d$ entre entités. Dans notre cas, on a expérimenté trois distances classiques de $\R^n$ : la distance euclidienne,  la distance (ou plus proprement dissimilarité) cosinus, et la distance $L_1$. Cette dernière, parfois nommée distance de Manhattan, s'écrit, pour deux vecteurs $\bf{u} = (u_1, u_2, \ldots, u_n)$ et $\bf{v} = (v_1, v_2, \ldots, v_n)$ de $\R^n$ :
 \begin{equation}
     \| \bf{u - v} \|_1 = \sum_{i=1}^{n} | u_i - v_i |
 \end{equation}
