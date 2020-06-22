@@ -497,7 +497,7 @@ Ces deux modes d'évaluation – directe et transitive – sont nécessaires pou
 \subsection{Résultats}
 \label{subsec:te-results}
 
-Les résultats sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-beta}). On compare ces résultats avec la méthode TIEmb (ref), qui a été présentée dans la section (ref). Là encore, on présente les résultats pour deux métriques : distance cosinus et distance euclidienne. Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont présentés en annexe.
+Les résultats sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). On compare ces résultats avec la méthode TIEmb (ref), qui a été présentée dans la section (ref). Là encore, on présente les résultats pour deux métriques : distance cosinus et distance euclidienne. Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont présentés en annexe.
 
 La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supérieurs à \textit{Hard Mapping} (HM) et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. Les modèles qui obtiennent un $F1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidiene, HM avec TransE et la distance euclidienne. 
 
@@ -564,12 +564,82 @@ On observe que les deux meilleures combinaisons sont, dans tous les cas, la dist
 \end{figure}
 
 \subsection{Base du softmax et seuil de probabilité}
-\label{subsec:te-hp-beta}
+\label{subsec:te-hp-softmapping}
 
-Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$.
+Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$. Dans toute la suit, le modèle de plongement utilisé est TransE et le regroupement se fait avec la distance cosinus et le critère du saut moyen. 
+
+Un jeu d'évaluation $X$ est constitué d'un jeu de données d'entrée $\cal{D}$, contenant des plongements vectoriels et les types correspondants, et d'une taxonomie de référence $T^*$. Pour des paramètres fixés, on peut extraire une taxonomie $\hat{T}$ à partir de $\cal{D}$, comparer cette taxonomie à la référencec $T^*$, et calculer les métriques précédentes : précision $p$, rappel $r$ et $F_1$, de façon directe, transitive ou moyenne. 
+
+Pour un jeu d'évaluation $X$, on choisit comme métrique d'évaluation la mesure $F_1$ moyenne : c'est la mesure la plus synthétique, puisque le $F_1$ est une moyenne de la précision et du rappel, et que le $F_1$ moyen est lui-même la moyenne du $F_1$ direct et du $F_1$ transitif; on le note $F_1^M(X, \beta, t)$ pour mettre en évidence la dépendance en les paramètres $t$ et $\beta$, ainsi qu'en les données d'évaluation $X$.
+On peut alors chercher les valeurs optimales des paramètres :
+\begin{equation}
+  \beta^*(X), t^*(X) = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}} F_1^M(X, \beta, t)
+\end{equation}
+Ces paramètres optimaux peuvent par exemple être estimés avec une \textit{grid search} : on discrétise l'espace de recherche, ce qui nous donne un nombre fini de combinaisons de paramètres possibles, et on évalue l'algorithme sur chacune de ces combinaisons. Par exemple, $t$ varie dans $[0, 1]$ et $\beta$ dans $\R_+$ : on peut diviser le premier intervalle en $\{0, 0.25, 0.5, 0.75, 1\}$ et le second en $\{0, 100, 500, 1000 \}$, soit cinq valeurs possibles pour $t$ et quatre pour $\beta$, donc vingt combinaisons à essayer au total. Cette recherche peut être améliorée en tirant aléatoirement des couples de $[0, 1] \times \R_+$, ce qui permet généralement de mieux couvrir l'espace de recherche (ref).
+
+En pratique, on veut pouvoir appliquer notre approche sur des données d'entrée pour lesquelles on ne dispose pas de taxonomie de référence, puisque le but est précisément d'extraire une telle taxonomie. C'est un problème non-supervisé, on ne peut donc pas utiliser de validation croisée.
+De plus, les valeurs de $\beta^*$ et $t^*$ optimales calculées pour un certain jeu de données ne sont \textit{a priori} pas optimales pour un autre jeu de données. 
+Plutôt que calculer $\beta^*$ et $t^*$, on souhaite plutôt trouver des valeurs «raisonnables» de $\beta$ et de $t$, autrement dit des valeurs permettant en moyenne de ne pas trop s'éloigner de l'optimum.
+
+Pour cela, on définit un ensemble de jeux d'évaluation de référence $\cal{X} = (X_1, X_2, \ldots, X_r)$, et on cherche une valeur de $t$ et de $\beta$ qui permettent d'approcher le score $F_1$ optimal sur chacun des $X_k$ :
+\begin{equation}
+    \hat{\beta}, \hat{t} = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}} \frac{1}{| \cal{X} |} \sum_{X \in \cal{X}} \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
+\end{equation}
+
+Le quotient $\frac{ F_1^M(X, \beta, t)}{ F_1^M(X, \beta^*(X), t^*(X))}$ permet d'exprimer les performances du modèle pour $t$ et $\beta$ comme une fraction des performances optimales – en effet, l'enjeu ici n'est pas les performances absolues du modèle, mais l'écart entre les performances atteintes avec $\beta$ et $t$ et les performances maximales possibles. On appelle cette quantié le \textit{score} associé aux paramètres $\beta$ et $t$ :
+\begin{equation}
+    S(\beta, t; X) = \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
+\end{equation}
+%
+Et l'on cherche à maximiser le score moyen associé à un couple de paramètres :
+\begin{equation}
+    \bar{S}(\beta, t) = \frac{1}{| \cal{X} |} \sum_{X \in \cal{X}} S(\beta, t; X)
+\end{equation}
+
+
+Alternativement, on pourrait choisir de maximiser le pire des scores, plutôt que la moyenne des scores :
+\begin{equation}
+    \hat{\beta}, \hat{t} = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}}
+    \min_{X \in \cal{X}} S(\beta, t; X)
+\end{equation}
+
+En pratique, pour constituer $\cal{X}$, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs.
+
+
+L'enjeu des paragraphes suivants est double : d'une part, trouver des valeurs satisfaisantes pour $\hat{\beta}$ et $\hat{t}$, et d'autre part, comprendre l'effet de $\beta$ et de $t$ sur la taxonomie extraite.
+
+\subsubsection{Choix de \texorpdfstring{$\beta$}{beta} et \texorpdfstring{$t$}{t}}
+\label{subsec:te-hp-values}
+
+On applique notre méthode d'extraction de taxonomie aux cinq sous-taxonomies contenues dans $\cal{X}$ pour vingt valeurs de $\beta$ réparties linéairement dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$  et chaque jeu sous-taxonomie $X_k$ à la mesure $F_1$ moyenne associée $F_1^M(X_k, \beta, t)$.
+
+
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{fig/plot/average_beta_vs_best_all_FR.eps}
+    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
+    \label{fig:beta-search-1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{fig/plot/average_beta_breakdown_all3_FR.eps}
+    \caption{Caption}
+    \label{fig:beta-search-3}
+\end{figure}
+
+On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
+
+Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
+
+Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne supérieure à 95\% de la mesure $F_1$ optimale. C'est donc ces valeurs des paramètres que l'on utilisera par défaut, et qui ont servi pour les résultats présentés à la section précédente.
 
 
 \subsubsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
+\label{subsec:te-hp-beta}
 
 Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. % TODO: expliquer pourquoi?
 
@@ -621,6 +691,7 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
 
 
 \subsubsection{Seuil de probabilité}
+\label{subsec:te-hp-threshold}
 
 \iffalse {
 \begin{figure}[h]
