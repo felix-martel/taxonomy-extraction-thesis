@@ -635,8 +635,15 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{fig/plot/threshold_breakdown_avg_no_event.eps}
-    \caption[Influence du seuil de probabilité sur l'extraction de taxonomie]{Précision, rappel et mesure $F_1$ mesurés sur cinq sous-taxonomies, pour différentes valeurs du seuil $t$. Chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
+    \caption[Influence du seuil de probabilité sur l'extraction de taxonomie pour $\beta=100$]{Précision, rappel et mesure $F_1$ mesurés sur cinq sous-taxonomies, pour différentes valeurs du seuil $t$ et pour $\beta=100$. Chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
     \label{fig:threshold-search-1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{fig/plot/threshold_breakdown_aggregated.eps}
+    \caption[Influence du seuil de probabilité sur l'extraction de taxonomie pour différents $\beta$]{Précision, rappel et mesure $F_1$ moyens, pour différentes valeurs du seuil $t$ et différentes valeurs de $\beta$. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
+    \label{fig:threshold-search-2}
 \end{figure}
 
 Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
