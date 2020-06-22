@@ -504,7 +504,7 @@ La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supéri
 
 Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérachie entre modèle est nette : TransE obtient les meilleurs résultats, quel que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
 
-% à affiner
+% TODO à affiner
 
 \begin{table}
     \centering
@@ -601,9 +601,16 @@ Pour généraliser ces observations, on construit aléatoirement cinq sous-taxon
 
 \begin{figure}[h]
     \centering
-    \includegraphics{fig/plot/average_beta_vs_best.eps}
+    \includegraphics{fig/plot/average_beta_vs_best_all_FR.eps}
     \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
     \label{fig:beta-search-1}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{fig/plot/average_beta_breakdown_all3_FR.eps}
+    \caption{Caption}
+    \label{fig:beta-search-3}
 \end{figure}
 
 On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
@@ -627,7 +634,7 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
 \fi 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{fig/plot/img_threshold_hexploration.png}
+    \includegraphics[width=\textwidth]{fig/plot/threshold_breakdown_avg_no_event.eps}
     \caption[Influence du seuil de probabilité sur l'extraction de taxonomie]{Précision, rappel et mesure $F_1$ mesurés sur cinq sous-taxonomies, pour différentes valeurs du seuil $t$. Chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
     \label{fig:threshold-search-1}
 \end{figure}
