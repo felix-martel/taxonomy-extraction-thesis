@@ -586,7 +586,7 @@ Pour cela, on définit un ensemble de jeux d'évaluation de référence $\cal{X}
     \hat{\beta}, \hat{t} = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}} \frac{1}{| \cal{X} |} \sum_{X \in \cal{X}} \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
 \end{equation}
 
-Le quotient $\frac{ F_1^M(X, \beta, t)}{ F_1^M(X, \beta^*(X), t^*(X))}$ permet d'exprimer les performances du modèle pour $t$ et $\beta$ comme une fraction des performances optimales – en effet, l'enjeu ici n'est pas les performances absolues du modèle, mais l'écart entre les performances atteintes avec $\beta$ et $t$ et les performances maximales possibles. On appelle cette quantié le \textit{score} associé aux paramètres $\beta$ et $t$ :
+Le quotient $\frac{ F_1^M(X, \beta, t)}{ F_1^M(X, \beta^*(X), t^*(X))}$ permet d'exprimer les performances du modèle pour $t$ et $\beta$ comme une fraction des performances optimales – en effet, l'enjeu ici n'est pas les performances absolues du modèle, mais l'écart entre les performances atteintes avec $\beta$ et $t$ et les performances maximales possibles. On appelle cette quantité le \textit{score} associé aux paramètres $\beta$ et $t$ :
 \begin{equation}
     S(\beta, t; X) = \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
 \end{equation}
@@ -597,13 +597,15 @@ Et l'on cherche à maximiser le score moyen associé à un couple de paramètres
 \end{equation}
 
 
-Alternativement, on pourrait choisir de maximiser le pire des scores, plutôt que la moyenne des scores :
+Alternativement, on pourrait choisir de maximiser le pire des scores, plutôt que la moyenne des scores. Le score minimal d'un couple de paramètres est le pire score obtenu sur l'ensemble des jeux de référence :
+\begin{equation}
+    S_{\min}(\beta, t) = \min_{X \in \cal{X}} S(\beta, t; X)
+\end{equation}
+En comparaison du score moyen, maximiser le score minimal permet de se prémunir contre des valeurs de paramètres qui fonctionnent bien dans le cas général mais donnent de très mauvais résultats dans certains cas :
 \begin{equation}
     \hat{\beta}, \hat{t} = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}}
-    \min_{X \in \cal{X}} S(\beta, t; X)
+    S_{\min}(\beta, t)
 \end{equation}
-
-En pratique, pour constituer $\cal{X}$, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs.
 
 
 L'enjeu des paragraphes suivants est double : d'une part, trouver des valeurs satisfaisantes pour $\hat{\beta}$ et $\hat{t}$, et d'autre part, comprendre l'effet de $\beta$ et de $t$ sur la taxonomie extraite.
@@ -611,18 +613,21 @@ L'enjeu des paragraphes suivants est double : d'une part, trouver des valeurs sa
 \subsubsection{Choix de \texorpdfstring{$\beta$}{beta} et \texorpdfstring{$t$}{t}}
 \label{subsec:te-hp-values}
 
-On applique notre méthode d'extraction de taxonomie aux cinq sous-taxonomies contenues dans $\cal{X}$ pour vingt valeurs de $\beta$ réparties linéairement dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$  et chaque jeu sous-taxonomie $X_k$ à la mesure $F_1$ moyenne associée $F_1^M(X_k, \beta, t)$.
-
-
-
+Pour trouver $\hat{\beta}$ et $\hat{t}$, on construit aléatoirement cinq sous-taxonomies de DBpédia de différentes tailles et de différentes profondeurs, afin de constituer l'ensemble $\cal{X}$.
+On applique alors notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour vingt valeurs de $\beta$ réparties linéairement dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$ (à nouveau en séparant l'intervalle en vingt valeurs espacées linéairement), ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$  et chaque sous-taxonomie $X_k$ au score associé $S(\beta, t; X_k)$.
 
 
 \begin{figure}[h]
     \centering
     \includegraphics{fig/plot/average_beta_vs_best_all_FR.eps}
-    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
+    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. 
+    L'ordonnée représente le score moyen $\bar{S}(\beta, t)$, qui est la moyenne des mesures $F_1^M$ sur les cinq sous-taxonomies de $\cal{X}$, exprimées comme une fraction de l'optimum.
+    %L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.
+    }
     \label{fig:beta-search-1}
 \end{figure}
+
+On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
 
 \begin{figure}
     \centering
@@ -631,7 +636,17 @@ On applique notre méthode d'extraction de taxonomie aux cinq sous-taxonomies co
     \label{fig:beta-search-3}
 \end{figure}
 
-On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
+Pour mieux comprendre les variabilités de $S$ d'un jeu de données à l'autre, affiche la courbe des scores en fonction de $\beta$ pour chacune des cinq sous-taxonomies. Le résultat est affiché dans la figure \ref{fig:beta-search-3}. On observe des disparités importantes d'une taxonomie à l'autre, pour les trois valeurs de $t$. 
+
+Dans le cas $t=t^*$, le score maximal est obtenu dès $\beta = 50$ pour l'une des taxonomies, et pour $\beta = 100$ pour une autre. Dans certains cas, les résultats diminuent sitôt le maximum atteint; dans d'autre, on observe au contraire un long plateau. Toutefois, pour toutes les taxonomies, le score atteignable en $\beta=100$ est proche du score maximal, c'est-à-dire que $S(\beta=100, t=t^*(\beta);X_i)$ est proche de $S(\beta^*, t^*; X_i)$ pour tous les $X_i \in \cal{X}$. Cela donne un score moyen $\bar{S}(\beta=100, t=t^*(\beta))$ égal à $97,7\%$, et un score minimal $S_{\min}(\beta, t)$ égal à $94,4\%$.
+
+Pour $t=0.1$, le comportement est globalement le même que dans le cas précédent. À nouveau, on observe d'une part des disparités de comportement entre les taxonomies, et d'autre part un rapprochement des courbes autour de $\beta=100$; choisir cette valeur de $\beta$ conduit à un score moyen de $96.9\%$ et à un score minimal de $92.9\%$. Dans les deux cas $t=t^*$ et $t=0.1$, prendre comme critère le score moyen ou le score minimal est indifférent : la valeur de $\beta$ qui maximise l'un est également celle qui maximise l'autre.
+
+Le cas $t=0.5$ est différent. Une nouvelle fois, on observe une augmentation abrupte du score dans l'intervalle $[0, 50]$, mais les disparités entre taxonomies sont fortement accrues. De plus, les scores sont significativement inférieurs au cas précédent; le score ne dépasse pas $90\%$ sur trois des cinq taxonomies. Enfin, les scores maximaux pour chaque taxonomie sont atteints en des points éloignés, ce qui grève le score moyen. Ce dernier atteint un maximum en $\beta=125$ et vaut alors $81.4\%$; le score minimal, lui, atteint son maximum en $\beta=150$ et vaut alors $62.5\%$.
+
+
+
+
 
 Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
 
@@ -667,6 +682,7 @@ $\beta$	&	classe	&	$P$	&	classe	&	$P$	&	classe	&	$P$  \\
 \end{table}
 
 
+\iffalse{
 Pour généraliser ces observations, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On moyenne alors les résultats obtenus sur les cinq sous-taxonomies. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$ à la moyenne des mesures $F_1$ obtenues sur les cinq tâches d'extraction de taxonomie pour ce choix de paramètres.
 
 \begin{figure}[h]
@@ -688,7 +704,8 @@ On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs 
 Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
 
 Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne supérieure à 95\% de la mesure $F_1$ optimale. C'est donc ces valeurs des paramètres que l'on utilisera par défaut, et qui ont servi pour les résultats présentés à la section précédente.
-
+}
+\fi 
 
 \subsubsection{Seuil de probabilité}
 \label{subsec:te-hp-threshold}
