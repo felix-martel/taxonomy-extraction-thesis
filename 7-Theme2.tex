@@ -632,7 +632,7 @@ On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{fig/plot/average_beta_breakdown_all3_FR.eps}
-    \caption{Caption}
+    \caption[Scores selon $\beta$ sur cinq sous-taxonomies]{Scores obtenus pour différentes valeurs de $\beta$ dans l'intervalle $[0, 200]$, pour le seuil optimal $t^*(\beta)$ (\textit{à gauche}), et pour deux seuils fixes 0.1 et 0.5. Chaque ligne pointillée représente les résultats pour une sous-taxonomie $X_i$; la ligne continue représente la moyenne sur les cinq sous-taxonomies.}
     \label{fig:beta-search-3}
 \end{figure}
 
@@ -644,16 +644,23 @@ Pour $t=0.1$, le comportement est globalement le même que dans le cas précéde
 
 Le cas $t=0.5$ est différent. Une nouvelle fois, on observe une augmentation abrupte du score dans l'intervalle $[0, 50]$, mais les disparités entre taxonomies sont fortement accrues. De plus, les scores sont significativement inférieurs au cas précédent; le score ne dépasse pas $90\%$ sur trois des cinq taxonomies. Enfin, les scores maximaux pour chaque taxonomie sont atteints en des points éloignés, ce qui grève le score moyen. Ce dernier atteint un maximum en $\beta=125$ et vaut alors $81.4\%$; le score minimal, lui, atteint son maximum en $\beta=150$ et vaut alors $62.5\%$.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{fig/tb_heatmap.eps}
+    \caption[Scores d'extraction moyens, pour différents $\beta$ et $t$]{Scores moyens obtenus sur cinq sous-taxonomies pour différentes valeurs de $\beta$ et de $t$.}
+    \label{fig:betea-search-4}
+\end{figure}
+
+Finalement, pour explorer d'autres valeurs du seuil $t$, on affiche directement le score moyen $\bar{S}(\beta, t)$ pour vingt valeurs de $t$ dans $[0, 20]$ et pour $\beta \in \{50, 75, 100, 150, 200\}$. Les résultats sont affichés à la figure \ref{fig:betea-search-4}. À nouveau, les meilleurs résultats sont observés pour $\beta = 75$ ou $\beta=100$ et pour des seuils faibles. On observe un maximum du score moyen $\bar{S}$ pour les valeurs $\beta = 100, t = 0.1$. De toutes ces observations, on utilisera par défaut les valeurs $\hat{beta} = 100$ et $\hat{t} = 0.1$.
+
+Cependant, cette recherche d'hyperparamètre demeure très limitée. D'une part, on s'est restreint aux plongements TransE avec distance et critère du saut moyen : d'autres modèles de plongement ou d'autres paramètres de regroupement pourrait conduire à d'autres valeurs de $\hat{\beta}$ et $\hat{t}$. De plus, les cinq sous-taxonomies de références sont toutes issues de DBpédia, et ne représentent pas nécessairement l'ensemble des graphes de connaissance. Aussi, les valeurs données ici ne doivent pas être considérées comme des choix définitifs.
+
+% Dans les deux sections suivantes, on cherche à mieux comprendre l'effet de $\beta$ et de $t$ sur les taxonomies suivantes
+% Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
+% Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne supérieure à 95\% de la mesure $F_1$ optimale. C'est donc ces valeurs des paramètres que l'on utilisera par défaut, et qui ont servi pour les résultats présentés à la section précédente.
 
 
-
-
-Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
-
-Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne supérieure à 95\% de la mesure $F_1$ optimale. C'est donc ces valeurs des paramètres que l'on utilisera par défaut, et qui ont servi pour les résultats présentés à la section précédente.
-
-
-\subsubsection{Base \texorpdfstring{$\beta$}{beta} du softmax}
+\subsubsection{Influence de \texorpdfstring{$\beta$}{beta}}
 \label{subsec:te-hp-beta}
 
 Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. % TODO: expliquer pourquoi?
@@ -734,7 +741,7 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
     \label{fig:threshold-search-2}
 \end{figure}
 
-Pour évaluer l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
+Pour comprendre l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
 %
 Les résultats sont représentés dans la figure \ref{fig:threshold-search-1}. % : chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir $y=1$ pour $t = 0$.
 %
