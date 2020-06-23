@@ -1,11 +1,11 @@
 \Chapter{EXTRACTION DE TAXONOMIE}
 \label{chap:te}
 
-introduction et présentation générale \ldots
+Introduction et présentation générale \ldots \hl{Note : j'attends d'avoir rédigé la revue de littérature pour écrire l'introduction, puisqe j'aurais probablement à présenter les enjeux de l'extraction de taxonomie dans ce chapitre là}
 
 
-\section{Exposé du problème}
-\subsection{Problème}
+\section{Présentation générale}
+\subsection{Énoncé du problème}
 \label{sec:te-problem}
 Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
 
@@ -18,9 +18,7 @@ L'objectif est d'extraire l'information taxonomique contenue dans la géométrie
 % Pourquoi ? extraire l'information taxonomique contenue dans la géométrie des plongements vectoriels + éviter d'exploiter des co-occurrences présentes dans les données, qui peuvent être causées par le fait que l'on a eu accès à une taxonomie lors de la création du graphe.
 % Relâcher cette contrainte : donne accès au graphe complet, et pas seulement aux embeddings + avoir accès aux co-occurences. Dans ce cas, beaucoup plus d'information = donne la possibilité d'extraire une taxonomie plus riche, cf chapitre suivant.
 
-
-\section{Méthode proposée}
-\label{sec:te-method}
+\subsection{Idée générale}
 
 Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels, et de liens d'inclusion entre groupes d'instance. Ces deux plans sont liés : les entités sont liées aux types par la relation \texttt{rdf:type}, ce qui permet de représenter un type dans l'espace des entités par l'ensemble des instances de ce type, et de traduire l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ par une relation d'inclusion entre les instances de \dbo{Athlete} et celles de \dbo{Person}. En pratique, cette liaison est imparfaite : il y a des entités dont les types sont inconnus, erronés ou arbitraires.
 
@@ -29,6 +27,11 @@ Dans le problème de l'extraction de taxonomie, on est amené à manipuler des d
 
 Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie sur les groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Inversement, les plongements vectoriels d'entités fournissent un moyen pour créer une hiérarchie sur les groupes d'entités : il suffit pour cela d'appliquer un algorithme de regroupement hiérarchique sur ces plongements. Un tel algorithme regroupe les plongements en groupes, sur la base de leur proximité géométrique; on obtient une division des plongements en groupes géométriquement similaires, eux-même divisés en sous-groupes, et ainsi de suite. L'idée de notre méthode est d'utiliser cette hiérarchie sur les groupes pour induire une hiérarchie sur les types, autrement dit une taxonomie.
 
+La section \ref{sec:te-method} décrit en détail la méthode proposée et ses deux variantes. La section \ref{sec:te-evaluation} évalue cette méthode et discute l'influence de chaque paramètre.
+
+\section{Méthode proposée}
+\label{sec:te-method}
+
 \begin{figure}[h]
     \centering
     \input{fig/te-summary}
@@ -36,7 +39,7 @@ Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie 
     \label{fig:te-summary}
 \end{figure}
 
-La méthode proposée ici se résume donc en trois étapes : d'abord, on effectue un regroupement hiérarchique des plongements vectoriels afin d'extraire un arbre de clustering, c'est-à-dire une hiérarchie sur les groupes d'entités (section \ref{subsec:te-clustering}); ensuite, les types des entités sont injectés dans cet arbre de clustering (section \ref{subsec:te-mapping}); enfin, une taxonomie est extraite en combinant les types et la structure d'arbre (section \ref{subsec:te-taxconstruction}). 
+La méthode proposée ici se résume en trois étapes : d'abord, on effectue un regroupement hiérarchique des plongements vectoriels afin d'extraire un arbre de clustering, c'est-à-dire une hiérarchie sur les groupes d'entités (section \ref{subsec:te-clustering}); ensuite, les types des entités sont injectés dans cet arbre de clustering (section \ref{subsec:te-mapping}); enfin, une taxonomie est extraite en combinant les types et la structure d'arbre (section \ref{subsec:te-taxconstruction}). 
 
 % création d'une hiérarchie sur des groupes d'entités à partir du regroupement hiérarchique de plongements vectoriels
 
@@ -51,7 +54,7 @@ La méthode proposée ici se résume donc en trois étapes : d'abord, on effectu
 \label{subsec:te-clustering}
 
 La première étape consiste à exécuter un algorithme de regroupement (ou \textit{clustering}) hiérarchique ascendant sur les plongements vectoriels des entités du jeu de données $\cal{D}$. %ce nuage de points. 
-On commence avec $N$ clusters singletons, chacun contenant l'une des $N$ entités de départ. À chaque étape, deux des clusters existants sont fusionnés pour former un nouveau cluster. Les clusters à fusionner sont choisis de sorte à minimiser un certain critère : ce critère peut être la distance moyenne entre les entités des clusters, la distance minimale ou maximale entre ces entités, ou la variance du nouveau cluster. 
+On commence avec $N$ groupes (ou \textit{clusters}) singletons, chacun contenant l'une des $N$ entités de départ. À chaque étape, deux des clusters existants sont fusionnés pour former un nouveau cluster. Les clusters à fusionner sont choisis de sorte à minimiser un certain critère : ce critère peut être la distance moyenne entre les entités des clusters, la distance minimale ou maximale entre ces entités, ou la variance du nouveau cluster. 
 L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient toutes les entités; ce cluster est appelé cluster racine. Le résultat de cet algorithme est un arbre binaire, dont la racine est le cluster racine contenant toutes les entités, et dont les feuilles sont les $N$ clusters singletons.
 
 \begin{figure}[h]
@@ -65,7 +68,7 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
 
 On note $\Clusters$ l'ensemble des clusters, $X$ l'arbre de clustering obtenu, et $\texttt{racine}$ la racine de l'arbre – c'est-à-dire, le cluster contenant toutes les entités. On peut écrire $X = (V_X, E_X)$, avec $V_X = \Clusters$ l'ensemble des sommets de $X$, et $E_X = \{(C_i, C_i')\}_{i = 1, 2, \ldots } \subseteq \Clusters^2$ l'ensemble des arêtes de $X$.
 
-Pour deux clusters $C$ et $C'$, on dit que $C$ est un \textit{prédecesseur} de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on a alors $C \subseteq C'$. Dans ce cas, on appelle $C'$ un \textit{successeur} de $C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$. La relation $\subset$ définit un ordre partiel sur l'arbre $X$.
+Pour deux clusters $C$ et $C'$, on dit que $C$ est un \textit{prédecesseur} de $C'$ si $C$ appartient à l'unique chemin entre la racine et $C'$, et on a alors $C' \subseteq C$. Dans ce cas, on appelle $C'$ un \textit{successeur} de $C$. De plus, on dit que $C$ est un prédecesseur \textit{strict} de $C'$ si $C$ est un prédecesseur de $C'$ avec $C \neq C'$, auquel cas on a $C' \subset C$. La relation $\subset$ définit un ordre partiel sur l'arbre $X$.
 
 Puisque $X$ est une hiérarchie sur $\Clusters$, il vérifie la propriété suivante :
 \begin{equation}
@@ -73,7 +76,7 @@ Puisque $X$ est une hiérarchie sur $\Clusters$, il vérifie la propriété suiv
 \end{equation}
 Dit autrement, deux clusters sont soit disjoints, soit inclus l'un dans l'autre.
 
-Pour un cluster $C$ donné, on définit $X[C]$ le sous-arbre de racine $C$ comme l'arbre contenant $C$ et tous ses successeurs:
+Pour un cluster $C$ donné, on définit $X[C]$ le \textit{sous-arbre de racine $C$} comme l'arbre contenant $C$ et tous ses successeurs:
 \begin{equation}
     X[C] = (\{C' \in \Clusters : C' \subseteq C\}, \{(C_1, C_2) \in E_X : C_2 \subset C_1 \subseteq C\})
 \end{equation}
@@ -85,7 +88,7 @@ Enfin, on définit $\gauche(C)$ et $\droite(C)$ respectivement les sous-clusters
 
 Plusieurs critères sont envisageables pour choisir les clusters à fusionner lors du regroupement. Ici, on en considère quatre : le saut minimum, le saut moyen, le saut maximum, et la distance de Ward. Chacun de ces critères suppose que l'on ait défini une distance $d$ entre les vecteurs à regrouper : cette distance peut être la distance euclidienne, la distance cosinus ou encore la distance de Manhattan. 
 
-Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Un critère de fusion est en réalité une distance $D$ entre les clusters, ou, vu autrement, un \textit{coût} de fusion; à chaque étape, on fusionne les clusters $A$ et $B$ qui ont la plus faible distance entre eux (autrement dit, le coût de fusion le plus faible). Ainsi, à l'étape $t$, on détermine les deux clusters à fusionner selon la formule :
+Notons $\cal{C}_t$ l'ensemble des clusters à l'étape $t$. Un critère de fusion est en réalité une distance $D$ entre les clusters, ou, vu autrement, un \textit{coût} de fusion; à chaque étape, on fusionne les clusters $A$ et $B$ qui ont la plus faible distance entre eux – autrement dit, on cherche à minimiser le coût de fusion tout au long de la construction de l'arbre. Ainsi, à l'étape $t$, on détermine les deux clusters à fusionner selon la formule :
 \begin{equation}
     A_t, B_t = \argmin_{A, B \in \cal{C}_t} D(A, B)
 \end{equation}
@@ -108,11 +111,11 @@ $X = (\cal{C}_0, \emptyset)$ \;
 \While{ $| \cal{C}_t | > 1$}{
     \tcp{déterminer les clusters à fusionner}
     $A_t, B_t \leftarrow  \argmin_{A, B \in \cal{C}_t} D(A, B)$ \;
-    $C_t \leftarrow  A_t \cup B_t$\;
+    $C_{t+1} \leftarrow  A_t \cup B_t$\;
     \tcp{mise à jour des clusters}
-    $\cal{C}_{t+1} \leftarrow  \{ C_t \} \cup \cal{C}_t \setminus \{ A_t, B_t \}$\;
+    $\cal{C}_{t+1} \leftarrow  \{ C_{t+1}  \} \cup \cal{C}_t \setminus \{ A_t, B_t \}$\;
     \tcp{mise à jour de l'arbre}
-    $X \leftarrow (V_X \cup \{ C_t \}, E_X \cup \{ (A_t, C_t), (B_t, C_t) \})$\;
+    $X \leftarrow (V_X \cup \{ C_{t+1} \}, E_X \cup \{ (A_t, C_{t+1} ), (B_t, C_{t+1} ) \})$\;
     $t \leftarrow t + 1$ \;
 }
 \Return{$X$}
@@ -144,9 +147,9 @@ Cette fois, la distance entre $A$ et $B$ est la distance \textit{maximale} entre
 
 Le critère de Ward consiste à minimiser l'augmentation d'inertie lors de la fusion de $A$ et de $B$. L'inertie d'un cluster $C$ est la somme des carrés des distances entre ses entités et son centroïde :
 \begin{equation}
-    I(C) = \sum_{\bf{x} \in C} \left(d\left(\bf{x}, \frac{1}{|C|} \sum_{\bf{y} \in C} \bf{y}\right)\right)^2
+    I(C) = \sum_{\bf{x} \in C} \left[d\left(\bf{x}, g(C)\right)\right]^2
 \end{equation}
-Le centroïde du cluster $C$ est parfois appellé \textit{centre de gravité}; il est noté $g(C)$ :
+Avec $g(C)$ le centroïde du cluster $C$, parfois appelé \textit{centre de gravité} et défini par :
 \begin{equation}
     g(C) = \frac{1}{|C|} \sum_{\bf{y} \in C} \bf{y}
 \end{equation}
@@ -194,16 +197,16 @@ Au terme du regroupement hiérarchique, on dispose d'un côté d'une hiérarchie
 Pour pouvoir associer les types aux clusters pertinents, il faut mesurer à quel point un cluster $C$ donné représente un type $t$. Pour ce faire, on peut utiliser la précision et le rappel de ce cluster pour $t$. Posons $N_{C,t} = | e \in C, type(e) = t|$ le nombre d'entités de type $t$ contenues dans le cluster $C$,
 $N_t = |e \in \mathcal{D}, type(e) = t|$ le nombre d'entités de type $t$ dans l'ensemble des données, et $N_C = | C |$ le nombre total d'entités dans le cluster $C$. On peut alors définir la précision, le rappel et la mesure $F_1$ :
 \begin{align}
-    p(C, t) &= \frac{N_{C, t}}{N_C} \\
-    r(C, t) &= \frac{N_{C, t}}{N_t} \\
-    F(C, t) &= 2 \cdot \frac{p(C, t)r(C, t)}{p(C, t) + r(C, t)} = 2 \cdot \frac{N_{C,t}}{N_C + N_t}
+    p(t, C) &= \frac{N_{C, t}}{N_C} \\
+    r(t, C) &= \frac{N_{C, t}}{N_t} \\
+    F_1(t, C) &= 2 \cdot \frac{p(t, C)r(t, C)}{p(t, C) + r(t, C)} = 2 \cdot \frac{N_{C,t}}{N_C + N_t}
 \end{align}
 
 La mesure $F_1$ varie entre 0 et 1: 0 indique que le cluster $C$ ne contient aucune entité de type $t$; 1 signifie que le cluster contient uniquement des entités de type $t$ et que toutes les entités de type $t$ sont contenues dans le cluster. 
 
-% Ideally, we would map type $t$ to the cluster that maximizes its F-score, \textit{i.e} choose $m^*(t) = \argmax_C F(C, t)$, but then we could have two types mapped to the same cluster. If two types $t_A$ and $t_B$ are mapped to the same cluster $C$, then any type that is mapped to a successor of $C$ will have both $t_A$ and $t_B$ as ancestors, and the resulting taxonomy will not be valid. The mapping thus need to be unambiguous. Formally, this condition means that we need to find a injective mapping between types and clusters $m^* : \mathcal{T} \rightarrow \mathcal{C}$, so that distinct types are mapped to distinct clusters.  
+% Ideally, we would map type $t$ to the cluster that maximizes its F-score, \textit{i.e} choose $m^*(t) = \argmax_C F_1(C, t)$, but then we could have two types mapped to the same cluster. If two types $t_A$ and $t_B$ are mapped to the same cluster $C$, then any type that is mapped to a successor of $C$ will have both $t_A$ and $t_B$ as ancestors, and the resulting taxonomy will not be valid. The mapping thus need to be unambiguous. Formally, this condition means that we need to find a injective mapping between types and clusters $m^* : \mathcal{T} \rightarrow \mathcal{C}$, so that distinct types are mapped to distinct clusters.  
 
-Idéalement, on souhaiterait associer chaque type $t$ au cluster qui maximise sa mesure $F_1$, et donc choisir $m^*(t) = \argmax_C F(C, t)$, mais on pourrait alors avoir deux types associés au même cluster. Or, si deux types $t_A$ et $t_B$ sont associés au même cluster $C$, alors tout type associé à un successeur de $C$ aurait à la fois $t_A$ et $t_B$ comme prédecesseurs, et la taxonomie résultante serait donc invalide, selon les conditions énoncées en section~\ref{sec:te-problem}. Il faut donc garantir une association univoque entre types et clusters. Formellement, cela signifie que la fonction d'association $m^* : \Types \rightarrow \Clusters$ entre les types et les clusters doit être injective :
+Idéalement, on souhaiterait associer chaque type $t$ au cluster qui maximise sa mesure $F_1$, et donc choisir $m^*(t) = \argmax_C F_1(t, C)$, mais on pourrait alors avoir deux types associés au même cluster. Or, si deux types $t_A$ et $t_B$ sont associés au même cluster $C$, alors tout type associé à un successeur de $C$ aurait à la fois $t_A$ et $t_B$ comme prédecesseurs, et la taxonomie résultante serait donc invalide, selon les conditions énoncées en section~\ref{sec:te-problem}. Il faut donc garantir une association univoque entre types et clusters. Formellement, cela signifie que la fonction d'association $m^* : \Types \rightarrow \Clusters$ entre les types et les clusters doit être injective :
 \begin{equation}
     \forall t, t' \in \Types, t \neq t' \implies m^*(t) \neq m^*(t')
 \end{equation}
@@ -211,13 +214,13 @@ Idéalement, on souhaiterait associer chaque type $t$ au cluster qui maximise sa
 
 Pour une injection $m : \Types \rightarrow \Clusters$, on définit un score $J(m)$ qui mesure la qualité de l'association type-cluster définie par $m$. Ce score est simplement la mesure $F_1$ globale induite par $m$ :
 \begin{equation}
-    J(m) = \sum_{t \in \mathcal{T}} F(m(t), t)
+    J(m) = \sum_{t \in \mathcal{T}} F_1(t, m(t))
 \end{equation}
 
 Notre association optimale est alors :
 \begin{equation}
     m^* = \argmax_{
-\substack{m : \Types \rightarrow \Clusters \\ m\text{ injective}}} \sum_{t \in \mathcal{T}} F(m(t), t)
+\substack{m : \Types \rightarrow \Clusters \\ m\text{ injective}}} \sum_{t \in \mathcal{T}} F_1(t, m(t))
 \label{eq:optim-mapping}
 \end{equation}
 
@@ -231,7 +234,7 @@ Cette solution optimal peut être trouvée par l'algorithme de Jonker-Volgenant,
 
 L'approche précédente aboutit à une fonction de décision binaire : un axiome $(t_i \sqsubset t_j)$ est prédit ou non, sans intermédiaire possible. Ceci parce que la fonction $\argmax$ de l'équation~\ref{eq:optim-mapping} n'est pas continue. En conséquence, la taxonomie prédite est sensible à des légers changements dans les données d'entrée.
 
-Dans cette version, on explore une version lissée de l'approche précédente : l'association entre types et clusters est conservée, mais elle est lissée en remplacant la fonction $\argmax$ par une fonction softmax. Ainsi, un type n'est plus associé à un unique cluster; on lui attribue plutôt un vecteur de probabilité qui mesure combien chaque cluster le répresente bien. Ensuite, comme précédemment, cette association type-cluster est utilisée pour transformer la hiérarchie des clusters en une hiérarchie des types. Par rapport au cas précédent, la condition d'injectivité de l'association disparaît : une étape supplémentaire est nécessaire pour transformer le graphe de subsumption en une taxonomie valide. Ainsi, la discontinuité identifiée précédemment ne disparaît pas, mais elle est déplacée : au lieu d'intervenir lors de l'extraction des axiomes de subsumption, elle apparaît lors de la création de la taxonomie prédite à partir de ces axiomes. 
+Dans cette version, on explore une version lissée de l'approche précédente : l'association entre types et clusters est conservée, mais elle est lissée en remplacant la fonction $\argmax$ par une fonction softmax. Ainsi, un type n'est plus associé à un unique cluster; on lui attribue plutôt un vecteur de probabilité qui, pour chaque cluster, mesure si ce cluster le représente  bien. Ensuite, comme précédemment, cette association type-cluster est utilisée pour transformer la hiérarchie des clusters en une hiérarchie des types. Par rapport au cas précédent, la condition d'injectivité de l'association disparaît : une étape supplémentaire est nécessaire pour transformer le graphe de subsumption en une taxonomie valide. Ainsi, la discontinuité identifiée précédemment ne disparaît pas, mais elle est déplacée : au lieu d'intervenir lors de l'extraction des axiomes de subsumption, elle apparaît lors de la création de la taxonomie prédite à partir de ces axiomes. 
 
 % Dans le cas précédent, on cherchait à déterminer la position optimale $m^*(t)$ de chaque type $t$ dans l'arbre. Ici, on suppose
 
@@ -239,7 +242,7 @@ Comme précédemment, notre hypothèse est que chaque type $t$ est représenté 
 
 Formellement, on introduit une famille de variables aléatoires $\cal{Z} = (Z_t)_{t \in \Types}$, indépendantes et à valeur dans $\Clusters$. On interprète la variable $Z_t$ comme le cluster représentant $t$ parmi tous les clusters de l'arbre de clustering. Il nous faut attribuer une loi de probabilité à $Z_t$, c'est-à-dire quantifier la probabilité que le type $t$ soit représenté par un cluster $C$ donné. Pour cela, on transforme les mesures $F_1$ en probabilités, à l'aide d'une fonction softmax. Pour un type $t$ et un cluster $C$, on définit un score d'association $\sigma(t, C)$:
 \begin{equation}
-    \sigma(t, C) = \frac{\displaystyle e^{ \beta F(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F(t, C')}}
+    \sigma(t, C) = \frac{\displaystyle e^{ \beta F_1(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F_1(t, C')}}
 \end{equation}
 Pour un type $t$ donné, la somme des scores d'association avec chaque cluster vaut 1, ce qui permet d'envisager ce score comme une probabilité :
 \begin{equation}
@@ -256,7 +259,7 @@ Par construction du softmax, la position la plus probable pour $Z_t$ est le clus
 \iffalse {
 La première étape est de transformer les mesures $F_1$ en probabilités, à l'aide d'une fonction softmax. Pour un type $t$ et un cluster $C$, on définit ainsi la probabilité que le cluster $C$ représente le type $t$ :
 \begin{equation}
-    P(m(t) = C) = \frac{\displaystyle e^{ \beta F(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F(t, C')}}
+    P(m(t) = C) = \frac{\displaystyle e^{ \beta F_1(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F_1(t, C')}}
 \end{equation}
 
 Le paramètre $\beta > 0$ contrôle la concentration de la distribution autour du maximum. Le cas $\beta \rightarrow 0$ attribue à tous les axiomes la même probabilité, tandis que le cas $\beta \rightarrow \infty$ donne toute la masse de probabilité à la valeur maximum, ce qui se rapproche de l'approche précédente. Le choix de la valeur de $\beta$ est discuté dans la section 
@@ -270,17 +273,17 @@ Note : une idée : et si on notais $Z_t$ la variable aléatoire correspondant à
 
 On définit un score d'association $\sigma(t, C)$:
 \begin{equation}
-    \sigma(t, C) = \frac{\displaystyle e^{ \beta F(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F(t, C')}}
+    \sigma(t, C) = \frac{\displaystyle e^{ \beta F_1(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F_1(t, C')}}
 \end{equation}
 
 On définit une famille de variables aléatoire $\cal{Z} = (Z_t)_{t \in \Types}$, indépendantes et à valeur dans $\Clusters$. Pour un type $t$ donné, la loi de la variable $Z_t$ est donné par :
 \begin{equation}
     P(Z_t = C) = \sigma(t, C)
 \end{equation}
-On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dans l'arbre de clustering. Contrairement au cas précédent, où on aurait eu $Z_t = \argmax_C F(C, t)$ (à la condition d'injectivité près), ici on accepte que l'associé de $t$ soit incertain. On peut distinguer plusieurs sources d'incertitude sur la position du cluster $Z_t$. D'une part, les plongements vectoriels sont bruités, car le graphe de connaissance initial est incomplet et contient des erreurs}
+On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dans l'arbre de clustering. Contrairement au cas précédent, où on aurait eu $Z_t = \argmax_C F_1(C, t)$ (à la condition d'injectivité près), ici on accepte que l'associé de $t$ soit incertain. On peut distinguer plusieurs sources d'incertitude sur la position du cluster $Z_t$. D'une part, les plongements vectoriels sont bruités, car le graphe de connaissance initial est incomplet et contient des erreurs}
 \fi
 
-\todo{Justifier l'indépendance}
+%\todo{Justifier l'indépendance}
 
 On peut alors interpréter l'axiome $t' \sqsubset t$ comme un événement aléatoire, qui s'exprime en fonction des événements $(Z_t = C)$ et $(Z_{t'} = C)$, pour tous $C \in \Clusters$.
 En effet, l'axiome $t' \sqsubset t$ signifie que les entités de type $t'$ sont également de type $t$, et donc que le cluster $Z_{t'}$ représentant $t'$ est un sous-cluster (immédiat ou non) de $Z_t$ le cluster représentant $t$, ce qui se traduit mathématiquement par la relation $(Z_{t'} \subset Z_{t})$.
@@ -307,7 +310,7 @@ On obtient donc une formule qui attribue une probabilité à chaque axiome de su
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{img/softmapping.jpg}
-    \caption[Principe de la méthode Soft Mapping]{(brouillon) Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
+    \caption[Principe de la méthode Soft Mapping]{(brouillon, il faut lire $Z_B \subset Z_A$ plutôt que $Z_A \prec Z_B$) Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
     \label{fig:te-softmapping-example}
 \end{figure}
 
@@ -360,7 +363,7 @@ P_{C}(t' \sqsubset t) =
 \label{eq:proba_over_subtree}
 \end{align}
 
-Cette équation fait apparaître le lien recherché entre $P_C$ d'un côté, et $P_L$ et $P_R$ de l'autre. On l'écrire de façon plus concise sous forme matricielle. Pour cela, définissons $n_T = | \mathcal{T} |$ le nombre de types distincts, $\mathbf{Q_C}$ une matrice de dimension $n_T \times n_T$ telle que sa coordonnée $(i, j)$ contienne $P_C(t_j \sqsubset t_i)$, et $\mathbf{p_C} = \left(P(Z_{t_i} = C)\right)_{i = 1, \ldots, n_T}$ le vecteur de probabilité du cluster $C$, de dimension $n_T$. 
+Cette équation fait apparaître le lien recherché entre $P_C$ d'un côté, et $P_L$ et $P_R$ de l'autre. On peut l'écrire de façon plus concise sous forme matricielle. Pour cela, définissons $n_T = | \mathcal{T} |$ le nombre de types distincts, $\mathbf{Q_C}$ une matrice de dimension $n_T \times n_T$ telle que sa coordonnée $(i, j)$ contienne $P_C(t_j \sqsubset t_i)$, et $\mathbf{p_C} = \left(P(Z_{t_i} = C)\right)_{i = 1, \ldots, n_T}$ le vecteur de probabilité du cluster $C$, de dimension $n_T$. 
 
 Avec ces notations, notre objectif est de calculer $\bf{Q_\texttt{racine}}$, et donc d'obtenir une formule récursive reliant $\bf{Q_C}$ à $\bf{Q_L}$ et $\bf{Q_R}$. L'équation \ref{eq:proba_over_subtree} se réécrit matriciellement :
 \begin{align}
@@ -421,7 +424,7 @@ Pour un arbre binaire équilibré, cet algorithme garantit un cache de taille ma
 
 Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode \textit{Hard Mapping}, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t') \subset m(t)$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
 \begin{equation}
-    \Tpred = (\cal{T}, \{t' \sqsubset t : m(t') \subset m(t) \text{ et } \forall C \in \cal{C}, m(t') \preceq C \preceq m(t) \implies C \notin m(\cal{T}) \})
+    \Tpred = (\cal{T}, \{t' \sqsubset t : m(t') \subset m(t) \text{ et } \forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T}) \})
     \label{eq:te-extract-tax-from-mapping}
 \end{equation}
 
@@ -441,7 +444,7 @@ Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$,
 
 
 
-Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C}, m(t) \preceq C \preceq m(t') \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
+Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
 
 \begin{figure}
     \centering
@@ -452,8 +455,7 @@ Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiome de subsum
 
 Pour cela, on construit un graphe $G$ des axiomes à conserver. Chaque axiome extrait est examiné, par ordre de probabilité décroissante. Pour chaque axiome $\alpha$, si ajouter $\alpha$ à $G$ crée un cycle, on rejete $\alpha$. Sinon, on l'ajoute effectivement à $G$. Par construction, le graphe $G$ ainsi obtenu est un graphe orienté acyclique (ou DAG en anglais, pour \textit{direct acyclic graph}) : il est bien acyclique car le graphe de départ est vide donc acyclique, et car il reste acyclique à chaque étape; il est orienté car l'axiome de subsumption $t \sqsubset t'$ est différent de l'axiome inverse $t' \sqsubset t$, il y a donc bien une orientation des arêtes de $G$. 
 
-Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le plus petit graphe $G_{red}$ tel qu'il existe un chemin de $t$ vers $t'$ dans $G_{red}$ si et seulement si il existe un chemin de $t$ vers $t'$ dans $G_{red}$. Enfin, pour tout type $t$ qui a un degré entrant supérieur à 1, c'est-à-dire qui est impliqué dans au moins deux axiomes $t \sqsubset t'$ et $t\sqsubset t''$, on supprime tous les axiomes de la forme $t \sqsubset t'$ à l'exception de celui de probabilité maximale. Le résultat est un la taxonomie extraite $\Tpred$. Le processus est représenté à la figure \ref{fig:softmapping-extraction}
-
+Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le plus petit graphe $G_{red}$ tel qu'il existe un chemin de $t$ vers $t'$ dans $G_{red}$ si et seulement si il existe un chemin de $t$ vers $t'$ dans $G_{red}$. Enfin, pour tout type $t$ qui a un degré entrant supérieur à 1, c'est-à-dire qui est impliqué dans au moins deux axiomes $t \sqsubset t'$ et $t\sqsubset t''$, on supprime tous les axiomes de la forme $t \sqsubset t'$ à l'exception de celui de probabilité maximale. Le résultat est un la taxonomie extraite $\Tpred$. Le processus est représenté à la figure \ref{fig:softmapping-extraction}.
 
 
 \section{Évaluation et discussion}
@@ -482,34 +484,34 @@ Une fois que l'on dispose de cette taxonomie de référence \textsc{DBpédia-Fr�
 
 % À partir de cette taxonomie, on tire pour chaque classe feuille un ensemble d'instances DBpédia qui y appartienne. On obtient alors $N=51 418$  instances. Chaque instance est représentée par son plongement, de dimension $d=50$. Le jeu de données consiste donc en une matrice réelle de dimension $51 418 \times 50$.
 
-
 \subsection{Méthode d'évaluation}
 \label{subsec:te-evaluation}
 
 On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, TransD, TransH, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait avec un des quatre critères de liaison cités (saut minimum, moyen, maximum, critère de Ward) et l'une des trois distances suivantes : euclidienne, cosinus, $L_1$. % soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus – le choix de ces deux combinaisons de paramètres est discuté dans la section \ref{sec:te-hp}. 
 La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb (ref vers la section Revue de littérature); pour cette méthode également, on expérimente avec les distances euclidienne, cosinus et $L_1$. 
 
-Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpédia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédecesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
+Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpédia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F_1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédecesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F_1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
 
-Ces deux modes d'évaluation – directe et transitive – sont nécessaires pour évaluer correctement la proximité d'une taxonomie prédite avec une taxonomie de référence, car ils ne mesurent pas la même chose. Prenons le cas où le modèle d'extraction prédit correctement la plupart des axiomes mais commet des erreurs sur les axiomes de haut niveau (proches de la racine, par exemple en prédisant à tort l'axiome $\dbo{Person} \sqsubset \dbo{Event}$). Comme la majorité des axiomes sont corrects, la mesure $F1$ directe est élévée; toutefois, après clôture transitive, l'erreur de haut niveau se propage dans tout le sous-arbre : dans notre exemple, toutes les sous-classe de \dbo{Person} seront incorrectement considérées comme des sous-classes de \dbo{Event}, ce qui fera chuter la précision et donc la mesure $F1$. À l'inverse, considérons le cas où un modèle extrait correctement les axiomes de haut niveau mais ne parvient pas à reproduire les axiomes de plus bas niveau – par exemple en prédisant $\dbo{SoccerPlayer} \sqsubset \dbo{Person}$ et $\dbo{Athlete} \sqsubset \dbo{Person}$ au lieu de $\dbo{SoccerPlayer} \sqsubset \dbo{Athlete} \sqsubset \dbo{Person}$. Dans ce cas, la mesure $F1$ transitive est élevée, car la majorité des axiomes transitifs de référence sont correctement prédits, mais la mesure $F1$ directe est basse, car les axiomes directs manquent. % En un sens, la mesure directe donne une évaluation locale de la prédiction
+Ces deux modes d'évaluation – directe et transitive – sont nécessaires pour évaluer correctement la proximité d'une taxonomie prédite avec une taxonomie de référence, car ils ne mesurent pas la même chose. Prenons le cas où le modèle d'extraction prédit correctement la plupart des axiomes mais commet des erreurs sur les axiomes de haut niveau (proches de la racine, par exemple en prédisant à tort l'axiome $\dbo{Person} \sqsubset \dbo{Event}$). Comme la majorité des axiomes sont corrects, la mesure $F_1$ directe est élévée; toutefois, après clôture transitive, l'erreur de haut niveau se propage dans tout le sous-arbre : dans notre exemple, toutes les sous-classe de \dbo{Person} seront incorrectement considérées comme des sous-classes de \dbo{Event}, ce qui fera chuter la précision et donc la mesure $F_1$. À l'inverse, considérons le cas où un modèle extrait correctement les axiomes de haut niveau mais ne parvient pas à reproduire les axiomes de plus bas niveau – par exemple en prédisant $\dbo{SoccerPlayer} \sqsubset \dbo{Person}$ et $\dbo{Athlete} \sqsubset \dbo{Person}$ au lieu de $\dbo{SoccerPlayer} \sqsubset \dbo{Athlete} \sqsubset \dbo{Person}$. Dans ce cas, la mesure $F_1$ transitive est élevée, car la majorité des axiomes transitifs de référence sont correctement prédits, mais la mesure $F_1$ directe est basse, car les axiomes directs manquent. % En un sens, la mesure directe donne une évaluation locale de la prédiction
 
 
 \subsection{Résultats}
 \label{subsec:te-results}
 
-Les résultats sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). On compare ces résultats avec la méthode TIEmb (ref), qui a été présentée dans la section (ref). Là encore, on présente les résultats pour deux métriques : distance cosinus et distance euclidienne. Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont présentés en annexe.
+Les résultats principaux sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). Pour la méthode TIEmb, on se restreint également aux distances cosinus et euclidienne. Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont présentés en annexe.
 
-La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supérieurs à \textit{Hard Mapping} (HM) et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. Les modèles qui obtiennent un $F1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidiene, HM avec TransE et la distance euclidienne. 
+La méthode \textit{Soft Mapping} (SM) obtient en moyenne des résultats supérieurs à \textit{Hard Mapping} (HM) et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. Les modèles qui obtiennent un $F_1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidiene, HM avec TransE et la distance euclidienne. 
 
 
 Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérachie entre modèle est nette : TransE obtient les meilleurs résultats, quel que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
 
+
 % TODO à affiner
 
-\begin{table}
+\begin{table}[h]
     \centering
     \caption[Évaluation de trois méthodes d'extraction de taxonomie]{
-    Évaluation de notre approche et de TIEmb sur \textsc{DBpedia-Freq}, pour différents modèles de plongement. $p, r, F1$ désignent respectivement la précision, le rappel et la mesure $F1$. \textit{cos} et \textit{euc} indiquent les distances cosinus et euclidienne. Les résultats de la section \textit{Moyenne} sont obtenus en calculant la moyenne des évaluations directe et transitive.}
+    Évaluation de notre approche et de TIEmb sur \textsc{DBpedia-Freq}, pour différents modèles de plongement. $p, r, F_1$ désignent respectivement la précision, le rappel et la mesure $F_1$. \textit{cos} et \textit{euc} indiquent les distances cosinus et euclidienne. Les résultats de la section \textit{Moyenne} sont obtenus en calculant la moyenne des évaluations directe et transitive.}
     \begin{adjustwidth}{-1in}{-1in}
         \begin{center}
             \input{data/table_results}
@@ -523,7 +525,7 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
     \centering
     \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_HM.eps}
     \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_SM.eps}
-    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesure $F1$ transitive obtenue pour différentes combinaisons de métriques et de critères de liaison, pour la méthode Hard Mapping (\textit{en haut}à et pour la méthode Soft Mapping (\textit{en bas}). Les résultats sont exprimés relativement à la mesure $F1$ moyenne.}
+    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesure $F_1$ transitive obtenue pour différentes combinaisons de métriques et de critères de liaison, pour la méthode Hard Mapping (\textit{en haut}à et pour la méthode Soft Mapping (\textit{en bas}). Les résultats sont exprimés relativement à la mesure $F_1$ moyenne.}
     \label{fig:taxex-cluparams-HM}
 \end{figure}
 }
@@ -534,8 +536,19 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
 \subsection{Discussion}
 \label{subsec:te-discussion}
 
-Les bons résultats de TransE peuvent paraître surprenant au regard de la simplicité du modèle. à détailler : pas si anormal d'après (1) le papier original et (2) les propriétés du modèle : en particulier sa faiblesse sur les relations many-to-one est ici un atout
 
+On peut trouver étonnante la nette supériorité du modèle TransE, alors qu'il s'agit du plus simple des modèles testés. Pourtant, la simplicité des hypothèses géométriques derrière TransE force précisément le modèle à plonger les entités de même type dans la même région de l'espace vectoriel. En effet, pour deux entités $h, h'$ de type $t$, on a :
+\begin{align*}
+    \| \mathbf{h} - \mathbf{h}'\|_2 &= \| (\mathbf{h} + \mathbf{r}_{\text{IS\_A}} - \mathbf{t}) - (\mathbf{h}' + \mathbf{r}_{\text{IS\_A}} - \mathbf{t}) \|_2 \\
+        &\leq \| \mathbf{h} + \mathbf{r}_{\text{IS\_A}} - \mathbf{t} \|_2 +  \| \mathbf{h}' + \mathbf{r}_{\text{IS\_A}} - \mathbf{t} \|_2 \\
+        &\leq E(h, r_{\text{IS\_A}}, t) + E(h', r_{\text{IS\_A}}, t)
+\end{align*}
+Puisque $(h, r_{\text{IS\_A}}, t)$ et $(h', r_{\text{IS\_A}}, t)$ sont deux triplets valides, les énergies $E(h, r_{\text{IS\_A}}, t) + E(h', r_{\text{IS\_A}}, t)$ sont minimisées pendant l'entraînement, et la distance entre $\bf{h}$ et $\bf{h'}$ est également minimisée. 
+On avait déjà noté cette propriété dans la section \ref{subsec:kge-models-transx} sur les limites du modèle TransE pour les relations \textit{many-to-one}: ici, dans le cas de l'extraction de taxonomie, cette limitation se transforme en point fort. De plus, nos observations permettent de valider une des hypothèses derrière TransE : ses concepteurs expliquaient que la translation était une bonne représentation pour les relations hiérarchiques, sans pouvoir en apporter de preuve; ici, les bons résultats de TransE apportent un argument empirique à cette intuition.
+
+Dans le chapitre précédent, on concluait que RDF2Vec et TransE étaient les meilleurs modèles en terme de séparabilité, dans cet ordre. Ici, nous devons constater que la séparabilité ne permet pas entièrement de préjuger des performances des modèles sur la tâche d'extraction de taxonomie. En effet, on observe bien une supériorité de RDF2Vec et TransE par rapport aux autres, mais c'est ici TransE qui domine nettement, tandis que RDF2Vec est à peine au-dessus de ComplEx et DistMult. Une piste d'explication viendrait du regroupement hiérarchique : si on observe les arbres de clustering produit par RDF2Vec et TransE, on constate que RDF2Vec donne des arbres plus déséquilibrés que TransE, et présente notamment une tendance à fusionner des clusters de tailles très inégales. Cette «aptitude au regroupement» n'est pas mesurée par la séparabilité, et pourrait expliquer l'inversion de la hiérarchie entre TransE et RDF2Vec. 
+
+\hl{Note : j'espère avoir le temps d'ajouter une section sur l'«aptitude au regroupement» dans le chapitre sur la séparabilité}
 
 \section{Hyperparamètres}
 \label{sec:te-hp}
@@ -551,15 +564,18 @@ L'étape de regroupement hiérarchique consiste à regrouper des entités géom�
 
 Le deuxième paramètre du regroupement est le critère de liaison à utiliser. Les critères considérés ici sont détaillés dans la section \ref{sec:te-clustering-linkage} et sont au nombre de quatre : saut minimum, moyen et maximum, et distance de Ward, ce dernier critère étant propre à la distance euclidienne. Cela donne donc 10 combinaisons possibles pour l'étape de regroupement hiérarchique.
 
-On calcule la mesure $F1$ de chacune de ces combinaisons, moyennée sur l'ensemble des modèles de plongement étudiés, pour les deux méthodes Hard Mapping et Soft Mapping, et pour les deux modes d'évaluation direct et transitive. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
+On calcule la mesure $F_1$ de chacune de ces combinaisons, moyennée sur l'ensemble des modèles de plongement étudiés, pour les deux méthodes Hard Mapping et Soft Mapping, et pour les deux modes d'évaluation direct et transitive. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
 
-On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode Hard Mapping, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode Soft Mapping, les résultats des deux combinaisons sont très proches. De l'autre côté de la hiérarchie, les combinaisons qui utilisent le critère du saut minimum n'aboutissent à aucun résultat. \todo{expliquer ce résultat}
-%Le critère du saut minimum conduit à des arbres dégénérés \cite{everitt2011cluster}
+On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode Hard Mapping, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode Soft Mapping, les résultats des deux combinaisons sont très proches. 
+
+Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'ont pas abouti. Le saut minimum tend à renforcer les plus gros clusters à chaque étape \cite{everitt2011cluster}, ce qui produit des arbres-peignes, ou \textit{arbres dégénérés}. Un arbre-peigne est un arbre tel que chaque cluster est soit un cluster singleton, soit la fusion d'un cluster singleton avec un autre cluster (c'est donc l'opposé d'un arbre équilibre). Confronté à cette structure particulière, nos deux modèles HM et SM obtiennent des résultats nuls dans la plupart des cas.
+
+%Le critère du saut minimum conduit à des arbres dégénérés 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluparams-all.eps}
-    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesures $F1$ obtenues pour différentes combinaisons de distances (euclidienne, cosinus, $L_1$) et de critères de liaison (\textit{min} pour saut minimal, \textit{max} pour saut maximal, \textit{moy} pour saut moyen, \textit{ward} pour distance de Ward). Les scores sont moyennés sur tous les modèles de plongement, et calculés selon l'évaluation directe (\textit{en haut}) et transitive (\textit{en bas}), pour les deux variantes Hard Mapping (HM, \textit{à gauche}) et Soft Mapping (SM, \textit{à droite}).}
+    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesures $F_1$ obtenues pour différentes combinaisons de distances (euclidienne, cosinus, $L_1$) et de critères de liaison (\textit{min} pour saut minimal, \textit{max} pour saut maximal, \textit{moy} pour saut moyen, \textit{ward} pour distance de Ward). Les scores sont moyennés sur tous les modèles de plongement, et calculés selon l'évaluation directe (\textit{en haut}) et transitive (\textit{en bas}), pour les deux variantes Hard Mapping (HM, \textit{à gauche}) et Soft Mapping (SM, \textit{à droite}).}
     \label{fig:taxex-cluparams-all}
 \end{figure}
 
@@ -579,14 +595,14 @@ Ces paramètres optimaux peuvent par exemple être estimés avec une \textit{gri
 
 En pratique, on veut pouvoir appliquer notre approche sur des données d'entrée pour lesquelles on ne dispose pas de taxonomie de référence, puisque le but est précisément d'extraire une telle taxonomie. C'est un problème non-supervisé, on ne peut donc pas utiliser de validation croisée.
 De plus, les valeurs de $\beta^*$ et $t^*$ optimales calculées pour un certain jeu de données ne sont \textit{a priori} pas optimales pour un autre jeu de données. 
-Plutôt que calculer $\beta^*$ et $t^*$, on souhaite plutôt trouver des valeurs «raisonnables» de $\beta$ et de $t$, autrement dit des valeurs permettant en moyenne de ne pas trop s'éloigner de l'optimum.
+Plutôt que calculer $\beta^*$ et $t^*$, on souhaite plutôt trouver des valeurs «raisonnables» de $\beta$ et de $t$, autrement dit des valeurs permettant, en moyenne, de ne pas trop s'éloigner de l'optimum.
 
 Pour cela, on définit un ensemble de jeux d'évaluation de référence $\cal{X} = (X_1, X_2, \ldots, X_r)$, et on cherche une valeur de $t$ et de $\beta$ qui permettent d'approcher le score $F_1$ optimal sur chacun des $X_k$ :
 \begin{equation}
     \hat{\beta}, \hat{t} = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}} \frac{1}{| \cal{X} |} \sum_{X \in \cal{X}} \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
 \end{equation}
 
-Le quotient $\frac{ F_1^M(X, \beta, t)}{ F_1^M(X, \beta^*(X), t^*(X))}$ permet d'exprimer les performances du modèle pour $t$ et $\beta$ comme une fraction des performances optimales – en effet, l'enjeu ici n'est pas les performances absolues du modèle, mais l'écart entre les performances atteintes avec $\beta$ et $t$ et les performances maximales possibles. On appelle cette quantité le \textit{score} associé aux paramètres $\beta$ et $t$ :
+Le quotient $\frac{ F_1^M(X, \beta, t)}{ F_1^M(X, \beta^*(X), t^*(X))}$ permet d'exprimer les performances du modèle pour $t$ et $\beta$ comme une fraction des performances optimales – en effet, l'enjeu ici n'est pas les performances absolues du modèle, mais l'écart entre les performances maximales possibles et les performances atteintes avec $\beta$ et $t$. On appelle cette quantité le \textit{score} associé aux paramètres $\beta$ et $t$, qui varie entre 0 et 1 :
 \begin{equation}
     S(\beta, t; X) = \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
 \end{equation}
@@ -619,7 +635,7 @@ On applique alors notre méthode d'extraction de taxonomie à ces cinq sous-taxo
 
 \begin{figure}[h]
     \centering
-    \includegraphics{fig/plot/average_beta_vs_best_all_FR.eps}
+    \includegraphics[width=0.7\textwidth]{fig/plot/average_beta_vs_best_all_FR.eps}
     \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. 
     L'ordonnée représente le score moyen $\bar{S}(\beta, t)$, qui est la moyenne des mesures $F_1^M$ sur les cinq sous-taxonomies de $\cal{X}$, exprimées comme une fraction de l'optimum.
     %L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.
@@ -636,9 +652,9 @@ On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs 
     \label{fig:beta-search-3}
 \end{figure}
 
-Pour mieux comprendre les variabilités de $S$ d'un jeu de données à l'autre, affiche la courbe des scores en fonction de $\beta$ pour chacune des cinq sous-taxonomies. Le résultat est affiché dans la figure \ref{fig:beta-search-3}. On observe des disparités importantes d'une taxonomie à l'autre, pour les trois valeurs de $t$. 
+Pour mieux comprendre les variabilités de $S$ d'un jeu de données à l'autre, on affiche la courbe des scores en fonction de $\beta$ pour chacune des cinq sous-taxonomies. Le résultat est présenté dans la figure \ref{fig:beta-search-3}. On observe des disparités importantes d'une taxonomie à l'autre, pour les trois valeurs de $t$. 
 
-Dans le cas $t=t^*$, le score maximal est obtenu dès $\beta = 50$ pour l'une des taxonomies, et pour $\beta = 100$ pour une autre. Dans certains cas, les résultats diminuent sitôt le maximum atteint; dans d'autre, on observe au contraire un long plateau. Toutefois, pour toutes les taxonomies, le score atteignable en $\beta=100$ est proche du score maximal, c'est-à-dire que $S(\beta=100, t=t^*(\beta);X_i)$ est proche de $S(\beta^*, t^*; X_i)$ pour tous les $X_i \in \cal{X}$. Cela donne un score moyen $\bar{S}(\beta=100, t=t^*(\beta))$ égal à $97,7\%$, et un score minimal $S_{\min}(\beta, t)$ égal à $94,4\%$.
+Dans le cas $t=t^*$, le score maximal est obtenu dès $\beta = 50$ pour l'une des taxonomies, et pour $\beta = 150$ pour une autre. Dans certains cas, les résultats diminuent sitôt le maximum atteint; dans d'autre, on observe au contraire un long plateau. Toutefois, pour toutes les taxonomies, le score atteignable en $\beta=100$ est proche du score maximal, c'est-à-dire que $S(\beta=100, t=t^*(\beta);X_i)$ est proche de $S(\beta^*, t^*; X_i)$ pour tous les $X_i \in \cal{X}$. Cela donne un score moyen $\bar{S}(\beta=100, t=t^*(\beta))$ égal à $97,7\%$, et un score minimal $S_{\min}(\beta, t)$ égal à $94,4\%$.
 
 Pour $t=0.1$, le comportement est globalement le même que dans le cas précédent. À nouveau, on observe d'une part des disparités de comportement entre les taxonomies, et d'autre part un rapprochement des courbes autour de $\beta=100$; choisir cette valeur de $\beta$ conduit à un score moyen de $96.9\%$ et à un score minimal de $92.9\%$. Dans les deux cas $t=t^*$ et $t=0.1$, prendre comme critère le score moyen ou le score minimal est indifférent : la valeur de $\beta$ qui maximise l'un est également celle qui maximise l'autre.
 
@@ -651,9 +667,9 @@ Le cas $t=0.5$ est différent. Une nouvelle fois, on observe une augmentation ab
     \label{fig:betea-search-4}
 \end{figure}
 
-Finalement, pour explorer d'autres valeurs du seuil $t$, on affiche directement le score moyen $\bar{S}(\beta, t)$ pour vingt valeurs de $t$ dans $[0, 20]$ et pour $\beta \in \{50, 75, 100, 150, 200\}$. Les résultats sont affichés à la figure \ref{fig:betea-search-4}. À nouveau, les meilleurs résultats sont observés pour $\beta = 75$ ou $\beta=100$ et pour des seuils faibles. On observe un maximum du score moyen $\bar{S}$ pour les valeurs $\beta = 100, t = 0.1$. De toutes ces observations, on utilisera par défaut les valeurs $\hat{beta} = 100$ et $\hat{t} = 0.1$.
+Finalement, pour explorer d'autres valeurs du seuil $t$, on affiche directement le score moyen $\bar{S}(\beta, t)$ pour vingt valeurs de $t$ dans $[0, 20]$ et pour $\beta \in \{50, 75, 100, 150, 200\}$. Les résultats sont affichés à la figure \ref{fig:betea-search-4}. À nouveau, les meilleurs résultats sont observés pour $\beta = 75$ ou $\beta=100$ et pour des seuils faibles. On observe un maximum du score moyen $\bar{S}$ pour les valeurs $\beta = 100, t = 0.1$. De toutes ces observations, on utilisera par défaut les valeurs $\hat{\beta} = 100$ et $\hat{t} = 0.1$.
 
-Cependant, cette recherche d'hyperparamètre demeure très limitée. D'une part, on s'est restreint aux plongements TransE avec distance et critère du saut moyen : d'autres modèles de plongement ou d'autres paramètres de regroupement pourrait conduire à d'autres valeurs de $\hat{\beta}$ et $\hat{t}$. De plus, les cinq sous-taxonomies de références sont toutes issues de DBpédia, et ne représentent pas nécessairement l'ensemble des graphes de connaissance. Aussi, les valeurs données ici ne doivent pas être considérées comme des choix définitifs.
+Cependant, cette recherche d'hyperparamètres demeure très limitée. D'une part, on s'est restreint aux plongements TransE avec distance cosinus et critère du saut moyen : d'autres modèles de plongement ou d'autres paramètres de regroupement pourrait conduire à d'autres valeurs de $\hat{\beta}$ et $\hat{t}$. De plus, les cinq sous-taxonomies de références sont toutes issues de DBpédia, et ne représentent pas nécessairement l'ensemble des graphes de connaissance. Aussi, les valeurs données ici ne doivent pas être considérées comme des choix définitifs.
 
 % Dans les deux sections suivantes, on cherche à mieux comprendre l'effet de $\beta$ et de $t$ sur les taxonomies suivantes
 % Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
@@ -772,7 +788,7 @@ Pour comprendre l'effet du seuil $t$, on s'intéresse à l'évolution de la pré
 
 En moyenne, on observe les effets suivants : la précision augmente avec $t$, tandis que le rappel diminue. Ces deux effets étaient attendus : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue.
 
-Ces tendances sont plus ou moins marquées selon $\beta$ : la précision augmente d'autant plus avec $t$ que $\beta$ est faible; de même, la diminution du rappel avec $t$ semble plus rapide pour les valeurs faibles de $\beta$. Selon les valeurs de $\beta$, ces deux tendances (augmentation de la précision et diminution du rappel) se compensent plus ou moins tant que $t$ est faible. Dans les cinq cas, le $F_1$ observé sur l'intervalle $t \in [0, 0.5]$ est proche du $F_1$ maximal ($10\%$ d'écart au maximum). Toutefois, passé un certain seuil proche de $t=0.5$, l'augmentation de la précision ne suffit plus à compenser la diminution du rappel et la mesure $F_1$ chute alors, quelle que soit la valeur de $\beta$.
+Ces tendances sont plus ou moins marquées selon $\beta$ : la précision augmente d'autant plus avec $t$ que $\beta$ est faible; de même, la diminution du rappel avec $t$ semble plus rapide pour les valeurs faibles de $\beta$. Selon les valeurs de $\beta$, ces deux tendances (augmentation de la précision et diminution du rappel) se compensent plus ou moins tant que $t$ est faible. Dans les cinq cas, le $F_1$ observé sur l'intervalle $t \in [0, 0.4]$ est proche du $F_1$ maximal ($10\%$ d'écart au maximum). Toutefois, passé un certain seuil proche de $t=0.5$, l'augmentation de la précision ne suffit plus à compenser la diminution du rappel et la mesure $F_1$ chute alors, quelle que soit la valeur de $\beta$.
 
 % on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
 %
@@ -801,7 +817,7 @@ Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail d
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{fig/plot/hp_results.eps}
-    \caption[Influence des paramètres $t$ et $\beta$]{Influence des hyperparamètres $t$ et $\beta$ pour la méthode «soft mapping». À gauche, la précision, rappel et mesure $F1$ obtenus par évaluation transitive pour différentes valeurs de $t$ dans $[0, 1]$, et $\beta = 100$. À droite, les mesures $F1$ obtenues pour différentes valeurs du paramètre $\beta$, et pour trois différents seuils : le seuil optimal $t^*(\beta)$ et deux seuils fixes $t=0,1$ et $t=0,5$. Les scores affichés sont obtenus en moyennant les résultats obtenus sur cinq sous-taxonomies de DBpedia, et exprimées comme une fraction du score optimal.
+    \caption[Influence des paramètres $t$ et $\beta$]{Influence des hyperparamètres $t$ et $\beta$ pour la méthode «soft mapping». À gauche, la précision, rappel et mesure $F_1$ obtenus par évaluation transitive pour différentes valeurs de $t$ dans $[0, 1]$, et $\beta = 100$. À droite, les mesures $F_1$ obtenues pour différentes valeurs du paramètre $\beta$, et pour trois différents seuils : le seuil optimal $t^*(\beta)$ et deux seuils fixes $t=0,1$ et $t=0,5$. Les scores affichés sont obtenus en moyennant les résultats obtenus sur cinq sous-taxonomies de DBpedia, et exprimées comme une fraction du score optimal.
     }
     \label{fig:t-search-1}
 \end{figure}}
