@@ -663,31 +663,64 @@ Cependant, cette recherche d'hyperparamètre demeure très limitée. D'une part,
 \subsubsection{Influence de \texorpdfstring{$\beta$}{beta}}
 \label{subsec:te-hp-beta}
 
-Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. % TODO: expliquer pourquoi?
+Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de quelques classes choisies : \dbo{Athlete}, \dbo{Song}, \dbo{Event} (en français : Athlète, Chanson, Événément). Par superclasse la plus probable d'une classe $x$, on entend la classe $y$ telle que la probabilité $P(x \sqsubset y)$ soit supérieure à toutes les autres probabilités $P(x \sqsubset y')$. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie de référence, \dbo{Athlete} et \dbo{Song} ont deux superclasses (\dbo{Person}, \dbo{Agent} et \dbo{MusicalWork}, \dbo{Work} respectivement), tandis que \dbo{Event} n'en a aucune.
+
 
 \begin{table}[h]
     \centering
-    \caption[Prédiction de superclasses pour différentes valeurs de $\beta$]{Les trois superclasses les plus probables de \dbo{Mountain}, avec les probabilités associées, pour différentes valeurs de $\beta$ entre $1$ et $100$ (une ligne pour chaque valeur de $\beta$).}
-    \begin{tabular}{|l|cr|cr|cr|}
-    \hline
-    & \multicolumn{2}{c|}{1} & \multicolumn{2}{c|}{2} & \multicolumn{2}{c|}{3} \\
-$\beta$	&	classe	&	$P$	&	classe	&	$P$	&	classe	&	$P$  \\ 
+    \caption[Prédiction de superclasses pour différentes valeurs de $\beta$]{Les trois superclasses les plus probables de \dbo{Athlete} (\textit{en haut}), de \dbo{Song} (\textit{au milieu}), et de \dbo{Event} (\textit{en bas}), avec les probabilités $p$ associées, pour différentes valeurs de $\beta$ entre $1$ et $100$ (une ligne pour chaque valeur de $\beta$, les préfixes \dbo{} sont omis par souci de concision).}
+
+\begin{tabular}{|l|cr|cr|cr|}
 \hline
-1	&	Agent	&	0.000	&	Event	&	0.000	&	Species	&	0.000  \\ 
-2	&	Agent	&	0.000	&	Event	&	0.000	&	Species	&	0.000  \\ 
-5	&	Event	&	0.001	&	Agent	&	0.001	&	Species	&	0.001  \\ 
-10	&	Event	&	0.019	&	SportsSeason	&	0.007	&	Document	&	0.006  \\ 
-15	&	Agent	&	0.018	&	Event	&	0.017	&	Species	&	0.011  \\ 
-20	&	Place	&	0.010	&	NaturalPlace	&	0.004	&	Agent	&	0.003  \\ 
-30	&	Place	&	0.093	&	NaturalPlace	&	0.026	&	Volcano	&	0.005  \\ 
-50	&	Place	&	0.725	&	NaturalPlace	&	0.360	&	ArchitecturalStructure	&	0.008  \\ 
-75	&	Place	&	0.871	&	NaturalPlace	&	0.665	&	ArchitecturalStructure	&	0.017  \\ 
-100	&	Place	&	0.930	&	NaturalPlace	&	0.832	&	ArchitecturalStructure	&	0.008  \\ 
+& \multicolumn{2}{c|}{1} & \multicolumn{2}{c|}{2} & \multicolumn{2}{c|}{3} \\
+$\beta$	&	classe	&	$p$	&	classe	&	$p$	&	classe	&	$p$  \\ 
 \hline
-    \end{tabular}
+1 & Agent & 0.00 & Event & 0.00 & Species & 0.00 \\5 & Event & 0.00 & Agent & 0.00 & Species & 0.00 \\10 & Event & 0.02 & SportsSeason & 0.01 & Document & 0.01 \\30 & Agent & 0.97 & Person & 0.00 & Species & 0.00 \\50 & Agent & 1.00 & Person & 0.02 & Organisation & 0.00 \\100 & Agent & 1.00 & Person & 0.41 & Organisation & 0.00 \\
+\hline
+\end{tabular}
+
+\vspace{2mm}
+
+\begin{tabular}{|l|cr|cr|cr|}
+\hline
+& \multicolumn{2}{c|}{1} & \multicolumn{2}{c|}{2} & \multicolumn{2}{c|}{3} \\
+$\beta$	&	classe	&	$p$	&	classe	&	$p$	&	classe	&	$p$  \\ 
+\hline
+1 & Agent & 0.00 & Event & 0.00 & Species & 0.00 \\5 & Event & 0.00 & Agent & 0.00 & Species & 0.00 \\10 & Event & 0.02 & SportsSeason & 0.01 & Document & 0.01 \\30 & Agent & 0.25 & MusicalWork & 0.12 & Species & 0.06 \\50 & Work & 0.87 & MusicalWork & 0.67 & Single & 0.20 \\100 & Work & 1.00 & MusicalWork & 0.81 & Single & 0.14 \\
+\hline
+\end{tabular}
+
+\vspace{2mm}
+
+\begin{tabular}{|l|cr|cr|cr|}
+\hline
+& \multicolumn{2}{c|}{1} & \multicolumn{2}{c|}{2} & \multicolumn{2}{c|}{3} \\
+$\beta$	&	classe	&	$p$	&	classe	&	$p$	&	classe	&	$p$  \\ 
+\hline
+1 & Agent & 0.00 & Species & 0.00 & Place & 0.00 \\5 & Agent & 0.00 & Species & 0.00 & Document & 0.00 \\10 & SportsSeason & 0.01 & Document & 0.00 & Agent & 0.00 \\30 & Work & 0.00 & Eukaryote & 0.00 & Place & 0.00 \\50 & Work & 0.00 & Place & 0.00 & ArchitecturalStructure & 0.00 \\100 & Person & 0.00 & Organisation & 0.00 & ArchitecturalStructure & 0.00 \\
+\hline
+\end{tabular}
+
     \label{tab:hp-most-prob-axioms}
 \end{table}
 
+
+
+Étudions d'abord les deux premiers tableaux. Dans les deux cas, on observe des résultats incohérents pour $\beta < 30$ : d'une part, les superclasses les plus probables ne correspondent pas aux vraies superclasses; d'autre part, les probabilités de toutes les superclasses sont très proches de zéro, ce qui ne permet pas de distinguer les axiomes pertinents des autres. Lorsque $\beta$ augmente (ici $\beta = 30$), les vraies superclasses commencent à émerger. Pour \dbo{Athlete}, les deux superclasses les plus probables sont bien les vraies superclasses; l'une d'elle  (\dbo{Agent}) est prédite avec probabilité 0.97, ce qui est satisfaisant; en revanche, l'autre (\dbo{Person}) est prédite avec une probabilité très faible. Il faut attendre $\beta = 100$ pour discriminer nettement les classes valides (\dbo{Agent} et \dbo{Person}, prédites avec probabilités $1$ et $0.41$ respectivement) des classes invalides (\dbo{Organisation}, avec probabilité $0.0$). Les mêmes observations s'appliquent à \dbo{Song} : les vraies superclasses émergent et se détachent progressivement des fausses superclasses. Dans ce cas, on note aussi que \dbo{Single}, qui n'est pas une superclasse de \dbo{Song} mais une classe sémantiquement proche, se voit attribuer une probabilité relativement élevée (entre $0.1$ et $0.2$).
+
+Enfin, dans le cas de \dbo{Event}, le modèle prédit correctement des probabilités nulles pour tous les axiomes de subsumption possibles, et ce, quelle que soit la valeur de $\beta$. Cela correspond bien à la réalité, puisque \dbo{Event} ne possède aucune superclasse.
+
+Si l'on examine maintenant les taxonomies extraites pour différentes valeurs de $\beta$, on obtient la figure \ref{fig:hp-beta-taxonomies} (seules quelques classes sont représentées, pour faciliter l'affichage). Comme prévu, le cas $\beta = 1$ n'aboutit à rien : on obtient un arbre dégénéré. Quand $\beta$ augmente, les deux classes de niveau 1 (\dbo{Place} et \dbo{Agent}) sont identifiées, mais l'une est incorrectement considérée comme sous-classe de l'autre. Aucune hiérarchie ne se distingue sur les autres classes. Puis, pour $\beta=50$, les deux classes principales sont correctement séparées, et leurs sous-classes attribuées sans erreur. Une hiérarchie commence à se dessiner dans les sous-classes de \dbo{Place}, avec d'un côté les lieux habités (\dbo{PopulatedPlace} et \dbo{Region}), et de l'autre les espaces naturels (\dbo{NaturalPlace}, \dbo{Mountain}, \dbo{Volcano}). Enfin, pour $\beta=100$, la taxonomie est correctement extraite, avec une seule erreur (\dbo{Volcano} n'est pas sous-classe de \dbo{Mountain} dans la taxonomie de référence, même si cette classification aurait une certaine logique). Ces observations illustrent comment l'émergence progressive des superclasses quand $\beta$ augmente, décrite dans les paragraphes précédents, se traduit par une structuration croissante de la taxonomie extraite.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{img/tax_samples.png}
+    \caption[Exemples de taxonomies partielles pour différentes valeurs de $\beta$]{Exemples de taxonomies partielles pour $\beta = 1$ (\textit{en haut à gauche}), $\beta = 15$ (\textit{en bas à gauche}), $\beta=50$ (\textit{en haut à droite}) et $\beta=100$ (\textit{en bas à droite}). \small Note: la classe \texttt{owl:Thing} n'est pas présente dans les données, elle est ajoutée automatiquement lorsqu'il y a plus d'une classe sans parents dans la taxonomie extraite.}
+    \label{fig:hp-beta-taxonomies}
+\end{figure}
+
+
+% de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. % TODO: expliquer pourquoi?
 
 \iffalse{
 Pour généraliser ces observations, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On moyenne alors les résultats obtenus sur les cinq sous-taxonomies. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$ à la moyenne des mesures $F_1$ obtenues sur les cinq tâches d'extraction de taxonomie pour ce choix de paramètres.
@@ -727,12 +760,6 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
 \end{figure}
 }
 \fi 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{fig/plot/threshold_breakdown_avg_no_event.eps}
-    \caption[Influence du seuil de probabilité sur l'extraction de taxonomie pour $\beta=100$]{Précision, rappel et mesure $F_1$ mesurés sur cinq sous-taxonomies, pour différentes valeurs du seuil $t$ et pour $\beta=100$. Chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
-    \label{fig:threshold-search-1}
-\end{figure}
 
 \begin{figure}[h]
     \centering
@@ -741,17 +768,30 @@ Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne s
     \label{fig:threshold-search-2}
 \end{figure}
 
-Pour comprendre l'effet du seuil $t$, on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
-%
-Les résultats sont représentés dans la figure \ref{fig:threshold-search-1}. % : chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir $y=1$ pour $t = 0$.
-%
+Pour comprendre l'effet du seuil $t$, on s'intéresse à l'évolution de la précision, du rappel et du $F_1$ lorsque $t$ varie entre $0$ et $1$, pour différentes valeurs de $\beta$. On calcule la moyenne de ces trois métriques sur les cinq sous-taxonomies utilisées précédemment. Les résultats sont affichés dans la figure \ref{fig:threshold-search-2}.
+
 En moyenne, on observe les effets suivants : la précision augmente avec $t$, tandis que le rappel diminue. Ces deux effets étaient attendus : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue.
+
+Ces tendances sont plus ou moins marquées selon $\beta$ : la précision augmente d'autant plus avec $t$ que $\beta$ est faible; de même, la diminution du rappel avec $t$ semble plus rapide pour les valeurs faibles de $\beta$. Selon les valeurs de $\beta$, ces deux tendances (augmentation de la précision et diminution du rappel) se compensent plus ou moins tant que $t$ est faible. Dans les cinq cas, le $F_1$ observé sur l'intervalle $t \in [0, 0.5]$ est proche du $F_1$ maximal ($10\%$ d'écart au maximum). Toutefois, passé un certain seuil proche de $t=0.5$, l'augmentation de la précision ne suffit plus à compenser la diminution du rappel et la mesure $F_1$ chute alors, quelle que soit la valeur de $\beta$.
+
+% on fixe $\beta = 100$, et pour différentes valeurs de $t$ dans l'intervalle $[0, 1]$, on évalue la méthode d'extraction sur chacune des cinq sous-taxonomies selon les métriques présentées dans la section précédente : moyennes de la précision, du rappel et de la mesure $F_1$ pour l'évaluation directe et transitive.
 %
-De plus, l'augmentation de la précision est insuffisante pour compenser la diminution du rappel, ce qui implique que la mesure $F_1$ diminue également avec $t$. 
+% Les résultats sont représentés dans la figure \ref{fig:threshold-search-1}. % : chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir $y=1$ pour $t = 0$.
+%
+%En moyenne, on observe les effets suivants : la précision augmente avec $t$, tandis que le rappel diminue. Ces deux effets étaient attendus : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue.
+%
+%De plus, l'augmentation de la précision est insuffisante pour compenser la diminution du rappel, ce qui implique que la mesure $F_1$ diminue également avec $t$. 
 
-Toutefois, ces premières observations doivent être nuancées, car on observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autre, le rappel est assez stable dans l'intervale $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{fig/plot/threshold_breakdown_avg_no_event.eps}
+    \caption[Influence du seuil de probabilité sur l'extraction de taxonomie pour $\beta=100$]{Précision, rappel et mesure $F_1$ mesurés sur cinq sous-taxonomies, pour différentes valeurs du seuil $t$ et pour $\beta=100$. Chaque ligne pointillée représente les résultats pour l'une des taxonomies, tandis que la ligne pleine est la moyenne des résultats sur les cinq taxonomies. Pour faciliter la comparaison des tendances, les résultats sont normalisés de façon à avoir chaque ligne commençant à 1 en $t = 0$.}
+    \label{fig:threshold-search-1}
+\end{figure}
 
-Cette hétérogénéité des comportements rend difficile le choix définitif d'une valeur pour $t$; toutefois, choisir une valeur basse telle que $t = 0.1$ paraît donner les meilleurs résultats en moyenne.
+Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail des résultats pour chacune des cinq taxonomies $X_i$ dans la figure \ref{fig:threshold-search-1}. On observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autre, le rappel est assez stable dans l'intervale $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$.
+
+% Cette hétérogénéité des comportements rend difficile le choix définitif d'une valeur pour $t$; toutefois, choisir une valeur basse telle que $t = 0.1$ paraît donner les meilleurs résultats en moyenne.
 
 %Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. En effet, pour $t > 0.7$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on élimine mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
 
