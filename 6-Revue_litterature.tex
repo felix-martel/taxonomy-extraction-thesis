@@ -1,4 +1,6 @@
-\Chapter{REVUE DE LITTÉRATURE}\label{chap:revue}
+\Chapter{Contexte et travaux connexes}\label{chap:revue}
+
+
 \section{Web sémantique et logique descriptive}
 \label{sec:dl}
 
@@ -10,6 +12,47 @@
 
 %Un graphe de connaissance 
 
+Un graphe de connaissance est une collection structurée de données permettant de représenter des informations, ou des \textit{faits}, sur le monde réel. Le terme «graphe de connaissance» est un terme générique dont la définition varie d'un auteur à l'autre \cite{ehrlinger2016towards} : il est parfois utilisé comme synonyme d'un graphe RDF
+- graphe RDF
+- inclut un mécanisme de raisonnement
+- restreint à un sous-domaine (WordNet)
+- générique (YAGO)
+
+
+Dans ce travail, on adopte une définition très générale d'un graphe de connaissance vu comme un ensemble d'entités liées entre elles par des relations. Pour un ensemble d'entités $\Ent$ et un ensemble de relations $\Rel$, un graphe de connaissance est simplement un ensemble de triplets $\KG \subseteq \Ent \times \Rel \times \Ent$. Si $(h, r, t)$ est un triplet du graphe, alors l'entité $h$ est reliée à l'entité $t$ par la relation $r$; dans ce cas, on dit que $h$ est le \textit{sujet} du triplet, et $t$ son objet. Le choix des notations s'explique par l'anglais, $h$ désignant la tête (\textit{head}) et $t$ la queue (\textit{tail}) du triplet. 
+% Pour un graphe de connaissance, on parle fréquement de données \textit{multi-relationnelles} pour indiquer que les entités
+
+Le format dominant pour représenter un tel graphe est le format RDF, pour \textit{Resource Description Framework} \cite{cyganiak14}. En RDF2, les entités sont de deux types : soit des identifiants, soit des littéraux. Les identifants, ou URI, pour \textit{Uniform Resource Identifier}, sont simplement des chaînes de caractères qui désignent des ressources du monde réel : lieux, personnes, documents, etc. %Il est courant de regrouper des identifiants au sein d'un \textit{vocabulaire} commun
+
+
+
+Les littéraux permettent de représenter des valeurs fixes – nombres, textes, booléens, dates, sommes d'argent – 
+
+% RDF
+
+% Typologie des relations
+
+
+\subsection{Ontologies et logique descriptive}
+
+% Présentation
+
+% Sémantique ?
+
+% OWL
+
+% Plongements de graphe
+
 \section{Extraction automatique d'ontologie et de taxonomie}
+
+% Raisonneurs
+
+% Apprentissage statistique
+
+% À partir de textes
+
+% Class-based
+
+% TIEmb / NICKEL
 
 \section{Regroupement hiérarchique sur les graphes}
