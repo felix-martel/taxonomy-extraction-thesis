@@ -23,12 +23,14 @@ Dans ce travail, on adopte une définition très générale d'un graphe de conna
 % Pour un graphe de connaissance, on parle fréquement de données \textit{multi-relationnelles} pour indiquer que les entités
 
 Le format dominant pour représenter un tel graphe est le format RDF, pour \textit{Resource Description Framework} \cite{cyganiak14}. En RDF2, les entités sont de deux types : soit des identifiants, soit des littéraux. Les identifants, ou URI, pour \textit{Uniform Resource Identifier}, sont simplement des chaînes de caractères qui désignent des ressources du monde réel : lieux, personnes, documents, etc. %Il est courant de regrouper des identifiants au sein d'un \textit{vocabulaire} commun
+RDF n'impose pas de mécanisme pour relier les URI aux entités qu'elles désignent. Au contraire, l'interprétation des littéraux est définie une fois pour toutes. Les littéraux permettent de représenter des valeurs fixes – nombres, textes, booléens, dates, sommes d'argent; pour spécifier l'interprétation, un littéral est constitué à la fois d'une \textit{valeur} et d'un \textit{format}. Par exemple, le littéral \texttt{1901-01-28^^xsd:date} est constitué de la valeur \texttt{1901-01-28} au format \texttt{xsd:date}, et s'interprète de manière unique comme la date du 28 janvier 1901.
 
+Un \textit{vocabulaire} est un ensemble d'URI, présentant une certaine cohérence. Les URI d'un même vocabulaire partagent quasi-systématiquement une racine commune, que l'on peut alors abréger par un \textit{préfixe}. Ainsi, toutes les URI du vocabulaire standard RDF commencent par \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns#}, que l'on abrège en \texttt{rdf:}. Ainsi, les URI \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns#type} et \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns#Property} sont abrégées en \texttt{rdf:type} et \texttt{rdf:Property}, respectivement. 
+De la même manière, les entités de DBpédia sont regroupées dans un vocabulaire commun, dont le préfixe usuel est \texttt{dbr} (abrégé de \texttt{http://dbpedia.org/resource/}) : ainsi, \dbr{Montréal} ou \dbr{Pablo\_Picasso} désignent des entités de DBpédia.
 
+Dans ce projet, on travaille majoritairement 
 
-Les littéraux permettent de représenter des valeurs fixes – nombres, textes, booléens, dates, sommes d'argent – 
-
-% RDF
+Il est courant de rassembler des URI au sein d'un \textit{vocabulaire}
 
 % Typologie des relations
 
