@@ -6,6 +6,8 @@
 
 \subsection{Graphes de connaissance}
 
+% À déplacer vers l'INtroduction ??
+
 %Un graphe de connaissance permet de représenter des données de manière structurée. Il consiste en un ensemble d'objets du monde réel, appellés \textit{entités}, reliés entre eux par des \textit{relations}.
 
 %On se donne $\Ent$ un ensemble d'entités, et $\Rel$ un ensemble de relations. En pratique, chaque entité ou relation est représentée par un identifiant unique, l'URI (\textit{Universal Resource Identifier}).
@@ -25,15 +27,36 @@ Un graphe de connaissance est une collection structurée de données permettant 
 Dans ce travail, on adopte une définition très générale d'un graphe de connaissance vu comme un ensemble d'entités liées entre elles par des relations. Pour un ensemble d'entités $\Ent$ et un ensemble de relations $\Rel$, un graphe de connaissance est simplement un ensemble de triplets $\KG \subseteq \Ent \times \Rel \times \Ent$. Si $(h, r, t)$ est un triplet du graphe, alors l'entité $h$ est reliée à l'entité $t$ par la relation $r$; dans ce cas, on dit que $h$ est le \textit{sujet} du triplet, et $t$ son objet. Le choix des notations s'explique par l'anglais, $h$ désignant la tête (\textit{head}) et $t$ la queue (\textit{tail}) du triplet. 
 % Pour un graphe de connaissance, on parle fréquement de données \textit{multi-relationnelles} pour indiquer que les entités
 
-Le format dominant pour représenter un tel graphe est le format RDF, pour \textit{Resource Description Framework} \cite{cyganiak14}. En RDF2, les entités sont de deux types : soit des identifiants, soit des littéraux. Les identifants, ou URI, pour \textit{Uniform Resource Identifier}, sont simplement des chaînes de caractères qui désignent des ressources du monde réel : lieux, personnes, documents, etc. %Il est courant de regrouper des identifiants au sein d'un \textit{vocabulaire} commun
-RDF n'impose pas de mécanisme pour relier les URI aux entités qu'elles désignent. Au contraire, l'interprétation des littéraux est définie une fois pour toutes. Les littéraux permettent de représenter des valeurs fixes – nombres, textes, booléens, dates, sommes d'argent; pour spécifier l'interprétation, un littéral est constitué à la fois d'une \textit{valeur} et d'un \textit{format}. Par exemple, le littéral \texttt{1901-01-28^^xsd:date} est constitué de la valeur \texttt{1901-01-28} au format \texttt{xsd:date}, et s'interprète de manière unique comme la date du 28 janvier 1901.
+Le format dominant pour représenter un tel graphe est le format RDF, pour \textit{Resource Description Framework} \cite{cyganiak14}. En RDF, les entités sont de deux types : soit des identifiants, soit des littéraux. Les identifants, ou URI, pour \textit{Uniform Resource Identifier}, sont simplement des chaînes de caractères qui désignent des ressources du monde réel : lieux, personnes, documents, etc. %Il est courant de regrouper des identifiants au sein d'un \textit{vocabulaire} commun
+RDF n'impose pas de mécanisme pour relier les URI aux entités qu'elles désignent. 
+Les littéraux permettent de représenter des valeurs fixes : nombres, textes, booléens, dates, sommes d'argent. Contrairement aux identifiants, l'interprétation des littéraux est définie une fois pour toutes; la manière d'interpréter un littéral est indiquée par son \textit{format} (parfois appelé \textit{datatype} en anglais). Par exemple, le littéral \texttt{1901-01-28\^{}\^{}xsd:date} est constitué de la valeur \texttt{1901-01-28} au format \texttt{xsd:date}, et s'interprète de manière unique comme la date du 28 janvier 1901.
 
 Un \textit{vocabulaire} est un ensemble d'URI, présentant une certaine cohérence. Les URI d'un même vocabulaire partagent quasi-systématiquement une racine commune, que l'on peut alors abréger par un \textit{préfixe}. Ainsi, toutes les URI du vocabulaire standard RDF commencent par \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#}, que l'on abrège en \texttt{rdf:}. Ainsi, les URI \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#type} et \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#Property} sont abrégées en \texttt{rdf:type} et \texttt{rdf:Property}, respectivement. 
 De la même manière, les entités de DBpédia sont regroupées dans un vocabulaire commun, dont le préfixe usuel est \texttt{dbr} (abrégé de \texttt{http://dbpedia.org/resource/}) : ainsi, \dbr{Montréal} ou \dbr{Pablo\_Picasso} désignent des entités de DBpédia.
 
+% DBpédia
+
+\paragraph{Un exemple : DBpédia}
+
+Il existe de nombreux graphes de connaissance publics; certains sont restreints à un domaine spécifique, comme WordNet \cite{miller1998wordnet}, d'autres sont généraux, comme YAGO \cite{suchanek2008yago} ou Wikidata \cite{vrandevcic2014wikidata}. Parmi ces graphes de connaissances généralistes, l'un des plus notables est DBpédia \cite{auer2007dbpedia}, sur lequel on s'appuiera dans toute la suite de ce travail. Les données de DBpédia sont obtenues de manière automatique en aggrégeant différentes sources issues de Wikimédia, en premier lieu desquelles les infoboîtes de Wikipédia. Les entités de DBpédia sont regroupées 
 
 \paragraph{Typologie des relations} 
 
+Il est utile de détailler les propriétés que peuvent avoir les relations dans un graphe de connaissance, et en premier lieu leur caractère symétrique ou antisymétrique :
+\begin{itemize}
+    \item une relation $r$ est \textbf{symétrique} si $\rel{t}{r}{h}$ est vérifiée dès que $\rel{h}{r}{t}$ est vérifiée. Par exemple, la relation \texttt{owl:sameAs}, qui indique que deux URI correspondent à la même entité, est naturellement symétrique. Plus généralement, toutes les relations qui impliquent une équivalence ou une réciprocité sont symétriques, comme \dbo{spouse} ou \dbo{colleague};
+    \item à l'inverse, une relation $r$ est \textbf{antisymétrique} si $\rel{h}{r}{t}$ et $\rel{t}{r}{h}$ ne peuvent jamais être vérifiées simultanément. C'est le cas, en pratique, de la relation \texttt{rdfs:subClassOf} et de la plupart des relations hiérarchiques comme \dbo{isPartOf} ou \dbo{parent};
+\end{itemize}
+Une relation peut très bien n'être ni symétrique, ni antisymétrique. La relation \dbo{influenced}, qui marque l'influence d'un penseur sur un autre, est parfois mutuelle (pensons par exemple à Russell et Wittgenstein, ou Beauvoir et Sartre) et parfois non.
+
+On peut également classer les relations selon les cardinalités relatives de leurs sujets et de leurs objets :
+\begin{itemize}
+    \item une relation \textbf{\textit{one-to-many}} (de un à plusieurs, en français) lie chaque sujet à plusieurs objets : par exemple, pour la relation \dbo{isAuthorOf}, un auteur est relié à chacune de ses œuvres, tandis qu'une œuvre n'a en général qu'un seul auteur;
+    \item à l'opposé, une relation \textbf{\textit{many-to-one}} (de plusieurs à un) lie plusieurs sujets à un même objet; c'est le cas de la relation \texttt{foaf:gender} qui, dans DBpédia, relie un million et demi de sujets à seulement trois objets (\texttt{"male"}, \texttt{"female"} et \texttt{"non-binary"});
+    \item une relation \textbf{\textit{one-to-one}} (un pour un) relie un sujet à un unique objet, et réciproquement. On peut penser à la relation qui unit un pays à sa capitale (\dbo{capital}), ou une entité à son label (\texttt{rdfs:label});
+    \item enfin, une relation \textbf{\textit{many-to-many}} relie un sujet à plusieurs objets, et un objet à plusieurs sujets. Cette catégorie comprend par exemple la relation \dbo{influenced} citée plus haut : en général, un artiste ou un penseur est influencé par plusieurs personnes, et en influence d'autres à son tour.
+\end{itemize}
+La caractérisation ci-dessus ne constitue pas une classification formelle des relations, et la frontière entre ces différents types de relation est parfois floue. Examinons par exemple la relation \texttt{rdf:type}, fondamentale pour le reste de ce travail, qui associe à chaque entité les types auxquels il appartient. En général, une entité a plusieurs types : dans DBpédia, \dbr{Gaston\_Miron} possède à la fois les types \dbo{Poet}, \dbo{Person}, \dbo{Agent} et \texttt{owl:Thing}. Réciproquement, de nombreuses entités sont liées à chacun de ces types. On serait donc tenté de catégoriser la relation \texttt{rdf:type} comme une relation \textit{many-to-many}. Pourtant, les effectifs d'un côté et de l'autre sont très déséquilibrés : là où une entité possède au plus sept types distincts, un type est relié en moyenne à X entités. Dans le cadre de ce travail, il est plus pertinent de considérer \texttt{rdf:type} comme une relation \textit{many-to-one}.
 
 \subsection{Ontologies et logique descriptive}
 
@@ -113,9 +136,14 @@ Dans la suite, on désignera par ontologie n'importe quel ensemble d'axiomes; pa
 
 % Raisonneurs
 
+Raisonneurs : permettent d'inférer de nouveaux faits. Partent d'axiomes existants et de règle de démonstration (donner un exemple, par ex modus ponens) pour produire de nouveaux axiomes. Toutefois, ils ne permettent pas de créer une ontologie de zéro puisqu'ils supposent des axiomes de départ. On pourrait envisager de construire manuellement des axiomes, et de les étendre mais les raisonneurs passent mal à l'échelle ne tournent pas nécessairement sur DBpédia
+
+% Inductive Logic Programming
 % Apprentissage statistique
 
 % À partir de textes
+% Traduction d'axiomes depuis le langage naturel
+
 
 % Class-based
 
