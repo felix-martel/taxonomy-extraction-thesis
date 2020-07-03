@@ -14,12 +14,7 @@
 
 %Un graphe de connaissance 
 
-Un graphe de connaissance est une collection structurée de données permettant de représenter des informations, ou des \textit{faits}, sur le monde réel. Le terme «graphe de connaissance» est un terme générique dont la définition varie d'un auteur à l'autre \cite{ehrlinger2016towards} : il est parfois utilisé comme synonyme d'un graphe RDF
-- graphe RDF
-- inclut un mécanisme de raisonnement
-- restreint à un sous-domaine (WordNet)
-- générique (YAGO)
-
+Un graphe de connaissance est une collection structurée de données permettant de représenter des informations, ou des \textit{faits}, sur le monde réel. La définition exacte d'un graphe de connaissance varie d'un auteur à l'autre \cite{ehrlinger2016towards}; parmi les caractéristiques fréquemment retenues, on notera l'interrelation des données et le caractère multirelationnel, l'existence d'une sémantique formelle et de mécanismes de raisonnement, ou parfois une certaine taille critique. Les paragraphes suivants visent à définir et expliciter ces différentes propriétés.
 
 
 \paragraph{Concepts de base}
@@ -32,13 +27,21 @@ RDF n'impose pas de mécanisme pour relier les URI aux entités qu'elles désign
 Les littéraux permettent de représenter des valeurs fixes : nombres, textes, booléens, dates, sommes d'argent. Contrairement aux identifiants, l'interprétation des littéraux est définie une fois pour toutes; la manière d'interpréter un littéral est indiquée par son \textit{format} (parfois appelé \textit{datatype} en anglais). Par exemple, le littéral \texttt{1901-01-28\^{}\^{}xsd:date} est constitué de la valeur \texttt{1901-01-28} au format \texttt{xsd:date}, et s'interprète de manière unique comme la date du 28 janvier 1901.
 
 Un \textit{vocabulaire} est un ensemble d'URI, présentant une certaine cohérence. Les URI d'un même vocabulaire partagent quasi-systématiquement une racine commune, que l'on peut alors abréger par un \textit{préfixe}. Ainsi, toutes les URI du vocabulaire standard RDF commencent par \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#}, que l'on abrège en \texttt{rdf:}. Ainsi, les URI \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#type} et \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#Property} sont abrégées en \texttt{rdf:type} et \texttt{rdf:Property}, respectivement. 
-De la même manière, les entités de DBpédia sont regroupées dans un vocabulaire commun, dont le préfixe usuel est \texttt{dbr} (abrégé de \texttt{http://dbpedia.org/resource/}) : ainsi, \dbr{Montréal} ou \dbr{Pablo\_Picasso} désignent des entités de DBpédia.
+
+
+% De la même manière, les entités de DBpédia sont regroupées dans un vocabulaire commun, dont le préfixe usuel est \texttt{dbr} (abrégé de \texttt{http://dbpedia.org/resource/}) : ainsi, \dbr{Montréal} ou \dbr{Pablo\_Picasso} désignent des entités de DBpédia.
 
 % DBpédia
 
 \paragraph{Un exemple : DBpédia}
 
-Il existe de nombreux graphes de connaissance publics; certains sont restreints à un domaine spécifique, comme WordNet \cite{miller1998wordnet}, d'autres sont généraux, comme YAGO \cite{suchanek2008yago} ou Wikidata \cite{vrandevcic2014wikidata}. Parmi ces graphes de connaissances généralistes, l'un des plus notables est DBpédia \cite{auer2007dbpedia}, sur lequel on s'appuiera dans toute la suite de ce travail. Les données de DBpédia sont obtenues de manière automatique en aggrégeant différentes sources issues de Wikimédia, en premier lieu desquelles les infoboîtes de Wikipédia. Les entités de DBpédia sont regroupées 
+Il existe de nombreux graphes de connaissance publics; certains sont restreints à un domaine spécifique, comme WordNet \cite{miller1998wordnet}, d'autres sont généraux, comme YAGO \cite{suchanek2008yago} ou Wikidata \cite{vrandevcic2014wikidata}. Parmi ces graphes de connaissances généralistes, l'un des plus notables est DBpédia \cite{auer2007dbpedia}, sur lequel on s'appuiera dans toute la suite de ce travail, dans sa version anglaise. Les données de DBpédia sont obtenues de manière automatique en aggrégeant différentes sources issues de Wikimédia, en premier lieu desquelles les infoboîtes de Wikipédia. Le cœur de DBpédia est son système d'extraction, qui convertit Wikipédia en un ensemble de triplets RDF à l'aide de différentes heuristiques; cet extracteur s'appuie essentiellement sur les infoboîtes de Wikipédia, des encarts constituées de paires clé-valeur et dont le format est relativement uniformisé à l'échelle de Wikipédia. Outre les infoboîtes, l'extracteur utilise également les liens de redirection et de désambiguïsation, les catégories des pages, les éventuelles informations de géolocalisation, etc. À cet extracteur s'ajoutent différentes procédures pour nettoyer et uniformiser les résultats, ainsi que pour aggréger des données provenant d'autres sources. DBpédia fournit également un point d'entrée pour effectuer des requêtes sur le graphe\footnote{\href{https://dbpedia.org/sparql}{dbpedia.org/sparql}}.
+
+Les entités de DBpédia sont regroupées au sein d'un vocabulaire \texttt{http://dbpedia.org/resource/}, généralement abrégé en \dbr{}. Le voisinage d'une entité donnée \dbr{<Nom de l'entité>}, c'est-à-dire les triplets dont cette entité est le sujet ou l'objet, peut être consulté en ligne à l'adresse \href{http://dbpedia.org/page/<Nom de l'entité>}{dbpedia.org/page/<Nom de l'entité>}. Les relations et les classes de DBpédia font elles parties du vocabulaire \texttt{http://dbpedia.org/ontology/}, abrégé en \dbo{}.
+
+
+DBpédia contient à l'heure actuelle 1 300 relations et 4,2 millions d'entités pour un total de 56,5 millions de triplets. Les entités sont réparties selon 655 types, dont les plus fréquents sont les personnes (\dbo{Person}), les lieux (\dbo{Place}), les espèces (\dbo{Species}), les événements (\dbo{Event}), les œuvres (\dbo{Work}, entendu au sens large et incluant livres, films, etc.), les organisations (\dbo{Organisation}). Comme les données de DBpédia sont extraites automatiquement de Wikipédia et que Wikipédia est modifié régulièrement, le graphe DBpédia évolue lui aussi régulièrement.
+
 
 \paragraph{Typologie des relations} 
 
@@ -47,14 +50,14 @@ Il est utile de détailler les propriétés que peuvent avoir les relations dans
     \item une relation $r$ est \textbf{symétrique} si $\rel{t}{r}{h}$ est vérifiée dès que $\rel{h}{r}{t}$ est vérifiée. Par exemple, la relation \texttt{owl:sameAs}, qui indique que deux URI correspondent à la même entité, est naturellement symétrique. Plus généralement, toutes les relations qui impliquent une équivalence ou une réciprocité sont symétriques, comme \dbo{spouse} ou \dbo{colleague};
     \item à l'inverse, une relation $r$ est \textbf{antisymétrique} si $\rel{h}{r}{t}$ et $\rel{t}{r}{h}$ ne peuvent jamais être vérifiées simultanément. C'est le cas, en pratique, de la relation \texttt{rdfs:subClassOf} et de la plupart des relations hiérarchiques comme \dbo{isPartOf} ou \dbo{parent};
 \end{itemize}
-Une relation peut très bien n'être ni symétrique, ni antisymétrique. La relation \dbo{influenced}, qui marque l'influence d'un penseur sur un autre, est parfois mutuelle (pensons par exemple à Russell et Wittgenstein, ou Beauvoir et Sartre) et parfois non.
+Une relation peut très bien n'être ni symétrique, ni antisymétrique. La relation \dbo{influenced}, qui marque l'influence intellectuelle d'une personne sur un autre, est parfois mutuelle (pensons par exemple à Russell et Wittgenstein, ou Beauvoir et Sartre) et parfois non.
 
 On peut également classer les relations selon les cardinalités relatives de leurs sujets et de leurs objets :
 \begin{itemize}
     \item une relation \textbf{\textit{one-to-many}} (de un à plusieurs, en français) lie chaque sujet à plusieurs objets : par exemple, pour la relation \dbo{isAuthorOf}, un auteur est relié à chacune de ses œuvres, tandis qu'une œuvre n'a en général qu'un seul auteur;
     \item à l'opposé, une relation \textbf{\textit{many-to-one}} (de plusieurs à un) lie plusieurs sujets à un même objet; c'est le cas de la relation \texttt{foaf:gender} qui, dans DBpédia, relie un million et demi de sujets à seulement trois objets (\texttt{"male"}, \texttt{"female"} et \texttt{"non-binary"});
     \item une relation \textbf{\textit{one-to-one}} (un pour un) relie un sujet à un unique objet, et réciproquement. On peut penser à la relation qui unit un pays à sa capitale (\dbo{capital}), ou une entité à son label (\texttt{rdfs:label});
-    \item enfin, une relation \textbf{\textit{many-to-many}} relie un sujet à plusieurs objets, et un objet à plusieurs sujets. Cette catégorie comprend par exemple la relation \dbo{influenced} citée plus haut : en général, un artiste ou un penseur est influencé par plusieurs personnes, et en influence d'autres à son tour.
+    \item enfin, une relation \textbf{\textit{many-to-many}} relie un sujet à plusieurs objets, et un objet à plusieurs sujets. Cette catégorie comprend par exemple la relation \dbo{influenced} citée plus haut : en général, un artiste ou un penseur est influencé par plusieurs personnes, et en influence d'autres à son tour;
 \end{itemize}
 La caractérisation ci-dessus ne constitue pas une classification formelle des relations, et la frontière entre ces différents types de relation est parfois floue. Examinons par exemple la relation \texttt{rdf:type}, fondamentale pour le reste de ce travail, qui associe à chaque entité les types auxquels il appartient. En général, une entité a plusieurs types : dans DBpédia, \dbr{Gaston\_Miron} possède à la fois les types \dbo{Poet}, \dbo{Person}, \dbo{Agent} et \texttt{owl:Thing}. Réciproquement, de nombreuses entités sont liées à chacun de ces types. On serait donc tenté de catégoriser la relation \texttt{rdf:type} comme une relation \textit{many-to-many}. Pourtant, les effectifs d'un côté et de l'autre sont très déséquilibrés : là où une entité possède au plus sept types distincts, un type est relié en moyenne à X entités. Dans le cadre de ce travail, il est plus pertinent de considérer \texttt{rdf:type} comme une relation \textit{many-to-one}.
 
