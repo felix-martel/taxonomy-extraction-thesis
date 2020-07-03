@@ -19,27 +19,91 @@ Un graphe de connaissance est une collection structurée de données permettant 
 - générique (YAGO)
 
 
+
+\paragraph{Concepts de base}
+
 Dans ce travail, on adopte une définition très générale d'un graphe de connaissance vu comme un ensemble d'entités liées entre elles par des relations. Pour un ensemble d'entités $\Ent$ et un ensemble de relations $\Rel$, un graphe de connaissance est simplement un ensemble de triplets $\KG \subseteq \Ent \times \Rel \times \Ent$. Si $(h, r, t)$ est un triplet du graphe, alors l'entité $h$ est reliée à l'entité $t$ par la relation $r$; dans ce cas, on dit que $h$ est le \textit{sujet} du triplet, et $t$ son objet. Le choix des notations s'explique par l'anglais, $h$ désignant la tête (\textit{head}) et $t$ la queue (\textit{tail}) du triplet. 
 % Pour un graphe de connaissance, on parle fréquement de données \textit{multi-relationnelles} pour indiquer que les entités
 
 Le format dominant pour représenter un tel graphe est le format RDF, pour \textit{Resource Description Framework} \cite{cyganiak14}. En RDF2, les entités sont de deux types : soit des identifiants, soit des littéraux. Les identifants, ou URI, pour \textit{Uniform Resource Identifier}, sont simplement des chaînes de caractères qui désignent des ressources du monde réel : lieux, personnes, documents, etc. %Il est courant de regrouper des identifiants au sein d'un \textit{vocabulaire} commun
 RDF n'impose pas de mécanisme pour relier les URI aux entités qu'elles désignent. Au contraire, l'interprétation des littéraux est définie une fois pour toutes. Les littéraux permettent de représenter des valeurs fixes – nombres, textes, booléens, dates, sommes d'argent; pour spécifier l'interprétation, un littéral est constitué à la fois d'une \textit{valeur} et d'un \textit{format}. Par exemple, le littéral \texttt{1901-01-28^^xsd:date} est constitué de la valeur \texttt{1901-01-28} au format \texttt{xsd:date}, et s'interprète de manière unique comme la date du 28 janvier 1901.
 
-Un \textit{vocabulaire} est un ensemble d'URI, présentant une certaine cohérence. Les URI d'un même vocabulaire partagent quasi-systématiquement une racine commune, que l'on peut alors abréger par un \textit{préfixe}. Ainsi, toutes les URI du vocabulaire standard RDF commencent par \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns#}, que l'on abrège en \texttt{rdf:}. Ainsi, les URI \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns#type} et \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns#Property} sont abrégées en \texttt{rdf:type} et \texttt{rdf:Property}, respectivement. 
+Un \textit{vocabulaire} est un ensemble d'URI, présentant une certaine cohérence. Les URI d'un même vocabulaire partagent quasi-systématiquement une racine commune, que l'on peut alors abréger par un \textit{préfixe}. Ainsi, toutes les URI du vocabulaire standard RDF commencent par \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#}, que l'on abrège en \texttt{rdf:}. Ainsi, les URI \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#type} et \texttt{http://www.w3.org/1999/02/22-rdf-syntax-ns\#Property} sont abrégées en \texttt{rdf:type} et \texttt{rdf:Property}, respectivement. 
 De la même manière, les entités de DBpédia sont regroupées dans un vocabulaire commun, dont le préfixe usuel est \texttt{dbr} (abrégé de \texttt{http://dbpedia.org/resource/}) : ainsi, \dbr{Montréal} ou \dbr{Pablo\_Picasso} désignent des entités de DBpédia.
 
-Dans ce projet, on travaille majoritairement 
 
-Il est courant de rassembler des URI au sein d'un \textit{vocabulaire}
-
-% Typologie des relations
+\paragraph{Typologie des relations} 
 
 
 \subsection{Ontologies et logique descriptive}
 
+Introduction : axiomes logiques permettant de décrire des classes, des relations, des interactions entre les deux, des restrictions des contraintes, etc.
+
 % Présentation
 
-% Sémantique ?
+La logique descriptive est un terme général englobant une famille de systèmes logiques, dont l'usage est précisément de pouvoir décrire des données multi-relationnelles. 
+Le choix d'un système logique nécessite un compromis entre deux aspects : l'expressivité et la calculabilité. L'expressivité désigne la capacité à modéliser des situations complexes; la calculabilité concerne 
+
+On souhaite en effet avoir une expressivité suffisante pour être capable de modéliser logiquement des situations complexes; toutefois, augmenter l'expressivité d'une logique a pour conséquence d'accroître le temps de calcul pour effectuer des raisonnements.
+
+
+La logique descriptive manipule trois types d'éléments : des entités (ou \textit{individus}), des relations, et des concepts. Les concepts sont des ensembles d'entités, et les relations décrivent des liens entre deux entités. Entités, relations et concepts peuvent être combinés entre eux pour former des \textit{axiomes}; les types de combinaisons possibles varient selon la logique descriptive choisie
+
+une ontologie est alors simplement un ensemble d'axiomes, chacun d'entre eux devant être vrai dans la situation décrite.
+
+Ici, on présentera uniquement les axiomes utilisés dans la suite du mémoire; pour une description plus complète, on pourra consulter \cite{krotzsch2013description}. 
+
+Subsumption 
+\begin{equation}
+    \texttt{Athlète} \sqsubseteq \texttt{Personne}
+\end{equation}
+
+
+On peut également définir un concept singleton, c'est-à-dire un concept constitué d'un seul individu :
+\begin{equation}
+    \{ \texttt{Canada} \}
+\end{equation}
+
+Équivalence
+\begin{equation}
+    \texttt{Personne} \equiv \texttt{Humain}
+\end{equation}
+
+Disjonction
+\begin{equation}
+    \texttt{Animal} \equiv \texttt{Vertébré} \sqcup \texttt{Invertébré}
+\end{equation}
+
+Conjonction
+\begin{equation}
+    A \sqcap B
+\end{equation}
+
+Concept universel
+\begin{equation}
+    \top
+\end{equation}
+
+Complémentaire
+\begin{equation}
+    A^-
+\end{equation}
+
+Existentiel
+\begin{equation}
+    \exists \texttt{écrit}.\texttt{Poème}
+\end{equation}
+
+% Existentiel 2
+\begin{equation}
+    \texttt{Poète} \equiv \texttt{Personne} \sqcap \exists \texttt{écrit}.\texttt{Poème}
+\end{equation}
+
+
+% Sémantique ? --> pas nécessaire ici / Inférence, raisonnement
+
+% Taxonomie, ontologie
+Dans la suite, on désignera par ontologie n'importe quel ensemble d'axiomes; par taxonomie, un ensemble d'axiomes de subsumption
 
 % OWL
 
