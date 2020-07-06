@@ -129,16 +129,6 @@ CTLnames_show_etal       = "1"
   organization={Atlantis Press}
 }
 
-@inproceedings{gupta2016domain,
-  title={Domain ontology induction using word embeddings},
-  author={Gupta, Niharika and Podder, Sanjay and Annervaz, KM and Sengupta, Shubhashis},
-  booktitle={15th IEEE International Conference on Machine Learning and Applications},
-  pages={115--119},
-  year={2016},
-  organization={IEEE},
-  doi={10.1109/icmla.2016.0027}
-}
-
 @inproceedings{gargi2011large,
   title={Large-scale community detection on youtube for topic discovery and exploration},
   author={Gargi, Ullas and Lu, Wenjun and Mirrokni, Vahab and Yoon, Sangho},
@@ -157,14 +147,6 @@ CTLnames_show_etal       = "1"
 }
 %
 
-@inproceedings{fu2014learning,
-  title={Learning semantic hierarchies via word embeddings},
-  author={Fu, Ruiji and Guo, Jiang and Qin, Bing and Che, Wanxiang and Wang, Haifeng and Liu, Ting},
-  booktitle={Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics},
-  volume={1},
-  pages={1199--1209},
-  year={2014}
-}
 
 @misc{
 cochez_2017, title={{RDF2Vec} {DB}pedia uniform embeddings}, DOI={10.5281/zenodo.1318146}, 
@@ -240,22 +222,6 @@ year={2017}
   year={2013},
   publisher={Elsevier}
 }
-@incollection{NIPS2017_7213,
-title = {Poincar\'{e} Embeddings for Learning Hierarchical Representations},
-author = {Nickel, Maximillian and Kiela, Douwe},
-booktitle = {Advances in Neural Information Processing Systems 30},
-pages = {6338--6347},
-year = {2017},
-publisher = {Curran Associates, Inc.}
-}
-
-@inproceedings{nickel2018learning,
-  title={Learning Continuous Hierarchies in the Lorentz Model of Hyperbolic Geometry},
-  author={Maximilian Nickel and Douwe Kiela},
-  booktitle={Proc. ICML},
-  year={2018}
-}
-
 @article{lehmann2009dl,
   title={{DL}-Learner: learning concepts in description logics},
   author={Lehmann, Jens},
@@ -616,6 +582,21 @@ abstract = "We present a series of theoretical and experimental results on the l
     pages = "2389--2398",
 }
 
+@inproceedings{shwartz-etal-2017-hypernyms,
+    title = "Hypernyms under Siege: Linguistically-motivated Artillery for Hypernymy Detection",
+    author = "Shwartz, Vered  and
+      Santus, Enrico  and
+      Schlechtweg, Dominik",
+    booktitle = "Proceedings of the 15th Conference of the {E}uropean Chapter of the Association for Computational Linguistics: Volume 1, Long Papers",
+    month = apr,
+    year = "2017",
+    address = "Valencia, Spain",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/E17-1007",
+    pages = "65--75",
+    abstract = "The fundamental role of hypernymy in NLP has motivated the development of many methods for the automatic identification of this relation, most of which rely on word distribution. We investigate an extensive number of such unsupervised measures, using several distributional semantic models that differ by context type and feature weighting. We analyze the performance of the different methods based on their linguistic motivation. Comparison to the state-of-the-art supervised methods shows that while supervised methods generally outperform the unsupervised ones, the former are sensitive to the distribution of training instances, hurting their reliability. Being based on general linguistic hypotheses and independent from training data, unsupervised measures are more robust, and therefore are still useful artillery for hypernymy detection.",
+}
+
 @inproceedings{roller-etal-2018-hearst,
     title = "Hearst Patterns Revisited: Automatic Hypernym Detection from Large Text Corpora",
     author = "Roller, Stephen  and
@@ -632,7 +613,7 @@ abstract = "We present a series of theoretical and experimental results on the l
     abstract = "Methods for unsupervised hypernym detection may broadly be categorized according to two paradigms: pattern-based and distributional methods. In this paper, we study the performance of both approaches on several hypernymy tasks and find that simple pattern-based methods consistently outperform distributional methods on common benchmark datasets. Our results show that pattern-based models provide important contextual constraints which are not yet captured in distributional methods.",
 }
 
-@inproceedings{10.1145/2213836.2213891,
+@inproceedings{wu2012probase,
 author = {Wu, Wentao and Li, Hongsong and Wang, Haixun and Zhu, Kenny Q.},
 title = {Probase: A Probabilistic Taxonomy for Text Understanding},
 year = {2012},
@@ -675,4 +656,71 @@ series = {SIGMOD ’12}
   booktitle={Proceedings of the 43rd Annual Meeting of the Association for Computational Linguistics (ACL’05)},
   pages={107--114},
   year={2005}
+}
+
+% WeedsPrec
+@inproceedings{weeds-etal-2004-characterising,
+    title = "Characterising Measures of Lexical Distributional Similarity",
+    author = "Weeds, Julie  and
+      Weir, David  and
+      McCarthy, Diana",
+    booktitle = "{COLING} 2004: Proceedings of the 20th International Conference on Computational Linguistics",
+    month = "aug 23{--}aug 27",
+    year = "2004",
+    address = "Geneva, Switzerland",
+    publisher = "COLING",
+    url = "https://www.aclweb.org/anthology/C04-1146",
+    pages = "1015--1021",
+}
+
+@inproceedings{fu2014learning,
+  title={Learning semantic hierarchies via word embeddings},
+  author={Fu, Ruiji and Guo, Jiang and Qin, Bing and Che, Wanxiang and Wang, Haifeng and Liu, Ting},
+  booktitle={Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages={1199--1209},
+  year={2014}
+}
+
+@inproceedings{gupta2016domain,
+  title={Domain ontology induction using word embeddings},
+  author={Gupta, Niharika and Podder, Sanjay and Annervaz, KM and Sengupta, Shubhashis},
+  booktitle={15th IEEE International Conference on Machine Learning and Applications},
+  pages={115--119},
+  year={2016},
+  organization={IEEE},
+  doi={10.1109/icmla.2016.0027}
+}
+
+@inproceedings{nguyen-etal-2017-hierarchical,
+    title = "Hierarchical Embeddings for Hypernymy Detection and Directionality",
+    author = {Nguyen, Kim Anh  and
+      K{\"o}per, Maximilian  and
+      Schulte im Walde, Sabine  and
+      Vu, Ngoc Thang},
+    booktitle = "Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing",
+    month = sep,
+    year = "2017",
+    address = "Copenhagen, Denmark",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/D17-1022",
+    doi = "10.18653/v1/D17-1022",
+    pages = "233--243",
+    abstract = "We present a novel neural model HyperVec to learn hierarchical embeddings for hypernymy detection and directionality. While previous embeddings have shown limitations on prototypical hypernyms, HyperVec represents an unsupervised measure where embeddings are learned in a specific order and capture the hypernym{--}hyponym distributional hierarchy. Moreover, our model is able to generalize over unseen hypernymy pairs, when using only small sets of training data, and by mapping to other languages. Results on benchmark datasets show that HyperVec outperforms both state-of-the-art unsupervised measures and embedding models on hypernymy detection and directionality, and on predicting graded lexical entailment.",
+}
+
+
+@incollection{nickel2017poincare,
+title = {Poincar\'{e} Embeddings for Learning Hierarchical Representations},
+author = {Nickel, Maximillian and Kiela, Douwe},
+booktitle = {Advances in Neural Information Processing Systems 30},
+pages = {6338--6347},
+year = {2017},
+publisher = {Curran Associates, Inc.}
+}
+
+@inproceedings{nickel2018learning,
+  title={Learning Continuous Hierarchies in the Lorentz Model of Hyperbolic Geometry},
+  author={Maximilian Nickel and Douwe Kiela},
+  booktitle={Proc. ICML},
+  year={2018}
 }

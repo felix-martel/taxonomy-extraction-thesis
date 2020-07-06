@@ -157,9 +157,9 @@ Ressource la plus abondante : corpus textuels
 L'approche dominante consiste à extraire des taxonomies à partir de texte. Dans ce domaine, on parle généralement d'\textit{hyperonymie} pour qualifier la subsumption. 
 Cela implique notamment d'identifier les concepts parmi les mots du vocabulaire, de détecter des paires hyponyme-hyperonyme, et de filtrer ces paires.
 
-\subsubsection{Utilisation de motifs}
+\subsubsection{Utilisation de motifs lexico-syntaxiques}
 
-Une première approche consiste à définir des motifs lexico-syntaxiques, appelés motifs de Hearst \cite{hearst1992automatic} (ou \textit{Hearst patterns}, en anglais), pour identifier les relations d'hyperonymie. Par exemple, le motif $NP \texttt{ \{, } NP \texttt{ \}* \{, \} or other } NP$ (où NP indique l'emplacement de noms) trouve une occurrence dans la phrase «\textit{Bruises, wounds, broken bones or other injuries}» et permet de déduire que «\textit{bruise}», \textit{wound}» et «\textit{broken bone}» sont des hyponymes de «\textit{injury}».
+Une première approche consiste à définir des motifs lexico-syntaxiques, appelés motifs de Hearst \cite{hearst1992automatic} (ou \textit{Hearst patterns}, en anglais), pour identifier les relations d'hyperonymie. Par exemple, le motif $NP \texttt{ \{, } NP \texttt{ \}* \{, \} or other } NP$ (où NP indique l'emplacement de noms) trouve une occurrence dans la phrase «\textit{Bruises, wounds, broken bones or other injuries}» et permet de déduire que «\textit{bruise}», \textit{wound}» et «\textit{broken bone}» sont des hyponymes de «\textit{injury}»\footnote{Exemple tiré de \cite{hearst1992automatic}}.
 Ces motifs sont généralement définis à la main, et fixés pendant toute la durée de l'extraction. Toutefois, certaines approches apprennent de nouveaux motifs au cours de l'extraction \cite{snow2005learning, shwartz-etal-2016-improving}. Appliquées à des corpus textuels étendus, les méthodes basées sur des motifs de Hearst ont généralement une bonne précision \cite{roller-etal-2018-hearst}, mais un mauvais rappel \cite{wu2008automatically}, car la langue naturelle présente une grande variabilité et il est difficile de définir des motifs capable de couvrir tous les cas d'hyperonymie.
 
 Les paires hyponyme-hyperonyme extraites sont ensuite filtrées, afin d'éliminer les éventuelles erreurs d'extraction. Dans sa forme la plus simple, le filtrage consiste simplement à compter le nombre d'occurrence de chaque paire, et de définir un seuil minimal. En faisant cela, on pénalise toutefois les mots rares au détriment des mots fréquents : par exemple, il est plus probable d'extraire la paire \textit{(France, pays)} que \textit{(France, république)}, simplement parce que «pays» est un terme plus commun que «république». Pour résoudre ce problème, \cite{turney2001mining} utilise la PPMI (\textit{Positive Pointwise Mutual Information}, ou information mutuelle ponctuelle positive) entre deux termes. Si $w(x, y)$ désigne le nombre d'occurrences d'une paire $(x, y)$ dans les résultats d'extraction, et $W$ le nombre total de paires extraites, on peut définir une fréquence d'extraction $p(x, y) = w(x,y) / W$ pour la paire $(x, y)$; pour le terme $x$, on définit également une fréquence d'apparition en tant qu'hyponyme : $p^-(x) = \sum_y w(x, y) / W$ et en tant qu'hyperonyme : $p^+(x) = \sum_y w(y, x) / W$. La PPMI est alors calculée selon la formule :
@@ -167,17 +167,42 @@ Les paires hyponyme-hyperonyme extraites sont ensuite filtrées, afin d'élimine
     PPMI(x, y) = \max \left(0, \log\frac{p(x, y)}{p^-(x)p^+(y)} \right)
 \end{equation}
 
-La PPMI permet de résoudre le problème soulevé plus haut : on aura certes toujours $p(\textrm{France}, \textrm{pays}) > p(\textrm{France}, \textrm{pays})$, mais également $p^+(\textrm{pays}) > p^+(\textrm{république})$, et donc normalement une PPMI comparable pour les deux paires \textit{(France, pays)} et \textit{(France, république)}.
+La PPMI permet de résoudre le problème soulevé plus haut : on aura certes toujours $p(\textrm{France}, \textrm{pays}) > p(\textrm{France}, \textrm{république})$, mais également $p^+(\textrm{pays}) > p^+(\textrm{république})$, et donc normalement une PPMI comparable pour les deux paires \textit{(France, pays)} et \textit{(France, république)}.
 
 Enfin, \cite{roller-etal-2018-hearst} propose de lisser les valeurs de PPMI obtenues en réduisant la dimension de la matrice de PPMI avec une SVD tronquée. Cela donne une représentation de rang faible des mots, qui permet alors de décider si deux mots sont hyperonymes l'un de l'autre, même si la paire exacte n'a pas été vue sur le corpus d'entraînement.
 
 % Pour améliorer ce rappel, le plus simple est parfois d'améliorer la taille du corpus : (ref) a montré qu'utiliser un ensemble restreint de motifs sur des corpus très étendus permet une bonne extraction. Une autre solution consiste à apprendre de nouveaux motifs au cours de l'extraction \cite{snow2005learning, shwartz-etal-2016-improving}.
 
-\subsubsection{Méthodes distributionnelles}
+\subsubsection{Méthodes distributionnelles, méthodes à plongement}
 
-Les méthodes distributionnelles s'appuyent sur des plongements lexicaux tels que \cite{mikolov2013distributed} pour obtenir des représentations riches des mots d'un corpus, et reposent sur l'«hypothèse d'inclusion distributionnelle» (HID, ou DIH pour \textit{Distributional Inclusion Hypothesis}) \cite{geffet2005distributional} : si A est un hyperonyme de B, alors les contextes dans lesquels B apparaît forment un sous-ensemble des contextes dans lesquels A apparaît. Intuitivement, cela signifie que l'on peut remplacer les occurrences de B par A tout en gardant un texte valide.
 
+Les méthodes distributionnelles reposent sur l'«hypothèse d'inclusion distributionnelle» (ou DIH, pour \textit{Distributional Inclusion Hypothesis}) \cite{geffet2005distributional} : si le terme A est un hyperonyme du terme B, alors les contextes dans lesquels B apparaît forment un sous-ensemble des contextes dans lesquels A apparaît. Le contexte d'un mot peut être les $2N$ mots adjacents au sein du corpus ($N$ mots précédents et $N$ mots suivants), ou les éléments voisins (parents ou enfants) au sein d'un arbre de dépendance \cite{shwartz-etal-2017-hypernyms}.
+Intuitivement, cette hypothèse signifie que l'on peut remplacer les occurrences de B par A tout en gardant un texte valide.
+
+Pour mettre en pratique cette idée, ces méthodes construisent une représentation vectorielles des termes; on peut alors évaluer si un terme A est un hyperonyme d'un terme B en utilisant une fonction de classification, qui combine les représentations de A et de B et prédit le résultat. 
+
+Les premières approches distributionnelles étaient non-supervisées \cite{weeds-etal-2004-characterising}, et se fondaient sur des représentations creuses des termes. Pour cela, on définit une notion de \textit{co-occurrence}, variable d'un modèle à l'autre : la co-occurrence peut être l'apparition dans une même fenêtre de contexte, ou le fait d'être sujet et objet d'un même verbe dans un arbre de dépendance. Pour un vocabulaire de $N$ termes $\{x_1, \ldots, x_N\}$, on peut alors représenter un terme $t$ par un vecteur $\textbf{t}$ à $N$ dimensions, tel que $\textbf{t}_i$ contient la fréquence de co-occurrence entre $t$ et $x_i$. Pour évaluer si $y$ est un hyperonyme de $x$, on peut alors comparer $\textbf{y}$ et $\textbf{x}$ à l'aide de mesures de similarités usuelles (indice de Jaccard, divergence de Jensen-Shannon ou autre), ou avec des mesures spécifiques à la la recherche de l'hyperonymie, comme la métrique \textit{WeedsPrec} \cite{weeds-etal-2004-characterising} :
+\begin{equation}
+    WeedsPrec(x, y) = \frac{\displaystyle \sum_{\substack{i=1, \ldots, N \\ \textbf{y}_i > 0}} \textbf{x}_i}{\displaystyle \sum_{i =1, \ldots, N } \textbf{x}_i}
+\end{equation}
+On retrouve dans cette formule l'hypothèse DIH : si les contextes de $x$ forment un sous-ensemble des contextes de $y$, alors $\textbf{y}_i$ est positif chaque fois que $\textbf{x}_i$ est positif, et on a donc $WeedsPrec(x, y) = 1$. À l'inverse, si les contextes de $x$ et $y$ sont disjoints, on a $WeedsPrec(x, y) = 0$. On peut alors estimer que $y$ est un hyperonyme de $x$ si le score $WeedsPrec(x, y)$ est supérieur à un certain seuil.
+
+
+Depuis l'introduction de Word2Vec par \cite{mikolov2013distributed}, la recherche s'est tournée vers l'exploitation de plongements lexicaux pour représenter vectoriellement les termes. Les plongements lexicaux sont des représentations denses des mots, généralement obtenus à partir de très grands corpus et qui intègrent la sémantique des mots sous forme géométrique.
+Deux approches sont possibles : soit utiliser des plongements lexicaux généralistes \cite{fu2014learning, gupta2016domain}, soit définir un modèle de plongement lexical spécifique à l'extraction d'hyperonymes \cite{nguyen-etal-2017-hierarchical, nickel2017poincare, nickel2018learning}. Dans le premier cas, les plongements sont d'abord conçus pour représenter la \textit{similarité} entre les mots (deux mots apparaissants dans les mêmes contextes auront des plongements géomtriquement proches), sans notion de hiérarchie ou d'hyperonymie. Pour identifier l'hyperonymie, \cite{fu2014learning} utilise une méthode supervisée : des paires hyponyme-hypernyme de références sont 
+
+\cite{fu2014learning} utilise des plongements lexicaux généralistes et entraînent ensuite un classifieur capable d'identifier les relations d'hyperonymie à partir de ces plongements; à l'inverse \cite{}
+
+en combinant les représentations de A et de B et en calculant un score.
+
+Les méthodes distributionnelles s'appuyent sur des plongements lexicaux tels que \cite{mikolov2013distributed} pour obtenir des représentations riches des mots d'un corpus, et évalue ensuite si une paire de mots correspond à une relation d'hyperonymie à l'aide d'une fonction de score qui dépende des plongements de ces mots. Elles reposent sur l'«hypothèse d'inclusion distributionnelle» (ou \textit{Distributional Inclusion Hypothesis}) \cite{geffet2005distributional} : si A est un hyperonyme de B, alors les contextes dans lesquels B apparaît forment un sous-ensemble des contextes dans lesquels A apparaît. Intuitivement, cela signifie que l'on peut remplacer les occurrences de B par A tout en gardant un texte valide.
+
+Une méthode distributionnelle repose donc sur (a) une méthode de plongement lexicale, capable d'obtenir des représentations denses et de faible dimension des mots; (b) une fonction de classification, qui combine les plongements de deux mots et évalue si le premier mot est un hyperonyme du second. 
+%De nombreuses méthodes existent, selon des plongements 
 % Class-based
+
+% HyperVec
+% Poincaré Embeddings
 
 % TIEmb / NICKEL
 
