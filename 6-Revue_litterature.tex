@@ -175,21 +175,82 @@ Enfin, \cite{roller-etal-2018-hearst} propose de lisser les valeurs de PPMI obte
 
 \subsubsection{Méthodes distributionnelles, méthodes à plongement}
 
-
 Les méthodes distributionnelles reposent sur l'«hypothèse d'inclusion distributionnelle» (ou DIH, pour \textit{Distributional Inclusion Hypothesis}) \cite{geffet2005distributional} : si le terme A est un hyperonyme du terme B, alors les contextes dans lesquels B apparaît forment un sous-ensemble des contextes dans lesquels A apparaît. Le contexte d'un mot peut être les $2N$ mots adjacents au sein du corpus ($N$ mots précédents et $N$ mots suivants), ou les éléments voisins (parents ou enfants) au sein d'un arbre de dépendance \cite{shwartz-etal-2017-hypernyms}.
 Intuitivement, cette hypothèse signifie que l'on peut remplacer les occurrences de B par A tout en gardant un texte valide.
 
 Pour mettre en pratique cette idée, ces méthodes construisent une représentation vectorielles des termes; on peut alors évaluer si un terme A est un hyperonyme d'un terme B en utilisant une fonction de classification, qui combine les représentations de A et de B et prédit le résultat. 
 
-Les premières approches distributionnelles étaient non-supervisées \cite{weeds-etal-2004-characterising}, et se fondaient sur des représentations creuses des termes. Pour cela, on définit une notion de \textit{co-occurrence}, variable d'un modèle à l'autre : la co-occurrence peut être l'apparition dans une même fenêtre de contexte, ou le fait d'être sujet et objet d'un même verbe dans un arbre de dépendance. Pour un vocabulaire de $N$ termes $\{x_1, \ldots, x_N\}$, on peut alors représenter un terme $t$ par un vecteur $\textbf{t}$ à $N$ dimensions, tel que $\textbf{t}_i$ contient la fréquence de co-occurrence entre $t$ et $x_i$. Pour évaluer si $y$ est un hyperonyme de $x$, on peut alors comparer $\textbf{y}$ et $\textbf{x}$ à l'aide de mesures de similarités usuelles (indice de Jaccard, divergence de Jensen-Shannon ou autre), ou avec des mesures spécifiques à la la recherche de l'hyperonymie, comme la métrique \textit{WeedsPrec} \cite{weeds-etal-2004-characterising} :
+
+\paragraph{Extraction des concepts}
+
+L'extraction de taxonomie à partir de texte suppose deux étapes : d'abord, identifier, parmi tous les termes du corpus, ceux qui ceux qui constituent des concepts et qui sont donc impliquées dans des relations d'hyperonymie; ensuite, identifier les relations d'hyperonymie entre ces concepts. Les méthodes basées sur des motifs de Hearst effectuent simultanément ces deux étapes; ce n'est pas le cas des méthodes distributionnelles, qui supposent une étape préalable d'\textit{extraction des concepts}. Dans certains cas, les concepts sont considérés comme des données d'entrée, et l'enjeu est simplement de les ordonner hiérarchiquement. Autrement, il est nécessaire de filtrer le corpus, puis d'identifier les concepts : cela consiste généralement à ne garder que les noms, à l'aide d'un étiquettage morpho-syntaxique, puis à les filtrer à l'aide de règles linguistiques ou statistiques (\hl{ref}).
+
+\paragraph{Approches distributionnelles}
+
+Les approches distributionnelles classiques sont non-supervisées \cite{weeds-etal-2004-characterising}, et se fondent sur des représentations creuses des termes. Pour cela, on définit une notion de \textit{co-occurrence}, variable d'un modèle à l'autre : la co-occurrence peut être l'apparition dans une même fenêtre de contexte, ou le fait d'être sujet et objet d'un même verbe dans un arbre de dépendance. Pour un vocabulaire de $N$ termes $\{x_1, \ldots, x_N\}$, on peut alors représenter un terme $t$ par un vecteur $\textbf{t}$ à $N$ dimensions, tel que $\textbf{t}_i$ contient la fréquence de co-occurrence entre $t$ et $x_i$. Pour évaluer si $y$ est un hyperonyme de $x$, on peut alors comparer $\textbf{y}$ et $\textbf{x}$ à l'aide de mesures de similarités usuelles (indice de Jaccard, divergence de Jensen-Shannon ou autre), ou avec des mesures spécifiques à la la recherche de l'hyperonymie, comme la métrique \textit{WeedsPrec} \cite{weeds-etal-2004-characterising} :
 \begin{equation}
     WeedsPrec(x, y) = \frac{\displaystyle \sum_{\substack{i=1, \ldots, N \\ \textbf{y}_i > 0}} \textbf{x}_i}{\displaystyle \sum_{i =1, \ldots, N } \textbf{x}_i}
 \end{equation}
 On retrouve dans cette formule l'hypothèse DIH : si les contextes de $x$ forment un sous-ensemble des contextes de $y$, alors $\textbf{y}_i$ est positif chaque fois que $\textbf{x}_i$ est positif, et on a donc $WeedsPrec(x, y) = 1$. À l'inverse, si les contextes de $x$ et $y$ sont disjoints, on a $WeedsPrec(x, y) = 0$. On peut alors estimer que $y$ est un hyperonyme de $x$ si le score $WeedsPrec(x, y)$ est supérieur à un certain seuil.
 
+\paragraph{Utilisation de plongements lexicaux}
 
 Depuis l'introduction de Word2Vec par \cite{mikolov2013distributed}, la recherche s'est tournée vers l'exploitation de plongements lexicaux pour représenter vectoriellement les termes. Les plongements lexicaux sont des représentations denses des mots, généralement obtenus à partir de très grands corpus et qui intègrent la sémantique des mots sous forme géométrique.
-Deux approches sont possibles : soit utiliser des plongements lexicaux généralistes \cite{fu2014learning, gupta2016domain}, soit définir un modèle de plongement lexical spécifique à l'extraction d'hyperonymes \cite{nguyen-etal-2017-hierarchical, nickel2017poincare, nickel2018learning}. Dans le premier cas, les plongements sont d'abord conçus pour représenter la \textit{similarité} entre les mots (deux mots apparaissants dans les mêmes contextes auront des plongements géomtriquement proches), sans notion de hiérarchie ou d'hyperonymie. Pour identifier l'hyperonymie, \cite{fu2014learning} utilise une méthode supervisée : des paires hyponyme-hypernyme de références sont 
+Deux approches sont possibles : soit utiliser des plongements lexicaux généralistes \cite{fu2014learning, gupta2016domain, atzori2020fully, pocostales-2016-nuig}, soit définir un modèle de plongement lexical spécifique à l'extraction d'hyperonymes \cite{nguyen-etal-2017-hierarchical, nickel2017poincare, nickel2018learning, yu2015learning, luu-etal-2016-learning, vendrov2015order}. 
+
+\textit{Plongements génériques :}
+Dans le premier cas, les plongements utilisés sont génériques – usuellement des variantes de Word2Vec. Ils sont donc d'abord conçus pour représenter la \textit{similarité} entre les mots (deux mots apparaissants dans les mêmes contextes auront des plongements géomtriquement proches), sans notion de hiérarchie ou d'hyperonymie. Pour identifier l'hyperonymie, \cite{fu2014learning} utilise une méthode supervisée : l'idée est d'apprendre une relation linéaire entre les plongements des hyponymes et ceux des hyperonymes. On dispose de paires d'hyponymes-hypernymes $\{(x_k, y_k )\}$, d'un plongement lexical $\textbf{w}$ pour chaque mot $w$ du vocabulaire, et on souhaite trouver une matrice $\textbf{M}$ telle que $\textbf{M} \textbf{x}_k \approx \textbf{y}_k$, ce qui correspond à un problème classique de régression linéaire. En pratique, une unique relation linéaire est insuffisante pour couvrir la variété des paires d'hyperonymes, et on utilise donc une relation linéaire par morceaux : chaque paire $(x_k, y_k)$ est représentée par le vecteur $\textbf{u}_k = \textbf{x}_k - \textbf{y}_k$, les vecteurs $\textbf{u}_k$ sont alors regroupés en $m$ groupes $C_1, \ldots, C_m$ avec l'algorithme des $k$-moyennes, et une régression linéaire $\textbf{M}_i$ est apprise sur chaque groupe $C_i$. Les $k$-moyennes produisent un partitionnement de l'espace : pour classifier une paire inconnue $(x, y)$, il suffit donc de trouver le groupe $C_i$ auquel la paire appartient, puis de mesurer la distance entre $\textbf{M}_i \textbf{x}$ et $\textbf{y}$ : si elle est inférieure à un certain seuil, alors $y$ est un hyperonyme de $x$.
+
+% Présenter Gupta et Atzori
+
+\textit{Plongements spécifiques :}
+Lorsqu'on choisit, au contraire, de définir un modèle de plongement lexical spécifique à la recherche d'hyperonymes, l'enjeu est de trouver une géométrie capable de représenter la notion de hiérarchie. La méthode du \textit{Dynamic-weighting Neural Network} \cite{luu-etal-2016-learning} utilise en entrée une liste de paires hyponymes-hypernymes et un corpus textuel étendu : chaque fois qu'un hyponyme et un hypernyme sont trouvés dans la même phrase du corpus, on extrait un triplet d'entraînement comportant lesdits hyponyme et hypernyme, ainsi que les mots contextuels, c'est-à-dire tous les mots situés entre l'hyponyme et l'hypernyme. On fournit alors ces mots contextuels et l'hyponyme à un réseau de neurone, dont l'objectif est de prédire l'hypernyme. Comme dans Word2Vec, les poids de ce réseau servent alors de plongements lexicaux. HyperVec \cite{nguyen-etal-2017-hierarchical} utilise également une liste de paires hyponymes-hyperonymes et un corpus textuel pour apprendre des plongements lexicaux présentant les caractéristiques suivantes : (a) un hyponyme et un hyperonyme ont des plongements proches au sens de la similarité cosinus, et (b) le plongement d'un hyponyme a une norme euclidienne inférieure à ses hyperonymes.
+Une approche classique consiste à choisir un espace $D$ pour les plongements (typiquement l'espace euclidien à $d$ dimensions) et un ordre partiel $\preceq$ sur cet espace, puis à entraîner les plongements lexicaux tels que $\textbf{x} \preceq \textbf{y}$ si $y$ est un hyperonyme de $x$. Ainsi, le modèle des \textit{Order Embeddings}\cite{vendrov2015order} utilise comme ordre partiel sur $\R^d_+$ la relation :
+\begin{equation}
+    \textbf{x} \preceq \textbf{y} \iff \forall i = 1, \ldots, d, {} x_i \geq y_i
+\end{equation}
+Ainsi, l'élément racine de la taxonomie aura un plongement nul, et chaque plongement définit une
+\textit{zone d'hyponymie}, c'est-à-dire une zone de l'espace qui contient tous les éléments qui lui sont inférieurs, et donc l'ensemble de ses hyponymes. En dimension 2, la zone d'hyponymie d'un point $A$ est le quart de plan supérieur droit de $A$, c'est-à-dire l'ensemble des points situés en haut à droite de $A$. On en représente quelques exemples dans la figure \ref{subfig:orderemb}. Ce choix de $\preceq$ a un inconvénient : il interdit d'avoir des classes disjointes. En effet, quels que soient les plongement $\textbf{x}$ et $\textbf{y}$ considérés, leurs zones d'hyponymies auront une intersection non-vide.
+
+Pour dépasser ce problème, le modèle des \textit{Box-Lattice Embeddings} \cite{vilnis2018probabilistic} se place dans l'hypercube $[0, 1]^d$, c'est-à-dire l'ensemble des vecteurs de $\R^d$ dont toutes les coordonnées sont comprises entre $0$ et $1$, et représente un plongement par un pavé. Le pavé $F(x)$ associé à un concept $x$ est caractérisé par deux vecteurs $\textbf{x}^m$ et $\textbf{x}^M$, et défini par :
+\begin{equation}
+    F(x) = \{ \textbf{u} \in [0, 1]^d : \forall i=1, \ldots, d, {} x_i^m \leq u_i \leq x_i^M \}
+\end{equation}
+La relation d'hyperonymie entre deux termes se traduit alors simplement par une relation d'inclusion entre leurs pavés : $y$ est un hyperonyme de $x$ si et seulement si $F(x) \subseteq F(y)$. La figure \ref{subfig:boxlatticeemb} en donne une illustration.
+
+Enfin, plusieurs travaux ont suggéré de quitter l'espace euclidien et de privilégier un espace hyperbolique \cite{nickel2017poincare, nickel2018learning, Aly_2019, dhingra2018embedding, ganea2018hyperbolic}, qui offre une représentation naturelle des relations hiérarchiques. Comme montré par \cite{ganea2018hyperbolic}, un plongement $\textbf{u}$ dans une boule de Poincaré induit naturellement une zone d'hyponymie conique, dont la largeur dépend de la norme de $\textbf{u}$. Des exemples de ces «cônes d'hyponymie» sont donnés à la figure \ref{subfig:poincone}.
+
+
+\begin{figure}[h]
+    \begin{subfigure}{.32\textwidth}
+          \centering
+          % include first image
+          \includegraphics[width=.8\linewidth]{img/emb-orderemb.png}  
+          \caption{\textit{Order Embeddings}}
+          \label{subfig:orderemb}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+          \centering
+          % include first image
+          \includegraphics[width=.8\linewidth]{img/emb-boxlattice.png}  
+          \caption{\textit{Box-Lattice Embeddings}}
+          \label{subfig:boxlatticeemb}
+    \end{subfigure}
+    \begin{subfigure}{.33\textwidth}
+          \centering
+          % include first image
+          \includegraphics[width=.8\linewidth]{img/emb-poincone.png}  
+          \caption{Plongements de Poincaré}
+          \label{subfig:poincone}
+    \end{subfigure}
+    \caption[Plongements lexicaux spécifiques à l'hyperonymie]{(brouillon) Zones d'hyponymies pour  différents modèles de plongement lexical utilisés pour la détection d'hyperonymes. La zone d'hyponymie associée à un concept contient tous les hyponymes de ce concept.}
+    \label{fig:litt-emb-models}
+\end{figure}
+
+
+\iffalse {
+Une paire de mots $(x_k, y_k)$ est représentée par la différence entre ses plongements $\textbf{x}_k - \textbf{y}_k$ : 
+
 
 \cite{fu2014learning} utilise des plongements lexicaux généralistes et entraînent ensuite un classifieur capable d'identifier les relations d'hyperonymie à partir de ces plongements; à l'inverse \cite{}
 
@@ -203,6 +264,12 @@ Une méthode distributionnelle repose donc sur (a) une méthode de plongement le
 
 % HyperVec
 % Poincaré Embeddings
+
+% Autres approches :
+% Ontology Completion Using Graph Convolutional Networks
+% Petrucci & Rospocher
+}
+\fi 
 
 % TIEmb / NICKEL
 
