@@ -140,16 +140,50 @@ Dans la suite, on désignera par ontologie n'importe quel ensemble d'axiomes; pa
 
 \section{Extraction automatique d'ontologie et de taxonomie}
 
-% Raisonneurs
+% Non ça ça va dans la section 'Problématique' : Constuire une ontologie manuellement est coûteux. Le graphe est dynamique et les données changent bla bla
 
+Le problème d'extraction d'axiomes logiques n'est pas nouveau et prend des formes très variées. Dans le cas général, on cherche soit à apprendre une ontologie à partir de zéro (ref), soit à étendre une ontologie existante en construisant de nouveaux axiomes (ref). Un sous-problème fréquent est l'extraction de \textit{taxonomie} : il s'agit alors d'extraire uniquement des axiomes de subsumption, c'est-à-dire ayant la forme $A \sqsubseteq B$, afin d'obtenir une hiérarchie sur les concepts. Si on autorise ces concepts à prendre la forme d'axiomes plus complexes, on parlera d'extraction de taxonomie \textit{expressive}. 
+
+On peut distinguer deux grandes familles de méthodes, selon la source des données utilisées : les méthodes basées sur le texte, et les méthodes basées sur un graphe de connaissance. Étant donné la très large disponibilité de corpus textuels étendus (et particulièrement en langue anglaise), les méthodes utilisant le texte sont aujourd'hui les plus fréquentes, et se concentrent particulièrement sur l'extraction de taxonomie. Les méthodes basées sur le graphe ont toutefois leurs avantages : en particulier, elles peuvent fonctionner pour les graphes spécifiques à un domaine et pour lesquels il n'existe pas de données textuelles – c'est le cas notamment du domaine biomédical. Notons que l'émergence conjointe des plongements lexicaux (pour le texte) et des plongements vectoriels de graphe permet d'envisager une convergence de ces deux familles de méthodes.
+
+
+\subsection{Extraction d'ontologies à partir d'un graphe}
 
 Raisonneurs : permettent d'inférer de nouveaux faits. Partent d'axiomes existants et de règle de démonstration (donner un exemple, par ex modus ponens) pour produire de nouveaux axiomes. Toutefois, ils ne permettent pas de créer une ontologie de zéro puisqu'ils supposent des axiomes de départ. On pourrait envisager de construire manuellement des axiomes, et de les étendre mais les raisonneurs passent mal à l'échelle ne tournent pas nécessairement sur DBpédia
 
-% Inductive Logic Programming
+Bla bla extraction à partir de graphe
+On présente d'abord les méthodes symboliques, qui utilisent les règles et le formalisme de la logique. Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes. 
+
+\subsubsection{Méthodes symboliques}
+
+Les méthodes symboliques constituent une première famille d'approches capables de construire de nouveaux axiomes à partir d'axiomes existants. Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes. On en présente succintement trois grandes familles dans les paragraphes qui suivent.
+
+Les raisonneurs, comme Fact++ \cite{tsarkov2006fact++} ou Hermit \cite{glimm2014hermit}, appliquent des règles de démonstration pour déduire des axiomes nouveaux. Un exemple de ces règles de démonstration est le \textit{modus ponens}, qui consiste simplement en $P \land (P \implies Q) \vdash Q$ : si $P$ est vraie et $P$ implique $Q$, alors $Q$ est vraie. Ces raisonneurs peuvent être utiles pour vérifier si une ontologie donnée est consistante, mais ils ne peuvent pas réellement être utilisés pour l'extraction de taxonomie : 
+d'une part, ils nécessitent une ontologie de départ; d'autre part, ce sont des méthodes \textit{déductives} et donc incapable d'inférer de nouvelles règles à partir des données; enfin, la complexité de calcul augmente rapidement, ce qui les rend inadaptés pour des ontologies de grande taille.
+
+Une autre approche symbolique est la \textbf{programmation logique inductive} (ou ILP, pour \textit{Inductive Logic Programming}): il s'agit cette fois d'une méthode \textit{inductive}, c'est-à-dire qui produit de nouveaux axiomes à partir d'exemples. La programmation logique inductive part d'une série d'axiomes (la \textit{théorie préalable}) et d'exemples positifs et négatifs; elle cherche à produire de nouveaux axiomes qui sont vérifiés par les exemples positifs  mais pas par les exemples négatifs. De manière informelle, on se donne une propriété $P$, une théorie préalable vide, un ensemble d'exemples positifs $E^+=\{P(0), P(2), P(4), P(8) \}$ et $E^- = \{ P(1), P(3), P(5) \}$ – autrement dit, $0, 2, 4, 8$ vérifient $P$ et $1, 3, 5$ ne la vérifient pas\footnote{Exemple tiré de \cite{nienhuys1997foundations}.}. Alors, un exemple de théorie induite est donné par :
+\begin{align}
+    & \textrm{Si } P(x) \textrm{ est vraie, alors } P(x + 2) \textrm{ est vraie.} \\
+    & P(0) \textrm{ est vraie.}
+\end{align}
+Cette théorie ne pourrait être obtenue par un raisonneur, car elle n'est pas une conséquence logique de $E^+$ et de $E^-$ : il s'agit simplement d'une théorie plausible étant donnée les faits observés. Pour obtenir des théories induites pertinentes, la programmation logique inductive nécessite donc un choix judicieux d'exemples positifs et négatifs. Comme pour les raisonneurs, les méthodes de programmation logique inductive passent difficilement à l'échelle pour les graphes de connaissance de grande taille (\hl{ref}). De plus, les données d'un graphe réel sont incomplètes et bruitées, une situation pas ou mal gérée par la programmation logique. 
+
+Une troisième approche symbolique repose sur l'\textbf{analyse formelle de concept} (en anglais :  \textit{Formal Concept Analysis}).
+
+
+
+\subsubsection{Méthodes statistiques}
 % Apprentissage statistique
+Statistical Schema Induction
+
 
 % À partir de textes
 % Traduction d'axiomes depuis le langage naturel
+\subsection{Méthodes utilisant les plongements vectoriels de graphe}
+
+Encore assez peu exploité
+
+TIEmb
 
 \subsection{Extraction de taxonomie à partir de texte}
 
@@ -272,5 +306,23 @@ Une méthode distributionnelle repose donc sur (a) une méthode de plongement le
 \fi 
 
 % TIEmb / NICKEL
+% TaxoGen
+% Gupta ?
+% Petrucci, Rospocher
+% GCN Li/Bouraoui
+
+
+
+\subsubsection{Regroupement hiérarchique sur les plongements lexicaux}
+
+
+Il existe une proximité naturelle entre un arbre de clustering hiérarchique et une taxonomie, si bien qu'il est naturel d'appliquer, comme nous le faisons dans ce mémoire, un algorithme de regroupement hiérarchique à des plongements vectoriels (qu'ils soient lexicaux ou non) dans le but d'obtenir une taxonomie.  De nombreuses méthodes ont été proposées dans ce sens, que l'on détaille dans les lignes qui suivent. On verra que chacune présente des différentes majeurs avec l'approche que nous proposons.
+
+
+En premier lieu, la majorité des méthodes fonctionne au niveau des concepts, et non au niveau des instances.
+% TaxoGen
+% Gupta
+% Bayesian Rose Tree (Blundell, Song)
+
 
 \section{Regroupement hiérarchique sur les graphes}
