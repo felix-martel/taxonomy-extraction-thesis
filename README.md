@@ -11,7 +11,21 @@
   - 🟡 Plan du mémoire  
 - Revue de littérature
   - 🟡 Web sémantique et logique descriptive
-  - 🔴 Extraction automatique d'ontologie et de taxonomie
+  - 🟠 Extraction automatique d'ontologie et de taxonomie
+     - 🟠 Extraction d'ontologie à partir de graphes
+        - 🟡 Méthodes symboliques
+          - 🟡 Raisonneurs
+          - 🟡 Programmation logique inductive
+          - 🟡 Analyse formelle de concepts
+        - 🔴 Méthodes statistiques
+        - 🔴 Méthodes vectorielles
+          - TIEmb
+     - 🟠 Extraction de taxonomie à partir de texte
+        - 🟡 Méthodes à motifs
+        - 🟡 Méthodes à plongements
+          - 🟡 Plongements génériques
+          - 🟡 Plongements spécifiques
+        - 🔴 Méthodes par regroupement          
   - 🔴 Regroupement hiérarchique sur les graphes
 - Chapitre 1 : plongements vectoriels de graphe de connaissance
   - 🟡 Introduction et motivation
