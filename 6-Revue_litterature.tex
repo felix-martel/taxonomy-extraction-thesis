@@ -14,7 +14,7 @@
 
 %Un graphe de connaissance 
 
-Un graphe de connaissance est une collection structurée de données permettant de représenter des informations, ou des \textit{faits}, sur le monde réel. La définition exacte d'un graphe de connaissance varie d'un auteur à l'autre \cite{ehrlinger2016towards}; parmi les caractéristiques fréquemment retenues, on notera l'interrelation des données et le caractère multi-relationnel, l'existence d'une sémantique formelle et de mécanismes de raisonnement, ou parfois une certaine taille critique. Les paragraphes suivants visent à définir et expliciter ces différentes propriétés.
+Un graphe de connaissance est une collection structurée de données permettant de représenter des informations, ou des \textit{faits}, sur le monde réel. La définition exacte d'un graphe de connaissance varie d'un auteur à l'autre \cite{ehrlinger2016towards}; parmi les caractéristiques fréquemment retenues, on notera l'inter-relation des données et le caractère multi-relationnel, l'existence d'une sémantique formelle et de mécanismes de raisonnement, ou parfois une certaine taille critique. Les paragraphes suivants visent à définir et expliciter ces différentes propriétés.
 
 
 \paragraph{Concepts de base}
@@ -151,7 +151,7 @@ On peut distinguer deux grandes familles de méthodes, selon la source des donn�
 
 Raisonneurs : permettent d'inférer de nouveaux faits. Partent d'axiomes existants et de règle de démonstration (donner un exemple, par ex modus ponens) pour produire de nouveaux axiomes. Toutefois, ils ne permettent pas de créer une ontologie de zéro puisqu'ils supposent des axiomes de départ. On pourrait envisager de construire manuellement des axiomes, et de les étendre mais les raisonneurs passent mal à l'échelle ne tournent pas nécessairement sur DBpédia
 
-Bla bla extraction à partir de graphe
+\hl{Bla bla extraction à partir de graphe}
 On présente d'abord les méthodes symboliques, qui utilisent les règles et le formalisme de la logique. Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes. 
 
 \subsubsection{Méthodes symboliques}
@@ -180,19 +180,52 @@ toutefois, la conception d'algorithmes efficaces et applicables à grande échel
 L'AFC peut être étendue aux relations binaires, c'est-à-dire à des triplets $(h, r, t)$ où $h, t$ sont des entités reliées par la relation $r$ : on parle alors d'\textbf{analyse relationnelle de concept} (ARC, ou \textit{Relational Concept Analysis} en anglais) \cite{bendaoud2008rcafca}. Une autre extension de l'AFC consiste à remplacer la logique booléenne usuelle par la logique floue, qui accepte des valeurs de vérité continues entre 0 et 1 et qui permet de mieux modéliser l'incertitude \cite{de2012hierarchical, mao2019construction}.
 
 
-
 \subsubsection{Méthodes statistiques}
-% Apprentissage statistique
-Statistical Schema Induction
+
+Les méthodes statistiques visent à extraire des règles logiques en observant des régularités statistiques dans un graphe de connaissance : par exemple, en comptant les co-occurrences de certaines classes ou de certaines relations dans le voisinage d'une entité. 
+
+On présente ici la méthode de \textit{Statistical Schema Induction} (SSI, en français : induction statistique d'ontologie) \cite{volker2011statistical}, qui se rapproche du travail que nous présentons à la section \ref{subsec:texp-exaxiom}. Cette approche repose sur l'apprentissage de \textit{règles d'association} \cite{zhang2003association}, qui sont essentiellement des implications logiques inférées d'après des co-occurrences observées dans les données. 
+Une règle d'association s'écrit sous la forme $X \rightarrow Y$. On peut par exemple imaginer une règle $\{\texttt{Personne}, \exists \texttt{écrit}.\texttt{Poème} \} \rightarrow \texttt{Poet}$ : si une même entité est de type \textrm{Personne} et vérifie l'axiome $\exists \texttt{écrit}.\texttt{Poème}$, alors cette entité est probablement de type \texttt{Poète}.
+
+Pour extraire ces règles, on se donne un tableau de transactions $\textbf{T}$, dont les lignes représentent des entités $e_1, \ldots, e_n$ du graphe, et les colonnes des prédicats logiques $P_1, \ldots, P_m$. Ces prédicats incluent les concepts nommés $C$ (\texttt{Artist}, \texttt{Person}, etc.) et différentes formes de restrictions existentielles comme $\exists r.C$ ou  $\exists r.\top$. On note $\Ent$ l'ensemble des entités, et $\mathcal{P}$ l'ensemble des prédicats. 
+La coordonnée $(i, j)$ de $\textbf{T}$ contient $1$ si $e_i$ vérifie le prédicat $P_j$, et $0$ sinon. Soit $X \subseteq \mathcal{P}$ un ensemble de prédicats, alors le \textit{support} de X est l'ensemble des entités qui vérifient tous ces prédicats simultanément :
+\begin{equation}
+    \textrm{Supp}(X) = \frac{|\{ e \in \Ent : \forall P \in X, P(e) \}|}{|\Ent |}
+\end{equation}
+L'indice de confiance associée à une règle $X \rightarrow Y$ se calcule alors par :
+\begin{equation}
+    \textrm{Conf}(X \rightarrow Y) = \frac{\textrm{Supp}(X \cup Y)}{\textrm{Supp}(X)}
+\end{equation}
+Au numérateur, on compte le nombre d'entités qui vérifient à la fois les prédicats de $X$ et de $Y$, que l'on rapporte au nombre d'entités qui vérifient les prédicats de $X$ (notons que l'on a nécessairement $\textrm{Supp}(X \cup Y) < \textrm{Supp}(X)$, car une entité qui vérifie à la fois les prédicats de $X$ et de $Y$ vérifie \textit{a fortiori} ceux de $Y$). Un indice égal à $1$ signifie que toutes les entités qui vérifient $X$ vérifient également $Y$, et donc que la règle $X \rightarrow Y$ est parfaitement validée par les données; dans la pratique, on définit plutôt un seuil $\tau$ au-delà duquel la règle d'association est considérée comme valide.
+
+Le nombre de combinaisons de prédicats possibles croît exponentiellement : les énumérer est donc impossible, même pour des jeux de données réduits. Plusieurs heuristiques ont été développées, dont la plus connue est Apriori \cite{srikant1994apriori}, elle-même améliorée à plusieurs reprises, par exemple en minimisant le nombre de lectures du graphe \cite{yuan2017improved} ou en implémentant un mécanisme de parallélisme avec MapReduce \cite{lin2014mapreduce}. Autres approches : FP-growth, OPUS
+
+
+Une fois les règles d'association extraites, on peut les convertir en axiomes de subsumption et les filtrer pour obtenir une taxonomie expressive. 
+Malgré ces améliorations, \hl{àà détéailler + différences avec notre approche}
+
 
 
 % À partir de textes
 % Traduction d'axiomes depuis le langage naturel
-\subsubsection{Méthodes utilisant les plongements vectoriels de graphe}
+\subsubsection{Utilisation de plongements vectoriels de graphe pour l'extraction d'ontologies}
 
-Encore assez peu exploité
+Les plongements vectoriels de graphe de connaissance sont très utilisés pour découvrir des régularités au niveau des instances (ce qui permet notamment d'évaluer la validité d'un triplet inconnu ou de prédire de nouveaux triplets), mais ils ont encore été peu exploités pour la manipulation de concepts ou l'extraction de taxonomie ou d'ontologie. Dans cette optique, \cite{gutierrez2018knowledge} étudie les liens entre les axiomes logiques et la géométrie de différents modèles de plongement, dans le but de pouvoir traduire un axiome sous forme de plongement vectoriel sans perte d'information ou d'expressivité. IterE \cite{zhang2019iteratively} apprend conjointement des plongements vectoriels et des règles logiques, les deux se renforçant mutuellement. Des plongements sont initialement appris à partir du graphe de connaissance; ensuite, des axiomes potentiels sont générés et on leur attribue un score de vraisemblance, calculé à l'aide des plongements vectoriels; enfin, ces axiomes servent à générer de nouveaux triplets d'entraînement : on peut effectuer ces étapes pour améliorer itérativement les plongements et les axiomes. Cette méthode est uniquement évaluée sur des graphes de petite taille (moins de 50 000 entités); savoir si elle est applicable à plus large échelle reste une question ouverte. RLvLR \cite{omran2018scalable} utilise la similarité entre les plongements des relations pour évaluer \textit{a priori} la validité d'un axiome, ce qui permet de restreindre l'espace de recherche et donc d'appliquer la méthode à des graphes de grande taille comme Wikidata ou DBpédia. En contrepartie, l'expressivité des axiomes extraits est limitée, et ces derniers ne forment pas véritablement une taxonomie.
 
-TIEmb
+Plus proche de notre propre méthode, \textbf{TIEmb} \cite{ristoski2017large} extrait une taxonomie (non-expressive) à partir de plongements vectoriels d'entités. Comme notre méthode, TIEmb considère comme données d'entrée un ensemble de paires $\{(\textbf{e}_i, t_i) \}_{i=1, \ldots, n}$, où $\textbf{e}_i \in \R^d$ est le plongement vectoriel de l'entité $e_i$, et $t_i$ est son type, et produit en sortie une taxonomie, c'est-à-dire un ensemble d'axiomes de subsumption $t_ \sqsubset t_j$. Pour cela, chaque type $t$ est représenté par un sphère $S_t$ à $d$ dimensions, dont le centre est un vecteur $\textbf{c}_t$ défini par :
+\begin{equation}
+ \textbf{c}_t = \frac{1}{n_t} \sum_{\substack{i \in [1, n] \\ t_i = t}} \textbf{e}_i
+\end{equation}
+Avec $n_t = |\{ i \in [1, n] : t_i = t \}|$ le nombre d'entités de type $t$ dans les données. $\textbf{c}_t$ représente le centroïde des instances de $t$.
+
+Le rayon $r_t$ de $S_t$ est lui défini comme la distance moyenne entre les instances de $t$ et le centroïde $\textbf{c}_t$ :
+\begin{equation}
+    r_t = \frac{1}{n_t}  \sum_{\substack{i \in [1, n] \\ t_i = t}} \| \textbf{e}_i - \textbf{c}_t \|_2
+\end{equation}
+Dès lors, l'axiome $t \sqsubset t'$ est prédit si et seulement si $S_t \subset S_{t'}$ : la sphère d'un supertype englobe les sphères de ses sous-types. Enfin, une étape finale de filtrage est appliquée pour enlever les cycles et obtenir une taxonomie valide. 
+
+TIEmb présente l'avantage d'être conceptuellement simple, et peu coûteux en calcul, ce qui permet de l'appliquer à très grande échelle. Une différence cruciale avec notre approche est que le regroupement des entités au sein des sphères est entièrement supervisé, puisqu'il repose sur les types $t_i$ contenus dans les données, et pas sur la géométrie des plongements : TIEmb ne permet donc pas d'identifier de nouveaux groupes cohérents d'entités et donc de détecter de nouvelles classes.
+
 
 \subsection{Extraction de taxonomie à partir de texte}
 
