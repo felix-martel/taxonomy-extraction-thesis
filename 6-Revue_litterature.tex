@@ -159,106 +159,22 @@ On peut voir un graphe de connaissance comme la combinaison d'un graphe RDF, qui
 
 Le problème d'extraction d'axiomes logiques n'est pas nouveau et prend des formes très variées. Dans le cas général, on cherche soit à apprendre une ontologie à partir de zéro \cite{lehmann2009dl, joinmerge, petrucci2018expressive, sritha2016survey, volker2011statistical}, soit à étendre une ontologie existante en construisant de nouveaux axiomes \cite{li2019ontology, faralli2017contrastmedium, wu2008automatically}. Un sous-problème fréquent est l'extraction de \textit{taxonomie} \cite{petrucci2018expressive, nickel2018learning, atzori2020fully, ristoski2017large}: il s'agit alors d'extraire uniquement des axiomes de subsumption, c'est-à-dire ayant la forme $A \sqsubseteq B$, afin d'obtenir une hiérarchie sur les concepts. Si on autorise ces concepts à prendre la forme d'axiomes plus complexes, on parlera d'extraction de taxonomie \textit{expressive}. 
 
-On peut distinguer deux grandes familles de méthodes, selon la source des données utilisées : les méthodes basées sur le texte, et les méthodes basées sur un graphe de connaissance. Étant donné la très large disponibilité de corpus textuels étendus (et particulièrement en langue anglaise), les méthodes utilisant le texte sont aujourd'hui les plus fréquentes, et se concentrent particulièrement sur l'extraction de taxonomie. Les méthodes basées sur le graphe ont toutefois leurs avantages : en particulier, elles peuvent fonctionner pour les graphes spécifiques à un domaine et pour lesquels il n'existe pas de données textuelles – c'est le cas notamment du domaine biomédical. Notons que l'émergence conjointe des plongements lexicaux (pour le texte) et des plongements vectoriels de graphe permet d'envisager une convergence de ces deux familles de méthodes \cite{nikolaev2020joint}.
-
-\subsection{Extraction d'ontologies à partir d'un graphe}
-
-Raisonneurs : permettent d'inférer de nouveaux faits. Partent d'axiomes existants et de règle de démonstration (donner un exemple, par ex modus ponens) pour produire de nouveaux axiomes. Toutefois, ils ne permettent pas de créer une ontologie de zéro puisqu'ils supposent des axiomes de départ. On pourrait envisager de construire manuellement des axiomes, et de les étendre mais les raisonneurs passent mal à l'échelle ne tournent pas nécessairement sur DBpédia
-
-\hl{Bla bla extraction à partir de graphe}
-On présente d'abord les méthodes symboliques, qui utilisent les règles et le formalisme de la logique. Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes. 
-
-\subsubsection{Méthodes symboliques}
-
-Les méthodes symboliques constituent une première famille d'approches capables de construire de nouveaux axiomes à partir d'axiomes existants. On désigne sous ce nom toutes les méthodes qui manipulent directement des règles logiques.
-Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes. On en présente succintement trois grandes familles dans les paragraphes qui suivent.
-
-Les \textbf{raisonneurs}, comme Fact++ \cite{tsarkov2006fact++} ou Hermit \cite{glimm2014hermit}, appliquent des règles de démonstration pour déduire des axiomes nouveaux. Un exemple de ces règles de démonstration est le \textit{modus ponens}, qui consiste simplement en $P \land (P \implies Q) \vdash Q$ : si $P$ est vraie et $P$ implique $Q$, alors $Q$ est vraie. Ces raisonneurs peuvent être utiles pour vérifier si une ontologie donnée est consistante, mais ils ne peuvent pas réellement être utilisés pour l'extraction de taxonomie : 
-d'une part, ils nécessitent une ontologie de départ; d'autre part, ce sont des méthodes \textit{déductives} et donc incapable d'inférer de nouvelles règles à partir des données. %; enfin, la complexité de calcul augmente rapidement, ce qui les rend inadaptés pour des ontologies de grande taille.
-
-Une autre approche symbolique est la \textbf{programmation logique inductive} (ou ILP, pour \textit{Inductive Logic Programming}) \cite{nienhuys1997foundations, de2008probabilistic}: il s'agit cette fois d'une méthode \textit{inductive}, c'est-à-dire qui produit de nouveaux axiomes à partir d'exemples. La programmation logique inductive part d'une série d'axiomes (la \textit{théorie préalable}) et d'exemples positifs et négatifs; elle cherche à produire de nouveaux axiomes qui sont vérifiés par les exemples positifs  mais pas par les exemples négatifs. De manière informelle, on se donne une propriété $P$, une théorie préalable vide, un ensemble d'exemples positifs $E^+=\{P(0), P(2), P(4), P(8) \}$ et $E^- = \{ P(1), P(3), P(5) \}$ – autrement dit, $0, 2, 4, 8$ vérifient $P$ et $1, 3, 5$ ne la vérifient pas\footnote{Exemple tiré de \cite{nienhuys1997foundations}.}. Alors, un exemple de théorie induite est donné par :
-\begin{align}
-    & \textrm{Si } P(x) \textrm{ est vraie, alors } P(x + 2) \textrm{ est vraie.} \\
-    & P(0) \textrm{ est vraie.}
-\end{align}
-Cette théorie ne pourrait être obtenue par un raisonneur, car elle n'est pas une conséquence logique de $E^+$ et de $E^-$ : il s'agit simplement d'une théorie plausible étant donnée les faits observés. Pour obtenir des théories induites pertinentes, l'ILP nécessite donc un choix judicieux d'exemples positifs et négatifs.
-Pour obtenir une théorie induite, deux approches sont possibles : soit partir d'une théorie très générale et la spécialiser itérativement en ajoutant des axiomes ou en précisant les axiomes existants, soit partir d'une théorie très spécifique et la généraliser itérativement.
-En pratique, et comme pour les raisonneurs, les méthodes d'ILP passent difficilement à l'échelle pour les graphes de connaissance de grande taille \cite{srinivasan2012data}, même si des heuristiques plus efficaces ont été proposées \cite{zeng2014quickfoil}. De plus, les données d'un graphe réel sont incomplètes et bruitées, une situation pas ou mal gérée par la programmation logique. 
-
-Une troisième approche symbolique repose sur l'\textbf{analyse formelle de concept} (AFC, en anglais :  \textit{Formal Concept Analysis}), introduite mathématiquement par \cite{wille1982fca} et appliquée à la construction d'ontologie par \cite{cimiano2004conceptual}. L'AFC considère un ensemble d'entités possédant des attributs, et cherche à produire une hiérarchie de \textit{concepts} : dans ce contexte, un concept est une paire $(A, B)$ où $A$ est un ensemble d'entités et $B$ un ensemble d'attributs tels que $B$ est l'ensemble des attributs vérifiés par tous les éléments de $A$, et inversement $A$ est l'ensemble des entités qui vérifient tous les attributs de $B$. L'ensemble des concepts est muni d'une relation d'ordre $\sqsubseteq$ : on a $(A, B) \sqsubseteq (A', B')$ si $A \subseteq A'$ (ou, de manière équivalente, $B' \subseteq B$), analogue à la subsumption décrite plus haut. Munie de cette relation d'ordre, l'AFC induit naturellement une hiérarchie sur les concepts.
-Pour obtenir ces concepts, on utilise une règle de dérivation : si $A$ est un ensemble d'entités, on désigne par $A'$ l'ensemble des attributs communs à tous les éléments de $A$; de la même manière, si $B$ est un ensemble d'attributs, on désigne par $B'$ l'ensemble des entités qui possèdent tous les attributs de $B$. En partant d'une entité $x$, on peut ainsi obtenir $\{x\}'$ l'ensemble des attributs de $x$, puis $\{x\}''$ l'ensemble des entités qui ont exactement les mêmes attributs que $x$ : la paire $(\{x\}'', \{x\}' )$ constitue un premier concept. En ajoutant une nouvelle entité $y$ à $\{x\}''$ et en effectuant à nouveau une double dérivation, on obtient un second concept. Par ailleurs, un ensemble de concepts $C_1, \ldots, C_N$ possède toujours un \textit{sous-concept commun maximal}, c'est-à-dire le plus grand concept $S$ qui vérifie $\forall i, S \sqsubseteq C_i$. De même, chaque ensemble de concepts possède un \textit{superconcept commun minimal}, c'est-à-dire le plus petit concept $S$ tel que $\forall i, C_i \sqsubseteq S$. De plus, il existe un concept minimal, qui contient tous les attributs (et potentiellement aucune entité), et un concept maximal, qui contient toutes les entités (et potentiellement aucun attribut). 
-%Le formalisme de l'AFC possède des soubassements mathématiques bien étudiés, mais la conception d'algorithmes efficaces et appropriés à des graphes de grande taille demeure un problème ouvert
-À partir de ces notions, de nombreux algorithmes ont été proposés pour l'identification et la hiérarchisation de concepts \cite{valtchev2001building, nourine1999fast, farach2008linear}; 
-toutefois, la conception d'algorithmes efficaces et applicables à grande échelle demeure un problème ouvert %ce problème continue à faire l'objet de recherches actives, notamment pour en réduire la complexité et donc permettre des applications à des jeux de données étendus 
-\cite{li2016approximate, zhang2019new}.
-L'AFC peut être étendue aux relations binaires, c'est-à-dire à des triplets $(h, r, t)$ où $h, t$ sont des entités reliées par la relation $r$ : on parle alors d'\textbf{analyse relationnelle de concept} (ARC, ou \textit{Relational Concept Analysis} en anglais) \cite{bendaoud2008rcafca}. Une autre extension de l'AFC consiste à remplacer la logique booléenne usuelle par la logique floue, qui accepte des valeurs de vérité continues entre 0 et 1 et qui permet de mieux modéliser l'incertitude \cite{de2012hierarchical, mao2019construction}.
-
-
-\subsubsection{Méthodes statistiques}
-
-Les méthodes statistiques visent à extraire des règles logiques en observant des régularités statistiques dans un graphe de connaissance : par exemple, en comptant les co-occurrences de certaines classes ou de certaines relations dans le voisinage d'une entité. 
-
-On présente ici la méthode de \textit{Statistical Schema Induction} (SSI, en français : induction statistique d'ontologie) \cite{volker2011statistical}, qui se rapproche du travail que nous présentons à la section \ref{subsec:texp-exaxiom}. Cette approche repose sur l'apprentissage de \textit{règles d'association} \cite{zhang2003association}, qui sont essentiellement des implications logiques inférées d'après des co-occurrences observées dans les données. 
-Une règle d'association s'écrit sous la forme $X \rightarrow Y$. On peut par exemple imaginer une règle $\{\texttt{Personne}, \exists \texttt{écrit}.\texttt{Poème} \} \rightarrow \texttt{Poet}$ : si une même entité est de type \texttt{Personne} et vérifie l'axiome $\exists \texttt{écrit}.\texttt{Poème}$, alors cette entité est probablement de type \texttt{Poète}.
-
-Pour extraire ces règles, on se donne un \textit{tableau de transactions} $\textbf{T}$, une matrice dont les lignes représentent les entités $e_1, \ldots, e_n$ du graphe, et les colonnes des prédicats logiques $P_1, \ldots, P_m$. Ces prédicats incluent les concepts nommés $C$ (comme \texttt{Artist}, \texttt{Person}, etc.) et différentes formes de restrictions existentielles comme $\exists r.C$ ou  $\exists r.\top$. On note $\Ent$ l'ensemble des entités, et $\mathcal{P}$ l'ensemble des prédicats. 
-La coordonnée $(i, j)$ de $\textbf{T}$ contient $1$ si $e_i$ vérifie le prédicat $P_j$, et $0$ sinon. Soit $X \subseteq \mathcal{P}$ un ensemble de prédicats, alors le \textit{support} de X est l'ensemble des entités qui vérifient tous ces prédicats simultanément :
-\begin{equation}
-    \textrm{Supp}(X) = \frac{|\{ e \in \Ent : \forall P \in X, P(e) \}|}{|\Ent |}
-\end{equation}
-L'indice de confiance associée à une règle $X \rightarrow Y$ se calcule alors par :
-\begin{equation}
-    \textrm{Conf}(X \rightarrow Y) = \frac{\textrm{Supp}(X \cup Y)}{\textrm{Supp}(X)}
-\end{equation}
-Au numérateur, on compte le nombre d'entités qui vérifient à la fois les prédicats de $X$ et de $Y$, que l'on rapporte au nombre d'entités qui vérifient les prédicats de $X$ (notons que l'on a nécessairement $\textrm{Supp}(X \cup Y) < \textrm{Supp}(X)$, car une entité qui vérifie à la fois les prédicats de $X$ et de $Y$ vérifie \textit{a fortiori} ceux de $Y$). Un indice égal à $1$ signifie que toutes les entités qui vérifient $X$ vérifient également $Y$, et donc que la règle $X \rightarrow Y$ est parfaitement validée par les données; dans la pratique, on définit plutôt un seuil $\tau$ au-delà duquel la règle d'association est considérée comme valide.
-
-Le nombre de combinaisons de prédicats possibles croît exponentiellement : les énumérer est donc impossible, même pour des jeux de données réduits. Plusieurs heuristiques ont été développées, dont la plus connue est Apriori \cite{srikant1994apriori}, elle-même améliorée à plusieurs reprises, par exemple en minimisant le nombre de lectures du graphe \cite{yuan2017improved} ou en implémentant un mécanisme de parallélisme avec MapReduce \cite{lin2014mapreduce}. % Autres approches : FP-growth, OPUS
-
-
-Une fois les règles d'association extraites, on peut les convertir en axiomes de subsumption et les filtrer pour obtenir une taxonomie expressive. 
-Malgré ces améliorations, \hl{àà détéailler + différences avec notre approche}
-
-
-
-% À partir de textes
-% Traduction d'axiomes depuis le langage naturel
-\subsubsection{Utilisation de plongements vectoriels de graphe pour l'extraction d'ontologies}
-
-Les plongements vectoriels de graphe de connaissance sont très utilisés pour découvrir des régularités au niveau des instances (ce qui permet notamment d'évaluer la validité d'un triplet inconnu ou de prédire de nouveaux triplets), mais ils ont encore été peu exploités pour la manipulation de concepts ou l'extraction de taxonomie ou d'ontologie. Dans cette optique, \cite{gutierrez2018knowledge} étudie les liens entre les axiomes logiques et la géométrie de différents modèles de plongement, dans le but de pouvoir traduire un axiome sous forme de plongement vectoriel sans perte d'information ou d'expressivité. IterE \cite{zhang2019iteratively} apprend conjointement des plongements vectoriels et des règles logiques, les deux se renforçant mutuellement. Des plongements sont initialement appris à partir du graphe de connaissance; ensuite, des axiomes potentiels sont générés et on leur attribue un score de vraisemblance, calculé à l'aide des plongements vectoriels; enfin, ces axiomes servent à générer de nouveaux triplets d'entraînement : on peut alors répéter ces trois étapes pour améliorer itérativement les plongements et les axiomes. Cette méthode est uniquement évaluée sur des graphes de petite taille (moins de 50 000 entités); savoir si elle est applicable à plus large échelle reste une question ouverte. RLvLR \cite{omran2018scalable} utilise la similarité entre les plongements des relations pour évaluer \textit{a priori} la validité d'un axiome, ce qui permet de restreindre l'espace de recherche et donc d'appliquer la méthode à des graphes de grande taille comme Wikidata ou DBpédia. En contrepartie, l'expressivité des axiomes extraits est limitée, et ces derniers ne forment pas véritablement une taxonomie.
-
-Plus proche de notre propre méthode, \textbf{TIEmb} \cite{ristoski2017large} extrait une taxonomie (non-expressive) à partir de plongements vectoriels d'entités. Comme notre méthode, TIEmb considère comme données d'entrée un ensemble de paires $\{(\textbf{e}_i, t_i) \}_{i=1, \ldots, n}$, où $\textbf{e}_i \in \R^d$ est le plongement vectoriel de l'entité $e_i$, et $t_i$ est son type, et produit en sortie une taxonomie, c'est-à-dire un ensemble d'axiomes de subsumption $t_ \sqsubset t_j$. Pour cela, chaque type $t$ est représenté par un sphère $S_t$ à $d$ dimensions, dont le centre est un vecteur $\textbf{c}_t$ défini par :
-\begin{equation}
- \textbf{c}_t = \frac{1}{n_t} \sum_{\substack{i \in [1, n] \\ t_i = t}} \textbf{e}_i
-\end{equation}
-Avec $n_t = |\{ i \in [1, n] : t_i = t \}|$ le nombre d'entités de type $t$ dans les données. $\textbf{c}_t$ représente le centroïde des instances de $t$.
-
-Le rayon $r_t$ de $S_t$ est lui défini comme la distance moyenne entre les instances de $t$ et le centroïde $\textbf{c}_t$ :
-\begin{equation}
-    r_t = \frac{1}{n_t}  \sum_{\substack{i \in [1, n] \\ t_i = t}} \| \textbf{e}_i - \textbf{c}_t \|_2
-\end{equation}
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth]{img/tiemb.png}
-    \caption[Principe général de TIEmb]{Plongements et sphères associées à trois classes dans le cadre de la méthode TIEmb, dans le cas bidimensionnel.}
-    \label{fig:litt-tiemb}
-\end{figure}
-
-
-Dès lors, l'axiome $t \sqsubset t'$ est prédit si et seulement si $S_t \subset S_{t'}$ : la sphère d'un supertype englobe les sphères de ses sous-types, comme illustré à la figure. Enfin, une étape finale de filtrage est appliquée pour enlever les cycles et obtenir une taxonomie valide. 
-
-TIEmb présente l'avantage d'être conceptuellement simple, et peu coûteux en calcul, ce qui permet de l'appliquer à très grande échelle. Une différence cruciale avec notre approche est que le regroupement des entités au sein des sphères est entièrement supervisé, puisqu'il repose sur les types $t_i$ contenus dans les données, et pas sur la géométrie des plongements : TIEmb ne permet donc pas d'identifier de nouveaux groupes cohérents d'entités et donc de détecter de nouvelles classes. Dans le chapitre \ref{chap:te}, on compare notre approche d'extraction de taxonomie non-expressive à TIEmb; dans le chapitre \ref{chap:texp}, on illustre les possibilités offertes par le regroupement non-supervisé en extrayant une taxonomie expressive de DBpédia.
+On peut distinguer deux grandes familles de méthodes, selon la source des données utilisées : les méthodes basées sur le texte, et les méthodes basées sur un graphe de connaissance. Étant donné la très large disponibilité de corpus textuels étendus (et particulièrement en langue anglaise), les méthodes utilisant le texte sont aujourd'hui les plus fréquentes, et se concentrent particulièrement sur l'extraction de taxonomie. Elles font l'objet de la section \ref{subsec:litt-te-text}. Les méthodes basées sur le graphe ont toutefois leurs avantages : en particulier, elles peuvent fonctionner pour les graphes spécifiques à un domaine et pour lesquels il n'existe pas de données textuelles – c'est le cas notamment du domaine biomédical. On décrit ces méthodes dans la section \ref{subsec:litt-te-graph}. Notons que l'émergence conjointe des plongements lexicaux (pour le texte) et des plongements vectoriels de graphe permet d'envisager une convergence de ces deux familles de méthodes \cite{nikolaev2020joint}.
 
 
 \subsection{Extraction de taxonomie à partir de texte}
+\label{subsec:litt-te-text}
 
-\hl{déplacer en 2.2.1 histoire de finir par tiemb + familiariser à la question des plongements}
+La recherche de taxonomie à partir de texte est explorée depuis longtemps \cite{hearst1992automatic}, et l'abondance actuelle des ressources textuelles \cite{gigaword2012, smith2013dirt} combinée à l'émergence des plongements lexicaux en ont fait l'approche dominante : ils nous paraît donc important de la présenter ici.
 
+%De plus, les méthodes basées sur le graphe et basées sur le texte font face à de nombreux problèmes en commun : représentation vectorielle des individus et/ou des concepts, lien entre hiérarchie et géométrie
+% Ce problème présente de nombreux points communs avec l'extraction basée sur les graphes; de plus, la combinaison de graphes et de ressources textuelles 
+% il nous paraît donc important de présenter ces deux approches.
 
-Ressource la plus abondante : corpus textuels
-L'approche dominante consiste à extraire des taxonomies à partir de texte. Dans ce domaine, on parle généralement d'\textit{hyperonymie} pour qualifier la subsumption. 
-Cela implique notamment d'identifier les concepts parmi les mots du vocabulaire, de détecter des paires hyponyme-hyperonyme, et de filtrer ces paires.
+Dans le contexte textuel, on parle plus volontiers d'\textit{hyperonymie} que de subsumption. Un terme $v$ est un \textit{hyperonyme} d'un terme $u$ s'il est plus général que lui. Dans ce cas, on dit que $u$ est un \textit{hyponyme} de $v$. Par exemple, «animal» est un hyperonyme de «chat», ce qui est analogue à la relation de subsumption $\texttt{Chat} \sqsubseteq \texttt{Animal}$. La principale différence entre l'hyperonymie et la subsumption est qu'elle concerne indifféremment les entités et les concepts : ainsi, «Garfield» est un hyponyme de «chat», lui-même hyponyme d'«animal». Dans le cas de la subsumption, on distinguerait pourtant ces deux cas, en disant que «Garfield» est une instance de «chat», et «chat» est subsumé par «animal». On parle parfois de relation \textit{is-a} («est un», en français) : Garfield \textit{est un} chat, un chat \textit{est un} animal.
+
+Les méthodes textuelles comportent généralement trois étapes : identifier les concepts parmi les mots du vocabulaire, identifier les paires hyponyme-hyperonyme probables, et filtrer ces paires pour obtenir une taxonomie.
+
 
 \subsubsection{Utilisation de motifs lexico-syntaxiques}
 
@@ -286,7 +202,7 @@ Pour mettre en pratique cette idée, les méthodes distributionnelles construise
 
 \paragraph{Extraction des concepts}
 
-L'extraction de taxonomie à partir de texte suppose deux étapes : d'abord, identifier, parmi tous les termes du corpus, ceux qui ceux qui constituent des concepts et qui sont donc impliquées dans des relations d'hyperonymie; ensuite, identifier les relations d'hyperonymie entre ces concepts. Les méthodes basées sur des motifs de Hearst effectuent simultanément ces deux étapes; ce n'est pas le cas des méthodes distributionnelles, qui supposent une étape préalable d'\textit{extraction des concepts}. Dans certains cas, les concepts sont considérés comme des données d'entrée, et l'enjeu est simplement de les ordonner hiérarchiquement. Autrement, il est nécessaire de filtrer le corpus, puis d'identifier les concepts : cela consiste généralement à ne garder que les noms, à l'aide d'un étiquettage morpho-syntaxique, puis à les filtrer à l'aide de règles linguistiques ou statistiques (\hl{ref}).
+L'extraction de taxonomie à partir de texte suppose deux étapes : d'abord, identifier, parmi tous les termes du corpus, ceux qui ceux qui constituent des concepts; ensuite, identifier les relations d'hyperonymie entre ces concepts. Les méthodes basées sur des motifs de Hearst effectuent simultanément ces deux étapes; ce n'est pas le cas des méthodes distributionnelles, qui supposent une étape préalable d'\textit{extraction des concepts}. Dans certains cas, les concepts sont considérés comme des données d'entrée, et l'enjeu est simplement de les ordonner hiérarchiquement. Autrement, il est nécessaire de filtrer le corpus, puis d'identifier les concepts : cela consiste généralement à ne garder que les noms, à l'aide d'un étiquettage morpho-syntaxique, puis à les filtrer à l'aide de règles linguistiques ou statistiques \cite{shang2018automated}. % (\hl{ref}).
 
 \paragraph{Approches distributionnelles}
 
@@ -413,8 +329,100 @@ En premier lieu, la majorité des méthodes fonctionne au niveau des concepts, e
 % TaxoGen
 % Gupta
 % Bayesian Rose Tree (Blundell, Song)
-
-
-\section{Regroupement hiérarchique sur les graphes}
 }
 \fi
+
+\subsection{Extraction d'ontologies à partir d'un graphe}
+\label{subsec:litt-te-graph}
+
+
+% \hl{Bla bla extraction à partir de graphe}
+% On présente d'abord les méthodes symboliques, qui utilisent les règles et le formalisme de la logique. Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes. 
+
+Ici, on décrit les approches existantes pour extraire ou étendre une ontologie à partir d'un graphes de connaissance. Là où les approches textuelles sont limitées à l'apprentissage de taxonomie, les méthodes basées sur les graphes permettent plus facilement d'extraire des axiomes expressifs. On cherche généralement à exprimer ces axiomes dans le formalisme de la logique descriptive; certaines des méthodes présentées ici utilisent d'autres formalismes (règles d'association, programme logique), mais le passage d'un système à l'autre ne pose généralement pas de problème.
+
+Une première approche consiste à des techniques issues de l'intelligence artificielle symbolique pour effectuer des raisonnements à partir de règles existantes et déduire de nouveaux axiomes. D'autres méthodes identifient au contraire des régularités dans le graphe, soit par un examen statistique (fréquences relatives des relations et des concepts, calculs de co-occurrences), soit en plongeant les éléments du graphe dans une espace vectoriel qui reflète la structure du graphe.
+
+
+\subsubsection{Méthodes symboliques}
+
+Les méthodes symboliques constituent une première famille d'approches capables de construire de nouveaux axiomes à partir d'axiomes existants. On désigne sous ce nom toutes les méthodes qui manipulent directement des règles logiques.
+Ces méthodes sont pour la plupart mal adaptées aux graphes de connaissances créés automatiquement ou semi-automatiquement, et ce pour deux raisons essentielles : d'une part, ces méthodes demandent beaucoup de ressources, et ne fonctionnent que sur des ontologies réduites; d'autre part, elles sont incapables de gérer correctement l'incertitude et le bruit qui caractérise ces graphes.  On en présente succintement trois grandes familles dans les paragraphes qui suivent.
+
+Les \textbf{raisonneurs}, comme Fact++ \cite{tsarkov2006fact++} ou Hermit \cite{glimm2014hermit}, appliquent des règles de démonstration pour déduire des axiomes nouveaux. Un exemple de ces règles de démonstration est le \textit{modus ponens}, qui consiste simplement en $P \land (P \implies Q) \vdash Q$ : si $P$ est vraie et $P$ implique $Q$, alors $Q$ est vraie. Ces raisonneurs peuvent être utiles pour vérifier si une ontologie donnée est consistante, mais ils ne peuvent pas réellement être utilisés pour l'extraction de taxonomie : 
+d'une part, ils nécessitent une ontologie de départ; d'autre part, ce sont des méthodes \textit{déductives} et donc incapable d'inférer de nouvelles règles à partir des données. %; enfin, la complexité de calcul augmente rapidement, ce qui les rend inadaptés pour des ontologies de grande taille.
+
+Une autre approche symbolique est la \textbf{programmation logique inductive} (ou ILP, pour \textit{Inductive Logic Programming}) \cite{nienhuys1997foundations, de2008probabilistic}: il s'agit cette fois d'une méthode \textit{inductive}, c'est-à-dire qui produit de nouveaux axiomes à partir d'exemples. La programmation logique inductive part d'une série d'axiomes (la \textit{théorie préalable}) et d'exemples positifs et négatifs; elle cherche à produire de nouveaux axiomes qui sont vérifiés par les exemples positifs  mais pas par les exemples négatifs. De manière informelle, on se donne une propriété $P$, une théorie préalable vide, un ensemble d'exemples positifs $E^+=\{P(0), P(2), P(4), P(8) \}$ et $E^- = \{ P(1), P(3), P(5) \}$ – autrement dit, $0, 2, 4, 8$ vérifient $P$ et $1, 3, 5$ ne la vérifient pas\footnote{Exemple tiré de \cite{nienhuys1997foundations}.}. Alors, un exemple de théorie induite est donné par :
+\begin{align}
+    & \textrm{Si } P(x) \textrm{ est vraie, alors } P(x + 2) \textrm{ est vraie.} \\
+    & P(0) \textrm{ est vraie.}
+\end{align}
+Cette théorie ne pourrait être obtenue par un raisonneur, car elle n'est pas une conséquence logique de $E^+$ et de $E^-$ : il s'agit simplement d'une théorie plausible étant donnée les faits observés. Pour obtenir des théories induites pertinentes, l'ILP nécessite donc un choix judicieux d'exemples positifs et négatifs.
+Pour obtenir une théorie induite, deux approches sont possibles : soit partir d'une théorie très générale et la spécialiser itérativement en ajoutant des axiomes ou en précisant les axiomes existants, soit partir d'une théorie très spécifique et la généraliser itérativement.
+En pratique, et comme pour les raisonneurs, les méthodes d'ILP passent difficilement à l'échelle pour les graphes de connaissance de grande taille \cite{srinivasan2012data}, même si des heuristiques plus efficaces ont été proposées \cite{zeng2014quickfoil}. De plus, les données d'un graphe réel sont incomplètes et bruitées, une situation pas ou mal gérée par la programmation logique. 
+
+Dans la section \ref{subsec:texp-exaxiom}, on propose une méthode d'extraction d'axiomes dont le point de départ est proche de l'ILP : on se donne en effet un ensemble d'exemples positifs et négatifs, et on cherche à trouver des axiomes décrivant l'un et pas l'autre. On résout le problème du passage à l'échelle en restreignant drastiquement l'espace de recherche grâce à l'utilisation de plongements vectoriels et le tirage aléatoire (\textit{sampling}). On reprend l'idée d'une amélioration itérative des axiomes par généralisation/spécialisation, mais on gère le bruit et l'incomplétude des données en utilisant des méthodes statistiques et non symboliques.
+
+Une troisième approche symbolique repose sur l'\textbf{analyse formelle de concept} (AFC, en anglais :  \textit{Formal Concept Analysis}), introduite mathématiquement par \cite{wille1982fca} et appliquée à la construction d'ontologie par \cite{cimiano2004conceptual}. L'AFC considère un ensemble d'entités possédant des attributs, et cherche à produire une hiérarchie de \textit{concepts} : dans ce contexte, un concept est une paire $(A, B)$ où $A$ est un ensemble d'entités et $B$ un ensemble d'attributs tels que $B$ est l'ensemble des attributs vérifiés par tous les éléments de $A$, et inversement $A$ est l'ensemble des entités qui vérifient tous les attributs de $B$. L'ensemble des concepts est muni d'une relation d'ordre $\sqsubseteq$ : on a $(A, B) \sqsubseteq (A', B')$ si $A \subseteq A'$ (ou, de manière équivalente, $B' \subseteq B$), analogue à la subsumption décrite plus haut. Munie de cette relation d'ordre, l'AFC induit naturellement une hiérarchie sur les concepts.
+Pour obtenir ces concepts, on utilise une règle de dérivation : si $A$ est un ensemble d'entités, on désigne par $A'$ l'ensemble des attributs communs à tous les éléments de $A$; de la même manière, si $B$ est un ensemble d'attributs, on désigne par $B'$ l'ensemble des entités qui possèdent tous les attributs de $B$. En partant d'une entité $x$, on peut ainsi obtenir $\{x\}'$ l'ensemble des attributs de $x$, puis $\{x\}''$ l'ensemble des entités qui ont exactement les mêmes attributs que $x$ : la paire $(\{x\}'', \{x\}' )$ constitue un premier concept. En ajoutant une nouvelle entité $y$ à $\{x\}''$ et en effectuant à nouveau une double dérivation, on obtient un second concept. Par ailleurs, un ensemble de concepts $C_1, \ldots, C_N$ possède toujours un \textit{sous-concept commun maximal}, c'est-à-dire le plus grand concept $S$ qui vérifie $\forall i, S \sqsubseteq C_i$. De même, chaque ensemble de concepts possède un \textit{superconcept commun minimal}, c'est-à-dire le plus petit concept $S$ tel que $\forall i, C_i \sqsubseteq S$. De plus, il existe un concept minimal, qui contient tous les attributs (et potentiellement aucune entité), et un concept maximal, qui contient toutes les entités (et potentiellement aucun attribut). 
+%Le formalisme de l'AFC possède des soubassements mathématiques bien étudiés, mais la conception d'algorithmes efficaces et appropriés à des graphes de grande taille demeure un problème ouvert
+À partir de ces notions, de nombreux algorithmes ont été proposés pour l'identification et la hiérarchisation de concepts \cite{valtchev2001building, nourine1999fast, farach2008linear}; 
+toutefois, la conception d'algorithmes efficaces et applicables à grande échelle demeure un problème ouvert %ce problème continue à faire l'objet de recherches actives, notamment pour en réduire la complexité et donc permettre des applications à des jeux de données étendus 
+\cite{li2016approximate, zhang2019new}.
+L'AFC peut être étendue aux relations binaires, c'est-à-dire à des triplets $(h, r, t)$ où $h, t$ sont des entités reliées par la relation $r$ : on parle alors d'\textbf{analyse relationnelle de concept} (ARC, ou \textit{Relational Concept Analysis} en anglais) \cite{bendaoud2008rcafca}. Une autre extension de l'AFC consiste à remplacer la logique booléenne usuelle par la logique floue, qui accepte des valeurs de vérité continues entre 0 et 1 et qui permet de mieux modéliser l'incertitude \cite{de2012hierarchical, mao2019construction}.
+\subsubsection{Méthodes statistiques}
+
+Les méthodes statistiques visent à extraire des règles logiques en observant des régularités statistiques dans un graphe de connaissance : par exemple, en comptant les co-occurrences de certaines classes ou de certaines relations dans le voisinage d'une entité. 
+
+On présente ici la méthode de \textit{Statistical Schema Induction} (SSI, en français : induction statistique d'ontologie) \cite{volker2011statistical}, qui se rapproche du travail que nous présentons à la section \ref{subsec:texp-exaxiom}. Cette approche repose sur l'apprentissage de \textit{règles d'association} \cite{zhang2003association}, qui sont essentiellement des implications logiques inférées d'après des co-occurrences observées dans les données. 
+Une règle d'association s'écrit sous la forme $X \rightarrow Y$. On peut par exemple imaginer une règle $\{\texttt{Personne}, \exists \texttt{écrit}.\texttt{Poème} \} \rightarrow \texttt{Poet}$ : si une même entité est de type \texttt{Personne} et vérifie l'axiome $\exists \texttt{écrit}.\texttt{Poème}$, alors cette entité est probablement de type \texttt{Poète}.
+
+Pour extraire ces règles, on se donne un \textit{tableau de transactions} $\textbf{T}$, une matrice dont les lignes représentent les entités $e_1, \ldots, e_n$ du graphe, et les colonnes des prédicats logiques $P_1, \ldots, P_m$. Ces prédicats incluent les concepts nommés $C$ (comme \texttt{Artist}, \texttt{Person}, etc.) et différentes formes de restrictions existentielles comme $\exists r.C$ ou  $\exists r.\top$. On note $\Ent$ l'ensemble des entités, et $\mathcal{P}$ l'ensemble des prédicats. 
+La coordonnée $(i, j)$ de $\textbf{T}$ contient $1$ si $e_i$ vérifie le prédicat $P_j$, et $0$ sinon. Soit $X \subseteq \mathcal{P}$ un ensemble de prédicats, alors le \textit{support} de X est l'ensemble des entités qui vérifient tous ces prédicats simultanément :
+\begin{equation}
+    \textrm{Supp}(X) = \frac{|\{ e \in \Ent : \forall P \in X, P(e) \}|}{|\Ent |}
+\end{equation}
+L'indice de confiance associée à une règle $X \rightarrow Y$ se calcule alors par :
+\begin{equation}
+    \textrm{Conf}(X \rightarrow Y) = \frac{\textrm{Supp}(X \cup Y)}{\textrm{Supp}(X)}
+\end{equation}
+Au numérateur, on compte le nombre d'entités qui vérifient à la fois les prédicats de $X$ et de $Y$, que l'on rapporte au nombre d'entités qui vérifient les prédicats de $X$ (notons que l'on a nécessairement $\textrm{Supp}(X \cup Y) < \textrm{Supp}(X)$, car une entité qui vérifie à la fois les prédicats de $X$ et de $Y$ vérifie \textit{a fortiori} ceux de $Y$). Un indice égal à $1$ signifie que toutes les entités qui vérifient $X$ vérifient également $Y$, et donc que la règle $X \rightarrow Y$ est parfaitement validée par les données; dans la pratique, on définit plutôt un seuil $\tau$ au-delà duquel la règle d'association est considérée comme valide.
+
+Le nombre de combinaisons de prédicats possibles croît exponentiellement : les énumérer est donc impossible, même pour des jeux de données réduits. Plusieurs heuristiques ont été développées, dont la plus connue est Apriori \cite{srikant1994apriori}, elle-même améliorée à plusieurs reprises, par exemple en minimisant le nombre de lectures du graphe \cite{yuan2017improved} ou en implémentant un mécanisme de parallélisme avec MapReduce \cite{lin2014mapreduce}. % Autres approches : FP-growth, OPUS
+
+Une fois les règles d'association extraites, on peut les filtrer et les convertir en axiomes de subsumption. Cette approche produit des axiomes de subsumption isolés les uns des autres, alors qu'on souhaite généralement obtenir une hiérarchie contenant tous les concepts nommés et, éventuellement, de nouveaux concepts expressifs. Dans notre propre méthode, nous reprenons l'idée d'extraire des axiomes en examinant statistiquement un tableau de co-occurrence entités-axiomes. Notre méthode propose toutefois deux différences essentielles : d'une part, elle s'applique sur un groupe d'entité restreint, qui a été défini de manière non supervisée en se basant sur des plongements vectoriels; d'autre part, l'extraction d'axiome sert uniquement à \textit{étiquetter} des groupes d'entités, et non pas à obtenir des liens de subsumption. Dans notre cas, les relations de subsumptions sont identifiées par regroupement hiérarchique.
+
+
+
+% À partir de textes
+% Traduction d'axiomes depuis le langage naturel
+\subsubsection{Utilisation de plongements vectoriels de graphe pour l'extraction d'ontologies}
+
+Les plongements vectoriels de graphe de connaissance sont très utilisés pour découvrir des régularités au niveau des instances (ce qui permet notamment d'évaluer la validité d'un triplet inconnu ou de prédire de nouveaux triplets), mais ils ont encore été peu exploités pour la manipulation de concepts ou l'extraction de taxonomie ou d'ontologie. Dans cette optique, \cite{gutierrez2018knowledge} étudie les liens entre les axiomes logiques et la géométrie de différents modèles de plongement, dans le but de pouvoir traduire un axiome sous forme de plongement vectoriel sans perte d'information ou d'expressivité. IterE \cite{zhang2019iteratively} apprend conjointement des plongements vectoriels et des règles logiques, les deux se renforçant mutuellement. Des plongements sont initialement appris à partir du graphe de connaissance; ensuite, des axiomes potentiels sont générés et on leur attribue un score de vraisemblance, calculé à l'aide des plongements vectoriels; enfin, ces axiomes servent à générer de nouveaux triplets d'entraînement : on peut alors répéter ces trois étapes pour améliorer itérativement les plongements et les axiomes. Cette méthode est uniquement évaluée sur des graphes de petite taille (moins de 50 000 entités); savoir si elle est applicable à plus large échelle reste une question ouverte. RLvLR \cite{omran2018scalable} utilise la similarité entre les plongements des relations pour évaluer \textit{a priori} la validité d'un axiome, ce qui permet de restreindre l'espace de recherche et donc d'appliquer la méthode à des graphes de grande taille comme Wikidata ou DBpédia. En contrepartie, l'expressivité des axiomes extraits est limitée; de plus, les axiomes extraits ne sont pas organisés entre eux sous forme de taxonomie.
+
+Plus proche de notre propre méthode, \textbf{TIEmb} \cite{ristoski2017large} extrait une taxonomie (non-expressive) à partir de plongements vectoriels d'entités. Comme notre méthode, TIEmb considère comme données d'entrée un ensemble de paires $\{(\textbf{e}_i, t_i) \}_{i=1, \ldots, n}$, où $\textbf{e}_i \in \R^d$ est le plongement vectoriel de l'entité $e_i$, et $t_i$ est son type, et produit en sortie une taxonomie, c'est-à-dire un ensemble d'axiomes de subsumption $t_ \sqsubset t_j$. Pour cela, chaque type $t$ est représenté par un sphère $S_t$ à $d$ dimensions, dont le centre est un vecteur $\textbf{c}_t$ défini par :
+\begin{equation}
+ \textbf{c}_t = \frac{1}{n_t} \sum_{\substack{i \in [1, n] \\ t_i = t}} \textbf{e}_i
+\end{equation}
+Avec $n_t = |\{ i \in [1, n] : t_i = t \}|$ le nombre d'entités de type $t$ dans les données. $\textbf{c}_t$ représente le centroïde des instances de $t$.
+
+Le rayon $r_t$ de $S_t$ est lui défini comme la distance moyenne entre les instances de $t$ et le centroïde $\textbf{c}_t$ :
+\begin{equation}
+    r_t = \frac{1}{n_t}  \sum_{\substack{i \in [1, n] \\ t_i = t}} \| \textbf{e}_i - \textbf{c}_t \|_2
+\end{equation}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/tiemb.png}
+    \caption[Principe général de TIEmb]{Plongements et sphères associées à trois classes dans le cadre de la méthode TIEmb, dans le cas bidimensionnel.}
+    \label{fig:litt-tiemb}
+\end{figure}
+
+
+Dès lors, l'axiome $t \sqsubset t'$ est prédit si et seulement si $S_t \subset S_{t'}$ : la sphère d'un supertype englobe les sphères de ses sous-types, comme illustré à la figure. Enfin, une étape finale de filtrage est appliquée pour enlever les cycles et obtenir une taxonomie valide. 
+
+TIEmb présente l'avantage d'être conceptuellement simple, et peu coûteux en calcul, ce qui permet de l'appliquer à très grande échelle. Une différence cruciale avec notre approche est que le regroupement des entités au sein des sphères est entièrement supervisé, puisqu'il repose sur les types $t_i$ contenus dans les données, et pas sur la géométrie des plongements : TIEmb ne permet donc pas d'identifier de nouveaux groupes cohérents d'entités et donc de détecter de nouvelles classes. Dans le chapitre \ref{chap:te}, on compare notre approche d'extraction de taxonomie non-expressive à TIEmb; dans le chapitre \ref{chap:texp}, on illustre les possibilités offertes par le regroupement non-supervisé en extrayant une taxonomie expressive de DBpédia.
+
+
+% \section{Regroupement hiérarchique sur les graphes}
