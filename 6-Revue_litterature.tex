@@ -1,4 +1,4 @@
-\Chapter{Contexte et travaux connexes}\label{chap:revue}
+\Chapter{CONTEXTE ET TRAVAUX CONNEXES}\label{chap:revue}
 
 
 \section{Web sémantique et logique descriptive}
@@ -66,86 +66,100 @@ La caractérisation ci-dessus ne constitue pas une classification formelle des r
 
 \subsection{Ontologies et logique descriptive}
 
+\iffalse {
 Introduction : axiomes logiques permettant de décrire des classes, des relations, des interactions entre les deux, des restrictions des contraintes, etc.
 
+La force d'un graphe de connaissance tient en grande partie à son caractère structuré, qui permet de s'exprimer sans ambiguïté, et de définir des règles que doivent vérifier les données : quels types d'objets sont reliés par une certaine relation, comment différents concepts sont reliés entre eux
+Pour cela, 
+
+de définir quel type d'objets sont reliés par une certaine relation, comme 
+}
+\fi
 % Présentation
 
-La logique descriptive est un terme général englobant une famille de systèmes logiques, dont l'usage est précisément de pouvoir décrire des données multi-relationnelles. 
-Le choix d'un système logique nécessite un compromis entre deux aspects : l'expressivité et la calculabilité. L'expressivité désigne la capacité à modéliser des situations complexes; la calculabilité concerne 
+La logique descriptive est un terme général englobant une famille de systèmes logiques, dont l'usage est précisément de pouvoir décrire des données multi-relationnelles. La logique descriptive cherche à obtenir un compromis entre deux aspects : l'expressivité – la capacité à décrire des situations complexes – et la calculabilité – la possibilité d'effectuer des raisonnements en un temps acceptable. Selon l'équilibre souhaité entre ces deux aspects, on autorise ou non certains types d'axiomes : $\mathcal{SROIQ}$ \cite{horrocks2006sroiq} est le système le plus large et le plus expressif, qui autorise l'ensemble des axiomes de la logique descriptive; $\mathcal{EL}$ et DL-lite sont parmi les plus simples \cite{krotzsch2012owl}; $\mathcal{ALC}$ se situe entre ces deux extrêmes.
 
-On souhaite en effet avoir une expressivité suffisante pour être capable de modéliser logiquement des situations complexes; toutefois, augmenter l'expressivité d'une logique a pour conséquence d'accroître le temps de calcul pour effectuer des raisonnements.
+%Le choix d'un système logique nécessite un compromis entre deux aspects : l'expressivité et la calculabilité. L'expressivité désigne la capacité à modéliser des situations complexes; la calculabilité concerne 
+
+% On souhaite en effet avoir une expressivité suffisante pour être capable de modéliser logiquement des situations complexes; toutefois, augmenter l'expressivité d'une logique a pour conséquence d'accroître le temps de calcul pour effectuer des raisonnements.
 
 
-La logique descriptive manipule trois types d'éléments : des entités (ou \textit{individus}), des relations, et des concepts. Les concepts sont des ensembles d'entités, et les relations décrivent des liens entre deux entités. Entités, relations et concepts peuvent être combinés entre eux pour former des \textit{axiomes}; les types de combinaisons possibles varient selon la logique descriptive choisie
+La logique descriptive manipule trois types d'éléments : des entités (ou \textit{individus}), des relations, et des concepts. Les concepts sont des ensembles d'entités, et les relations décrivent des liens entre deux entités. Entités, relations et concepts peuvent être combinés entre eux pour former des \textit{axiomes}; les types de combinaisons possibles varient selon la logique descriptive choisie. Une ontologie (parfois appelée un \textit{schéma}) est alors simplement un ensemble d'axiomes, chacun d'entre eux devant être vrai dans la situation décrite.
+Ici, on présente un aperçu des types d'axiomes les plus utilisés; %présentera uniquement les axiomes utilisés dans la suite du mémoire; 
+pour une description plus complète, on pourra consulter \cite{krotzsch2013description}. % Il est usuel de distinguer trois grands types d'axiomes : ceux qui expriment 
 
-une ontologie est alors simplement un ensemble d'axiomes, chacun d'entre eux devant être vrai dans la situation décrite.
 
-Ici, on présentera uniquement les axiomes utilisés dans la suite du mémoire; pour une description plus complète, on pourra consulter \cite{krotzsch2013description}. 
+La forme la plus simple d'un concept est un concept nommé (parfois appelé un \textit{type}), comme par exemple \texttt{Personne}, \texttt{Lieu}, etc. On peut également définir un \textit{concept singleton}, c'est-à-dire un concept contenant une unique instance : $\{ \texttt{alice} \}$ ou $\{ \texttt{bob} \}$ par exemple. Enfin, on dispose de deux concepts spéciaux : le concept universel $\top$, qui contient toutes les entités, et le concept vide $\bot$, qui n'en contient aucune. On peut alors assembler et relier ces différents types de concepts, en utilisant les axiomes qui suivent.
 
-Subsumption 
+Une première forme d'axiome est la \textbf{subsumption} entre un concept $A$ et un concept $B$, notée $A \sqsubset B$, qui indique que les instances de $A$ sont également instances de $B$. Par exemple :
 \begin{equation}
     \texttt{Athlète} \sqsubseteq \texttt{Personne}
 \end{equation}
 
-
-On peut également définir un concept singleton, c'est-à-dire un concept constitué d'un seul individu :
-\begin{equation}
-    \{ \texttt{Canada} \}
-\end{equation}
-
-Équivalence
+On peut aussi indiquer l'\textbf{équivalence} entre deux concepts $A$ et $B$, en écrivant $A \equiv B$. Deux concepts sont équivalents s'ils partagent les mêmes instances, ce qui correspond à une subsumption mutuelle $A \sqsubseteq B$ et $B \sqsubseteq A$. Par exemple :
 \begin{equation}
     \texttt{Personne} \equiv \texttt{Humain}
 \end{equation}
 
-Disjonction
+Pour combiner deux concepts $A$ et $B$, on possède un opérateur de disjonction et un opérateur de conjonction. La \textbf{disjonction} (ou \textit{union)} de $A$ et de $B$, notée $A \sqcup B$, est un nouveau concept qui contient tous les individus qui sont instances de $A$ ou instances de $B$. Cela permet par exemple d'exprimer l'idée qu'un animal est soit un vertébré, soit un invertébré :
 \begin{equation}
     \texttt{Animal} \equiv \texttt{Vertébré} \sqcup \texttt{Invertébré}
 \end{equation}
-
-Conjonction
+La \textbf{conjonction} (ou \textit{intersection}) de $A$ et de $B$, notée $A \sqcap B$, est un concept dont les instances sont tous les individus qui sont à la fois instances de $A$ et instances de $B$. Cela permet d'exprimer des axiomes de la forme :
 \begin{equation}
-    A \sqcap B
+    \texttt{Mère} \equiv \texttt{Parent} \sqcap \texttt{Femme}
 \end{equation}
 
-Concept universel
+Le \textbf{complémentaire} d'un concept $A$, noté $A^-$, contient l'ensemble des individus qui ne sont pas instances de $A$. On peut ainsi ré-écrire la relation entre vertébrés et invertébrés à l'aide du complémentaire, en disant qu'un invertébré est un animal qui n'est pas vertébré :
 \begin{equation}
-    \top
+    \texttt{Invertébré} \equiv \texttt{Animal} \sqcap (\texttt{Vertébré}^-)
 \end{equation}
 
-Complémentaire
-\begin{equation}
-    A^-
-\end{equation}
-
-Existentiel
-\begin{equation}
-    \exists \texttt{écrit}.\texttt{Poème}
-\end{equation}
-
-% Existentiel 2
+Enfin, on souhaite pouvoir relier les concepts à des relations, et pas seulement les concepts entre eux. Pour cela, on dispose de la \textbf{restriction existentielle} $\exists R.C$, qui représente l'ensemble des individus reliés à une instance de $C$ par la relation $R$. Cela permet par exemple de définir les poètes comme l'ensemble des personnes qui écrivent des poèmes :
 \begin{equation}
     \texttt{Poète} \equiv \texttt{Personne} \sqcap \exists \texttt{écrit}.\texttt{Poème}
 \end{equation}
+L'utilisation d'un concept singleton dans un quantificateur existentiel, qui donne un axiome de la forme $\exists R.\{ e \}$, permet de représenter tous les individus reliés à l'individu $e$ par la relation $R$, par exemple :
+\begin{equation}
+    \texttt{PoèteCanadien} \equiv \texttt{Poète} \sqcap \exists  \texttt{nationalité}. \{\texttt{Canada} \}
+\end{equation}
+
+Enfin, si l'on souhaite seulement représenter les individus qui sont sujets d'une relation, sans restriction sur le type de l'objet associé, on peut utiliser le concept universel :
+\begin{equation}
+    \texttt{Possédant} \equiv \exists \texttt{possède}.\top
+\end{equation}
+
+Il existe également la \textbf{restriction universelle}, notée $\forall R.C$. Un indivdu $x$ en fait partie à la condition que tous les individus $y$ tels que $\rel{x}{R}{y}$ %auquel il est relié par $R$ 
+soient des instances de $C$ (cela inclut donc le cas où $x$ n'est pas sujet de la relation $R$).
+
+Enfin, on peut également obtenir de nouvelles relations à partir de relations existantes. La \textbf{composition de relations}, notée $R_1 \circ R_2$, produit une nouvelle relation qui relie $x$ à $y$ si et seulement si l'on peut trouver $z$ tel que $\rel{x}{R_1}{z}$ et $\rel{z}{R_2}{y}$. L'inverse d'une relation $R$, notée $R^-$ ou parfois $R^{-1}$, est une relation qui relie $x$ à $y$ dès que $y$ est relié à $x$ par $R$.
 
 
-% Sémantique ? --> pas nécessaire ici / Inférence, raisonnement
+\paragraph{Sémantique d'une ontologie}
 
-% Taxonomie, ontologie
-Dans la suite, on désignera par ontologie n'importe quel ensemble d'axiomes; par taxonomie, un ensemble d'axiomes de subsumption
+% À partir de maintenant, on désigne par \textit{ontologie} n'importe quel ensemble d'axiomes, et par \textit{taxonomie}, un ensemble d'axiomes de subsumption $A \sqsubset B$. Si on restreint $A$ et $B$ aux seuls concepts nommés, la taxonomie est dite \textit{non-expressive}; sinon, on parlera de taxonomie \textit{expressive}.
 
-% OWL
+On a présenté ici une vision intuitive de la logique descriptive et de ses types d'axiomes. Derrière cette vision intuitive, il existe une sémantique formelle des axiomes logiques et une notion d'interprétation, dont on présente ici les grandes lignes.
+Une ontologie correspond à une description partielle du monde; plusieurs états du monde peuvent correspondre à cette description. Une \textit{interprétation} consiste justement à faire correspondre l'ontologie à un état du monde particulier, en reliant chaque entité apparaissant dans l'ontologie à un individu, chaque concept nommé à un ensemble d'individus et chaque relation à un ensemble de paires d'individus. Les axiomes décrits plus haut possèdent tous une \textit{sémantique} formelle, qui est simplement une traduction mathématique ensembliste de la description intuitive qu'on en a fait. Par exemple, la conjonction de concepts $A \sqcap B$ se traduit sémantiquement par l'intersection des ensembles d'individus associés à $A$ et $B$. Cette sémantique permet de vérifier, de façon univoque, si un axiome est vérifié dans l'interprétation choisie. Une interprétation \textit{satisfait} l'ontologie $\mathcal{O}$ si tous les axiomes de $\mathcal{O}$ sont vérifiés; un axiome $\alpha$ est une \textit{conséquence} de cette ontologie s'il est vérifié dans toutes les interprétations qui satisfont $\mathcal{O}$, ce que l'on notera $\mathcal{O} \vdash \alpha$.
 
-% Plongements de graphe
+On dit qu'une ontologie est \textit{consistante} s'il existe au moins un état du monde (une interprétation) qui satisfait cette ontologie; dans le cas contraire, l'ontologie ne peut jamais être satisfaite, et présente donc peu d'intérêt. Le \textit{raisonnement} logique consiste principalement à vérifier la consistance d'une ontologie d'une part, et d'autre part à déduire de nouveaux axiomes qui sont des conséquences logiques de l'ontologie de départ.
+
+
+\paragraph{Le formalisme OWL}
+
+Les axiomes de la logique descriptive peuvent être représentés informatiquement dans le langage OWL (\textit{Web Ontology Language}) \cite{Hitzler:12:OWO}, que l'on peut voir comme une extension de RDF pour la représentation d'ontologies. Un axiome de subsumption $A \sqsubset B$ est représenté en OWL par un triplet \texttt{A rdfs:subClassOf B}; l'équivalence $\equiv$, la conjonction $\sqcap$ et la disjonction $\sqcup$ sont représentées respectivement par les relations \texttt{owl:equivalentClass}, \texttt{owl:intersectionOf} et \texttt{owl:unionOf}. Par rapport à la logique descriptive, OWL ajoute entre autres la gestion des littéraux.
+
+On peut voir un graphe de connaissance comme la combinaison d'un graphe RDF, qui relie les entités entre elles au moyen de relations, et d'un graphe OWL qui décrit des axiomes reliant les concepts et les relations. Ces deux graphes sont liés entre eux, principalement par la relation \texttt{rdf:type} qui relie les entités (RDF) aux concepts (OWL). La tâche d'extraction d'ontologie peut dès lors être vue comme la création ou l'enrichissement du graphe OWL à partir du graphe RDF. Cette division RDF/OWL est parfois simplificatrice, mais elle décrit assez fidèlement le cas de DBpédia et le problème que nous traitons dans ce mémoire.
+
 
 \section{Extraction automatique d'ontologie et de taxonomie}
 
 % Non ça ça va dans la section 'Problématique' : Constuire une ontologie manuellement est coûteux. Le graphe est dynamique et les données changent bla bla
 
-Le problème d'extraction d'axiomes logiques n'est pas nouveau et prend des formes très variées. Dans le cas général, on cherche soit à apprendre une ontologie à partir de zéro (ref), soit à étendre une ontologie existante en construisant de nouveaux axiomes (ref). Un sous-problème fréquent est l'extraction de \textit{taxonomie} : il s'agit alors d'extraire uniquement des axiomes de subsumption, c'est-à-dire ayant la forme $A \sqsubseteq B$, afin d'obtenir une hiérarchie sur les concepts. Si on autorise ces concepts à prendre la forme d'axiomes plus complexes, on parlera d'extraction de taxonomie \textit{expressive}. 
 
-On peut distinguer deux grandes familles de méthodes, selon la source des données utilisées : les méthodes basées sur le texte, et les méthodes basées sur un graphe de connaissance. Étant donné la très large disponibilité de corpus textuels étendus (et particulièrement en langue anglaise), les méthodes utilisant le texte sont aujourd'hui les plus fréquentes, et se concentrent particulièrement sur l'extraction de taxonomie. Les méthodes basées sur le graphe ont toutefois leurs avantages : en particulier, elles peuvent fonctionner pour les graphes spécifiques à un domaine et pour lesquels il n'existe pas de données textuelles – c'est le cas notamment du domaine biomédical. Notons que l'émergence conjointe des plongements lexicaux (pour le texte) et des plongements vectoriels de graphe permet d'envisager une convergence de ces deux familles de méthodes.
+Le problème d'extraction d'axiomes logiques n'est pas nouveau et prend des formes très variées. Dans le cas général, on cherche soit à apprendre une ontologie à partir de zéro \cite{lehmann2009dl, joinmerge, petrucci2018expressive, sritha2016survey, volker2011statistical}, soit à étendre une ontologie existante en construisant de nouveaux axiomes \cite{li2019ontology, faralli2017contrastmedium, wu2008automatically}. Un sous-problème fréquent est l'extraction de \textit{taxonomie} \cite{petrucci2018expressive, nickel2018learning, atzori2020fully, ristoski2017large}: il s'agit alors d'extraire uniquement des axiomes de subsumption, c'est-à-dire ayant la forme $A \sqsubseteq B$, afin d'obtenir une hiérarchie sur les concepts. Si on autorise ces concepts à prendre la forme d'axiomes plus complexes, on parlera d'extraction de taxonomie \textit{expressive}. 
 
+On peut distinguer deux grandes familles de méthodes, selon la source des données utilisées : les méthodes basées sur le texte, et les méthodes basées sur un graphe de connaissance. Étant donné la très large disponibilité de corpus textuels étendus (et particulièrement en langue anglaise), les méthodes utilisant le texte sont aujourd'hui les plus fréquentes, et se concentrent particulièrement sur l'extraction de taxonomie. Les méthodes basées sur le graphe ont toutefois leurs avantages : en particulier, elles peuvent fonctionner pour les graphes spécifiques à un domaine et pour lesquels il n'existe pas de données textuelles – c'est le cas notamment du domaine biomédical. Notons que l'émergence conjointe des plongements lexicaux (pour le texte) et des plongements vectoriels de graphe permet d'envisager une convergence de ces deux familles de méthodes \cite{nikolaev2020joint}.
 
 \subsection{Extraction d'ontologies à partir d'un graphe}
 
@@ -198,7 +212,7 @@ L'indice de confiance associée à une règle $X \rightarrow Y$ se calcule alors
 \end{equation}
 Au numérateur, on compte le nombre d'entités qui vérifient à la fois les prédicats de $X$ et de $Y$, que l'on rapporte au nombre d'entités qui vérifient les prédicats de $X$ (notons que l'on a nécessairement $\textrm{Supp}(X \cup Y) < \textrm{Supp}(X)$, car une entité qui vérifie à la fois les prédicats de $X$ et de $Y$ vérifie \textit{a fortiori} ceux de $Y$). Un indice égal à $1$ signifie que toutes les entités qui vérifient $X$ vérifient également $Y$, et donc que la règle $X \rightarrow Y$ est parfaitement validée par les données; dans la pratique, on définit plutôt un seuil $\tau$ au-delà duquel la règle d'association est considérée comme valide.
 
-Le nombre de combinaisons de prédicats possibles croît exponentiellement : les énumérer est donc impossible, même pour des jeux de données réduits. Plusieurs heuristiques ont été développées, dont la plus connue est Apriori \cite{srikant1994apriori}, elle-même améliorée à plusieurs reprises, par exemple en minimisant le nombre de lectures du graphe \cite{yuan2017improved} ou en implémentant un mécanisme de parallélisme avec MapReduce \cite{lin2014mapreduce}. Autres approches : FP-growth, OPUS
+Le nombre de combinaisons de prédicats possibles croît exponentiellement : les énumérer est donc impossible, même pour des jeux de données réduits. Plusieurs heuristiques ont été développées, dont la plus connue est Apriori \cite{srikant1994apriori}, elle-même améliorée à plusieurs reprises, par exemple en minimisant le nombre de lectures du graphe \cite{yuan2017improved} ou en implémentant un mécanisme de parallélisme avec MapReduce \cite{lin2014mapreduce}. % Autres approches : FP-growth, OPUS
 
 
 Une fois les règles d'association extraites, on peut les convertir en axiomes de subsumption et les filtrer pour obtenir une taxonomie expressive. 
@@ -322,7 +336,7 @@ Enfin, plusieurs travaux ont suggéré de quitter l'espace euclidien et de privi
     \begin{subfigure}{.32\textwidth}
           \centering
           % include first image
-          \includegraphics[width=.8\linewidth]{img/emb-orderemb.png}  
+          \includegraphics[width=.8\linewidth]{img/orderembboxed.png}  
           \caption{\textit{Order Embeddings}}
           \label{subfig:orderemb}
     \end{subfigure}
@@ -340,7 +354,7 @@ Enfin, plusieurs travaux ont suggéré de quitter l'espace euclidien et de privi
           \caption{Plongements de Poincaré}
           \label{subfig:poincone}
     \end{subfigure}
-    \caption[Plongements lexicaux spécifiques à l'hyperonymie]{(brouillon) Zones d'hyponymies pour  différents modèles de plongement lexical utilisés pour la détection d'hyperonymes. La zone d'hyponymie associée à un concept contient tous les hyponymes de ce concept.}
+    \caption[Plongements lexicaux spécifiques à l'hyperonymie]{Zones d'hyponymies pour  différents modèles de plongement lexical utilisés pour la détection d'hyperonymes. La zone d'hyponymie associée à un concept contient tous les hyponymes de ce concept. Les illustrations proviennent, de gauche à droite, de \cite{vendrov2015order}, \cite{vilnis2018probabilistic} et \cite{ganea2018hyperbolic}.}
     \label{fig:litt-emb-models}
 \end{figure}
 
