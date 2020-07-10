@@ -1,0 +1,100 @@
+\begin{tikzpicture}[
+  box/.style={draw=gray, thick, align=center},
+  arrow/.style={->, shorten >=3pt, gray},
+  node/.style={draw=gray, fill=gray!20},
+  hnode/.style={draw=accent1, fill=accent1!20},
+  snode/.style={draw=accent1, fill=accent1!20, very thick},
+  exparr/.style={->, red, thick},
+  axiomnode/.style={text=accent2},
+  axiomedge/.style={dashed, accent2},
+  short/.style={shorten >= 4pt, shorten <= 4pt}
+]
+
+\def\base{1.2};
+\def\y{\base*1.3};
+\def\dy{0.8};
+\def\x{\base*1};
+\def\sep{\base*0.3};
+\def\xoff{\base*0.3};
+
+\node [node] (a1) at (-4*\x-\sep, 0) {};
+\node [node] (a2) at (-3*\x-\sep, 0) {};
+\node [node] (a3) at (-2*\x, 0) {};
+\node [node] (a4) at (-\x, 0) {};
+
+\node (a5) at (\xoff, 0) {};
+\node[snode] (a6) at (\xoff+\x, 0) {5};
+\node[hnode] (a7) at (\xoff+2*\x, 0) {6};
+
+\node [node] (b1) at (-3.5*\x-\sep, \y) {};
+\node [node] (b2) at (-1.5*\x, \y) {};
+\node [snode] (b3) at (\xoff, \y) {3};
+\node [hnode] (b4) at (1.5*\x + \xoff, \y) {4};
+
+\node [snode] (c1) at (-2.5*\x-0.5*\sep, \y*(1+\dy) {1};
+\node [hnode] (c2) at (\xoff + 0.75*\x, \y*(1+\dy) {2};
+
+\node [hnode] (root) at (0.5*\xoff-0.25*\sep-0.5*1.75*\x, \y+\y*\dy+\y*\dy*\dy) {0};
+
+\draw[arrow] (b1) to (a1);
+\draw[arrow] (b1) to (a2);
+\draw[arrow] (b2) to (a3);
+\draw[arrow] (b2) to (a4);
+
+%\draw[arrow] (b3) to (a5);
+\draw[arrow] (b4) to (a6);
+\draw[arrow] (b4) to (a7);
+
+\draw[arrow] (c1) to (b1);
+\draw[arrow] (c1) to (b2);
+\draw[arrow] (c2) to (b3);
+\draw[arrow] (c2) to (b4);
+
+\draw[arrow] (root) to (c1);
+\draw[arrow] (root) to (c2);
+
+\node[above left=0.1cm of root] (1a) {} ;
+\node[above left=0.1cm of c1] (1b) {};
+\draw[exparr, short] (1a) to 
+%node[above left, red] {Recherche à gauche} 
+(1b);
+
+\node[right=0.4cm of c1] (2a) {};
+\node[left=0.4cm of c2] (2b) {};
+\draw[exparr] (2a) to[bend left] 
+%node[below=0.4cm, red] {Recherche à droite} 
+(2b);
+
+\node[left=0.1cm of c2] (3a) {};
+\node[above left=0.1cm of b3] (3b) {};
+\draw[exparr] (3a) to (3b);
+
+\node[right=0.1cm of b3] (4a) {};
+\node[left=0.1cm of b4] (4b) {};
+\draw[exparr] (4a) to[bend left] (4b) {};
+
+\node[left=0.1cm of b4] (5a) {};
+\node[above left=0.1cm of a6] (5b) {};
+\draw[exparr] (5a) to (5b);
+
+\node[right=0.01cm of a6] (6a) {};
+\node[left=0.01cm of a7] (6b) {};
+\draw[exparr] (6a) to[bend left] (6b) {};
+
+\node[axiomnode, above right=1cm of c2] (lc2) {\texttt{indéfini}};
+\node[axiomnode, above right=1cm of b4] (lb4) {\texttt{indéfini}};
+\node[axiomnode, above right=1cm of a7] (la7) {\texttt{indéfini}};
+\node[axiomnode, below right=1cm of a6] (la6) {$\exists \texttt{dbo:totalLaunches}.\texttt{integer}$};
+\node[axiomnode, below left=1cm of a5, align=right] (la5) {$\texttt{dbo:Ship} \lor \texttt{dbo:Aircraft}$};
+\node[axiomnode, above right=1cm of root] (lroot) {racine \texttt{dbo:MeanOfTransportation}};
+\node[axiomnode, above left=1cm of c1] (lc1) {\texttt{dbo:Automobile}};
+
+\draw[axiomedge] (c2) to (lc2);
+\draw[axiomedge] (b4) to (lb4);
+\draw[axiomedge] (a7) to (la7);
+\draw[axiomedge] (a6.south) to (la6.west);
+\draw[axiomedge] (b3.south) to (la5.east);
+\draw[axiomedge] (c1) to (lc1.east);
+\draw[axiomedge] (root) to (lroot.west);
+
+\end{tikzpicture}

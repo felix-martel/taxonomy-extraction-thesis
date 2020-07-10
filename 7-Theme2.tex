@@ -256,32 +256,6 @@ On peut alors définir la loi de la variable aléatoire $Z_t$, en posant pour $C
 \end{equation}
 Par construction du softmax, la position la plus probable pour $Z_t$ est le cluster qui a la mesure $F_1$ la plus élevée; toutefois, des clusters qui ont une mesure $F_1$ proche de la valeur maximale se verront également attribuer des probabilités signifcatives. L'utilisation d'une exponentielle et un choix de $\beta \gg 1$ permet à l'inverse de faire approcher de zéro les valeurs de $F_1$ éloignées du maximum, et donc d'éviter les localisations aberrantes de $Z_t$. 
 
-\iffalse {
-La première étape est de transformer les mesures $F_1$ en probabilités, à l'aide d'une fonction softmax. Pour un type $t$ et un cluster $C$, on définit ainsi la probabilité que le cluster $C$ représente le type $t$ :
-\begin{equation}
-    P(m(t) = C) = \frac{\displaystyle e^{ \beta F_1(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F_1(t, C')}}
-\end{equation}
-
-Le paramètre $\beta > 0$ contrôle la concentration de la distribution autour du maximum. Le cas $\beta \rightarrow 0$ attribue à tous les axiomes la même probabilité, tandis que le cas $\beta \rightarrow \infty$ donne toute la masse de probabilité à la valeur maximum, ce qui se rapproche de l'approche précédente. Le choix de la valeur de $\beta$ est discuté dans la section 
-
-Ce score d'injection $P(m(t) = C)$ peut ensuite être utilisé pour calculer la probabilité d'un axiome de subsumption $(t' \sqsubset t)$, en tirant profit de la structure d'arbre qui existe entre les clusters. 
-Écrire ce score d'injection comme une probabilité $P(m(t) = C)$ permet d'interpréter $(m(t) = C)$ comme un événement aléatoire, et donc $m(t)$ comme une variable aléatoire. On peut donc envisager l'approche de la façon suivante : le type $t$ est localisé quelque part dans l'arbre de clustering, mais cette localisation est entachée d'incertitude, ce que modélise la variable aléatoire $m(t)$. Par définition du softmax, la position la plus probable de $t$ est le cluster qui a le score $F_1$ le plus élevé; toutefois, là où la méthode du hard mapping ne considérait pas d'autre possibilité, d'autres positions de $t$ sont possibles. 
-
-Dès lors, l'axiome $(t' \sqsubset t)$ est lui aussi un événément aléatoire. Cet événement se réalise si, dans l'arbre, \ldots
-
-Note : une idée : et si on notais $Z_t$ la variable aléatoire correspondant à $m(t)$ ? Ça simplifierais peut etre les notations et la compréhension de la méthode. $m(t)$ c'est pas clair ce que ça représente, alors que $Z_t$ ça représente le cluster associé à $t$ (comme dans le hard mapping), sauf qu'on ne sait pas où est $Z_t$. Intro : «on modélise la situation> (comme c'est une modélisation on est plus comptables de la véracité de nos hypothèses, notamment l'indepndance des $Z_t$)
-
-On définit un score d'association $\sigma(t, C)$:
-\begin{equation}
-    \sigma(t, C) = \frac{\displaystyle e^{ \beta F_1(t, C)}}{\displaystyle \sum_{C' \in \mathcal{C}} e^{\beta F_1(t, C')}}
-\end{equation}
-
-On définit une famille de variables aléatoire $\cal{Z} = (Z_t)_{t \in \Types}$, indépendantes et à valeur dans $\Clusters$. Pour un type $t$ donné, la loi de la variable $Z_t$ est donné par :
-\begin{equation}
-    P(Z_t = C) = \sigma(t, C)
-\end{equation}
-On interprète la variable aléatoire $Z_t$ comme le cluster associé à $t$ dans l'arbre de clustering. Contrairement au cas précédent, où on aurait eu $Z_t = \argmax_C F_1(C, t)$ (à la condition d'injectivité près), ici on accepte que l'associé de $t$ soit incertain. On peut distinguer plusieurs sources d'incertitude sur la position du cluster $Z_t$. D'une part, les plongements vectoriels sont bruités, car le graphe de connaissance initial est incomplet et contient des erreurs}
-\fi
 
 %\todo{Justifier l'indépendance}
 
@@ -520,16 +494,6 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
     \end{adjustwidth}
 \end{table}
 
-\iffalse {
-\begin{figure}
-    \centering
-    \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_HM.eps}
-    \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluster-params_SM.eps}
-    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesure $F_1$ transitive obtenue pour différentes combinaisons de métriques et de critères de liaison, pour la méthode Hard Mapping (\textit{en haut}à et pour la méthode Soft Mapping (\textit{en bas}). Les résultats sont exprimés relativement à la mesure $F_1$ moyenne.}
-    \label{fig:taxex-cluparams-HM}
-\end{figure}
-}
-\fi
 
 
 
@@ -738,44 +702,12 @@ Si l'on examine maintenant les taxonomies extraites pour différentes valeurs de
 
 % de \dbo{Mountain}, c'est-à-dire les classes $x$ telles que  $P(\dbo{Mountain} \sqsubset x)$ soit maximales. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie DBpédia, \dbo{Mountain} a deux superclasses, \texttt{Place} et \texttt{NaturalPlace}. On observe ici que les résultats sont incohérents pour $\beta \leq 20$ : tous les axiomes ont des probabilités très faibles, inférieures à $0,02$. Quand $\beta$ augmente (cas $\beta = 30$), les superclasses correctes émergent, mais leurs probabilités sont encore faibles. Puis, pour $\beta \geq 50$, ces deux superclasses se distinguent nettement des autres, allant jusqu'à atteindre des probabilités de $0,93$ et $0,83$ respectivement, tandis que les probabilités des autres classes ne dépassent pas $0,01$. Enfin, on observe que l'axiome $\texttt{Mountain} \sqsubset \texttt{Place}$ a une plus grande probabilité que $\texttt{Mountain} \sqsubset \texttt{NaturalPlace}$, ce qui correspond à l'intuition. % TODO: expliquer pourquoi?
 
-\iffalse{
-Pour généraliser ces observations, on construit aléatoirement cinq sous-taxonomies de DBpédia, de différentes tailles et de différentes profondeurs (\todo{détailler la procédure pour extraire aléatoirement des sous-taxonomies de DBpédia}), et on applique notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour différentes valeurs de $\beta$ dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$, ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On moyenne alors les résultats obtenus sur les cinq sous-taxonomies. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$ à la moyenne des mesures $F_1$ obtenues sur les cinq tâches d'extraction de taxonomie pour ce choix de paramètres.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics{fig/plot/average_beta_vs_best_all_FR.eps}
-    \caption[Influence du paramètre $\beta$]{Résultats de l'extraction de taxonomie pour différentes valeurs du paramètre $\beta$, pour le seuil optimal $t^*(\beta)$ et pour deux seuils fixes $t=0.1$ et $t=0.5$. L'ordonnée représente la moyenne des mesures $F_1$ obtenues par évaluation directe et transitive sur cinq sous-taxonomies de DBpédia, exprimée comme une fraction de l'optimum.}
-    \label{fig:beta-search-1}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{fig/plot/average_beta_breakdown_all3_FR.eps}
-    \caption{Caption}
-    \label{fig:beta-search-3}
-\end{figure}
-
-On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs fixes, $t = 0.1$ et $t = 0.5$, et la valeur optimale $t = t^*(\beta)$ qui indique le meilleur score que l'on puisse espérer atteindre. Le résultat est présenté dans la figure \ref{fig:beta-search-1}. Pour les trois valeurs de $t$, on observe le comportement suivant : la mesure $F_1$ moyenne est nulle pour $\beta = 1$, augmente abruptement, atteint un maximum autour de $\beta = 100$, puis diminue progressivement. 
-
-Ces observations concordent avec l'analyse qualitative : il est nécessaire de fixer une valeur de $\beta$ suffisamment élevée pour séparer suffisamment les axiomes vrais des axiomes faux. Pour $\beta$ suffisamment élevé en revanche, on observe une relative stabilisation du score, plus ou moins marquée selon $t$. 
-
-Enfin, en fixant $\beta = 100$ et $t=0.1$, on obtient une mesure $F_1$ moyenne supérieure à 95\% de la mesure $F_1$ optimale. C'est donc ces valeurs des paramètres que l'on utilisera par défaut, et qui ont servi pour les résultats présentés à la section précédente.
-}
-\fi 
 
 \subsubsection{Seuil de probabilité}
 \label{subsec:te-hp-threshold}
 
-\iffalse {
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.7\textwidth]{fig/plot/threshold_exp.eps}
-    \caption[Influence du paramètre $t$]{
-    Taxonomy extraction $F$-scores obtained for different values of parameter $\beta$, with the optimal threshold $t^*(\beta)$ and two fixed threshold $0.1$ and $0.5$. Scores are averaged over five different subtaxonomies of DBpedia, and expressed as a fraction of the optimal score.}
-    \label{fig:beta-search-2}
-\end{figure}
-}
-\fi 
+
 
 \begin{figure}[h]
     \centering
@@ -811,15 +743,4 @@ Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail d
 
 %Les résultats sont représentés dans la figure \ref{fig:beta-search-2}. Pour l'évaluation transitive, on observe que la précision augmente avec $t$, tandis que le rappel diminue. Cette conclusion était attendue : en augmentant le seuil, on élimine les axiomes les plus incertains, c'est-à-dire ceux qui ont le plus de chance d'être faux. La précision, autrement dit la proportion d'axiomes extraits qui sont vrais, augmente donc. Mais, parmi les axiomes éliminés par l'augmentation du seuil, certains étaient vrais : la proportion d'axiomes vrais qui sont effectivement extraits, c'est-à-dire le rappel, diminue. Ces deux effets, augmentation de la précision et diminution du rappel avec $t$, se compensent globalement dans l'intervalle $[0.1, 0.7]$, comme le montre la courbe du $F_1$. Au-delà de $0.7$, l'augmentation de la précision n'est plus suffisante pour compenser la chute du rappel. En effet, pour $t > 0.7$, plus de 95\% des axiomes extraits sont vrais : en augmentant le seuil, on élimine mécaniquement un grand nombre d'axiomes vrais, d'où la chute du rappel et donc de la mesure $F_1$.
 
-
-\iffalse {
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{fig/plot/hp_results.eps}
-    \caption[Influence des paramètres $t$ et $\beta$]{Influence des hyperparamètres $t$ et $\beta$ pour la méthode «soft mapping». À gauche, la précision, rappel et mesure $F_1$ obtenus par évaluation transitive pour différentes valeurs de $t$ dans $[0, 1]$, et $\beta = 100$. À droite, les mesures $F_1$ obtenues pour différentes valeurs du paramètre $\beta$, et pour trois différents seuils : le seuil optimal $t^*(\beta)$ et deux seuils fixes $t=0,1$ et $t=0,5$. Les scores affichés sont obtenus en moyennant les résultats obtenus sur cinq sous-taxonomies de DBpedia, et exprimées comme une fraction du score optimal.
-    }
-    \label{fig:t-search-1}
-\end{figure}}
-\fi 
 
