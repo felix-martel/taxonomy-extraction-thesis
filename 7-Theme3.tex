@@ -400,6 +400,88 @@ Le résultat de cet algorithme est un ensemble $\cal{A}(L)$ (éventuellement vid
     \alpha(L) = \argmax_{a \in \cal{A}(L)}(\xscore(a))
 \end{equation}
 
+\begin{algorithm}[h]
+\SetKwFunction{Fusionne}{ExtraitAxiome}
+\SetKwFunction{Evalue}{Evalue}
+\SetKwProg{Fn}{Fonction}{:}{}
+
+\SetKwData{mingain}{gain\_min}
+\SetKwData{maxstep}{max\_étapes}
+\SetKwData{atoms}{atomes}
+\SetKwData{cands}{candidats}
+\SetKwData{ax}{axiome}
+\SetKwData{at}{atome}\SetKwData{OP}{OP}
+\SetKwData{cov}{couverture}
+\SetKwData{spe}{spécificité}
+\SetKwData{sco}{score}
+\SetKwData{indef}{indéfini}
+\SetKwData{nsco}{nouveauScore}
+\SetKwData{improv}{améliorés}
+\SetKwData{none}{None}
+\SetKwData{nc}{nouveauCandidat}
+\SetKw{Continue}{continuer}
+\SetKw{Break}{interrompre}
+
+\KwInput{un ensemble d'exemples positifs $E^+$ et négatifs $E^-$ (par exemple, le cluster cible et son voisin), et une liste d'atomes}
+\KwOutput{liste d'axiomes $\mathcal{A}$ vérifiés par les entités de $E^+$ mais pas par celles de $E^-$}
+\Parameter{nombre maximal d'étapes \maxstep, gain minimal \mingain, seuil de score $\delta$, longueur maximale des axiomes $N_{\text{ax}}$}
+
+\Fn{\Fusionne{$E^+, E^-$, \atoms}}{
+    $\mathcal{A} \leftarrow \varnothing$ \;
+    $\cands \leftarrow \{ \none \}$ \;
+    $t \leftarrow 0$ \;
+    \While{$t \leq \maxstep$}{
+        $\improv \leftarrow \varnothing$ \; 
+        \For{\ax dans \cands}{
+            \tcp{1 : évaluation de l'axiome candidat courant}
+            \eIf{\ax est \none}{
+                    $\OP \leftarrow \none$ \;
+           }{
+                $\cov, \spe, \sco \leftarrow $ \Evalue{\ax, $E^+, E^-$} \;
+               \uIf{$\cov < \delta$ et $\spe < \delta$}{
+                    \Continue
+              }
+              \uElseIf{$\spe < \delta$}{
+                    \tcp{spécificité insuffisante: on spécialise avec ET}
+                    $\OP \leftarrow \land$ \;
+              }
+              \uElseIf{$\cov < \delta$}{
+                    \tcp{couverture insuffisante: on généralise avec OU}
+                    $\OP \leftarrow \lor$ \;
+              }
+          }
+          \tcp{2 : amélioration du candidat}
+          \For{\at dans \atoms}{
+            \eIf{\OP = \none}{
+                $\nc \leftarrow \at$ \;
+            }{
+                $\nc \leftarrow$ \at \OP \ax \;
+            }
+            $\cov, \spe, \nsco \leftarrow $ \Evalue(\nc, $E^+, E^-$) \;
+            \uIf{$\nsco > \delta$}{
+                \tcp{\nc a un score suffisant : on le garde}
+                ajouter \nc à $\mathcal{A}$ \;
+            }
+            \uElseIf{$\nsco - \sco > \mingain$}{
+                \tcp{\nc est meilleur que \ax, mais pas encore suffisant : on poursuit l'amélioration}
+                ajouter $(\nc, \nsco)$ à \improv\;
+            }
+          }
+          \If{\improv est vide}{
+            \tcp{aucun nouvel axiome n'a été trouvé : la recherche s'arrête}
+            \Break
+        }
+            $\cands \leftarrow$ les $N_{\textrm{ax}}$ meilleurs axiomes de \improv \;
+            $t \leftarrow t + 1$ \;
+        }
+    }
+    \Return le meilleur axiome de $\mathcal{A}$ (ou \indef si $\mathcal{A}$ est vide) \;
+}
+
+ \caption{Pseudo-code pour extraire un axiome à partir d'une liste d'axiomes atomiques, et d'exemples positifs et négatifs.}
+ \label{algo:extraction}
+\end{algorithm}
+
 % \todo{Mentionner l'autre idée (TF-IDF) ?} %Autre principe : TF-IDF based
 
 \iffalse {
