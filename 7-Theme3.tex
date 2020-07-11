@@ -29,36 +29,54 @@ Toutefois, un ajout majeur : le retirage récursif des entités à regrouper pou
 
 DBpédia, comme la plupart des graphes de connaissances, fonctionne sous l'hypothèse du monde ouvert : si un triplet est absent du graphe, cela ne signifie pas nécessairement qu'il est faux. Aussi, dans la suite, lorsqu'on écrit qu'une entité $x$ ne vérifie pas un prédicat logique $P$, cela doit être compris comme un raccourci pour écrire que l'assertion $P(x)$ n'est pas contenue dans le graphe, et non comme l'assertion $\neg P(x)$.
 
+\paragraph{Notations}
+
+On utilise les notations usuelles de la théorie des graphes : un graphe $G$ est représenté par une paire $(V, E)$ avec $V$ ses sommets, et $E \subseteq V \times V$ ses arêtes. En particulier, si $G$ est un arbre de clustering, l'arête $(C, C') \in E$ indique une relation d'inclusion $C \subset C'$; si $G$ est une taxonomie, l'arête $(A, B) \in E$ indique une subsumption $A \sqsubseteq B$. Par abus de notation, on notera parfois $x \in G$ plutôt que $x \in V$ pour indiquer qu'un élément est un sommet du graphe.
+
 \section{Méthode proposée}
+
+\begin{figure}[h]
+    \centering
+    \input{fig/texp-overview}
+    \caption[Aperçu de la méthode d'extraction de taxonomie expressive]{Principe général de la méthode d'extraction de taxonomie : à partir d'un axiome initial $a$, on prélève aléatoirement des entités qui vérifient $a$, on les regroupe hiérarchiquement, et on parcours l'arbre obtenu pour extraire de nouveaux axiomes capables de décrire les clusters. On répète ces étapes pour construire progressivement une taxonomie complète du graphe; l'initialisation se fait avec $a = \top$.}
+    \label{fig:texp-overview}
+\end{figure}
+
+La méthode d'extraction de taxonomie expressive commence par une phase de regroupement hiérarchique. Dans la méthode précédente, on avait comme seules données d'entrée un ensemble fixé d'entités typées $\cal{D}$. Ici au contraire, on s'autorise l'accès à tout le graphe, donc l'ensemble $\cal{D}$ sur lequel s'opère le regroupement hiérarchique est variable et change au cours de l'exécution de l'algorithme. À chaque étape $t$, on constitue un nouveau jeu de données $\mathcal{D}_t$.
+On effectue alors un regroupement hiérarchique sur les plongements des entités de $\cal{D}_t$, puis on étiquette les clusters obtenus avec des axiomes logiques (l'extraction d'axiomes à partir de clusters est détaillée dans la section \ref{subsec:texp-exaxiom}). Chaque nouvel axiome extrait sert alors à créer un nouveau jeu de données $\mathcal{D}_{t+1}$, sur lequel on répète l'étape précédente, ce qui permet d'étendre itérativement la taxonomie prédite. L'algorithme \ref{algo:texp-main} présente les grandes étapes de cette méthode, et la figure \ref{fig:texp-overview} les résume.
+
+
 
 \begin{algorithm}
 \KwInput{un graphe de connaissance $\KG$}
 \KwOutput{une taxonomie expressive $\Tpred$}
-\Parameter{nombre d'entités à prélever à chaque étape $N_e$, à compléter}
+\Parameter{nombre d'entités à prélever à chaque étape $N_e$
+%à compléter ?
+}
 \SetKwFunction{Preleve}{Preleve}
 \SetKwFunction{Regroupe}{Regroupe}
-\SetKwFunction{TrouveAxiomes}{Trouve\_Axiomes}
+\SetKwFunction{TrouveAxiomes}{EtiquetteArbre}
 \SetKwFunction{Fusionne}{Fusionne}
 
 \tcp{taxonomie construite récursivement :}
 $\Tpred \leftarrow  (\{ \top \}, \varnothing)$ \;
 \tcp{file d'axiomes à traiter :}
-$A \leftarrow \{ \top \}$\;
+$\mathcal{AT} \leftarrow \{ \top \}$\;
 % $t \leftarrow 0$ \;
 % $\cal{C}_0 \leftarrow  \left\{ \{\bf{e}_1\}, \ldots, \{\bf{e}_N\} \right\}$\;
 % $X = (\cal{C}_0, \emptyset)$ \;
 
-\While{$A$ est non-vide}{
-    $a \leftarrow $ premier axiome de la file $A$ \;
+\While{$\mathcal{AT}$ est non-vide}{
+    $a \leftarrow $ premier axiome de la file $\mathcal{AT}$ \;
     \tcp{1 : prélevement/regroupement}
     $\mathcal{D}_a  \leftarrow$ \Preleve{$a, \KG, N_e$} \;
     $X_a \leftarrow$ \Regroupe{$\mathcal{D}_a$} \;
     \tcp{2 : extraction d'axiomes}
     $T_a \leftarrow$ \TrouveAxiomes{$X_a$} \;
     \For{chaque nouvel axiome $b$ de $T_a$}{
-        ajouter $b$ à $A$ \;
+        ajouter $b$ à $\mathcal{AT}$ \;
     }
-    $\Tpred \leftarrow $ \Fusionne{$\Tpred, T_a, a$} \;
+    $\Tpred \leftarrow $ \Fusionne{$\Tpred, T_a$} \;
     % $t \leftarrow t + 1$ \;
 }
 \Return{$X$}
@@ -66,14 +84,6 @@ $A \leftarrow \{ \top \}$\;
 \label{algo:texp-main}
 \end{algorithm}
 
-La méthode d'extraction de taxonomie expressive commence elle aussi par une phase de regroupement hiérarchique. Dans la méthode précédente, on avait comme seules données d'entrée un ensemble fixé d'entités typées $\cal{D}$. Ici au contraire, on s'autorise l'accès à tout le graphe, donc l'ensemble $\cal{D}$ sur lequel s'opère le regroupement hiérarchique est variable et change au cours de l'exécution de l'algorithme. À chaque étape $t$, on effectue un regroupement hiérarchique sur les plongements des entités de $\cal{D}_t$, puis on étiquette les clusters obtenus avec des axiomes logiques (l'extraction d'axiomes à partir de clusters est détaillée dans la section \ref{subsec:texp-exaxiom}). Chaque nouvel axiome extrait sert alors à créer un nouveau jeu de données, sur lequel on répète l'étape précédente, ce qui permet d'étendre itérativement la taxonomie prédite. L'algorithme \ref{algo:texp-main} présente les grandes étapes de cette méthode.
-
-\begin{figure}[h]
-    \centering
-    \input{fig/texp-overview}
-    \caption[Aperçu de la méthode d'extraction de taxonomie expressive]{Principe général de la méthode d'extraction de taxonomie : à partir d'un axiome initial $a$, on prélève aléatoirement des entités qui vérifient $a$, on les regroupe hiérarchiquement, et on parcours l'arbre obtenu pour extraire de nouveaux axiomes capables de décrire les clusters.}
-    \label{fig:texp-overview}
-\end{figure}
 
 
 \subsection{Regroupement hiérarchique récursif avec retirage}
@@ -82,31 +92,48 @@ La méthode d'extraction de taxonomie expressive commence elle aussi par une pha
 
 % Ensuite, pour chacun des axiomes $a_1, \ldots, a_k$ obtenus, on tire aléatoirement des entités qui vérifient cet axiome, ce qui donne de nouveaux ensembles d'entrées $\cal{D}_{t+1}, \ldots, \cal{D}_{t+k}$.
 
-Dans cette section, on se donne une fonction d'extraction d'axiome $\alpha$, telle que $\alpha(C)$ est un axiome logique qui qualifie le cluster $C$, si un tel axiome existe, et qui renvoie un symbole spécial \texttt{indéfini} dans le cas contraire. Un exemple d'une telle fonction est donné dans la section suivante. 
 
 % Principe général
-On dispose d'une file d'axiomes à traiter $A$, et de la taxonomie en cours de construction $\Tpred$. La file d'axiomes à traiter n'est autre que la liste des feuilles de $\Tpred$ qui n'ont pas encore été visitées. Lorsqu'on visite un axiome $\alpha$ de $A$, soit on parvient à extraire un sous-arbre $T_\alpha$ qui contient des axiomes, et alors $T_\alpha$ est ajouté à $\Tpred$ à l'emplacement de $\alpha$, et les nœuds feuilles de $T_\alpha$ sont ajoutés à la file des axiomes à traiter; soit on ne trouve aucun sous-axiome pertinent pour $\alpha$, auquel cas $\alpha$ reste une feuille de $\Tpred$ et la recherche continue dans les autres axiomes de la file $A$, jusqu'à épuisement de $A$.
+On dispose d'une file d'axiomes à traiter $\mathcal{AT}$, et de la taxonomie en cours de construction $\Tpred$. La file d'axiomes à traiter n'est autre que la liste des feuilles de $\Tpred$ qui n'ont pas encore été visitées. Lorsqu'on traite un axiome $\alpha$ de $\mathcal{AT}$, soit on parvient à extraire un sous-arbre $T_\alpha$ qui contienne des axiomes, et alors $T_\alpha$ est ajouté à $\Tpred$ à l'emplacement de $\alpha$, et les nœuds feuilles de $T_\alpha$ sont ajoutés à la file des axiomes à traiter; soit on ne trouve aucun sous-axiome pertinent pour $\alpha$, auquel cas $\alpha$ reste une feuille de $\Tpred$ et la recherche continue dans les autres axiomes de la file $\mathcal{AT}$, jusqu'à épuisement de $\mathcal{AT}$.
 
-Pour la première étape, $A$ est initialisée à $\{\top\}$ : le seul axiome de $A$ est le concept universel $\top$ qui, par définition, est vérifié par toutes les entités du graphe. $\top$ sert de racine à la taxonomie, puisque c'est le seul axiome dont on soit sûr \textit{a priori} qu'il définisse toutes les entités.
+Pour la première étape, $\mathcal{AT}$ est initialisée à $\{\top\}$ : le seul axiome de $\mathcal{AT}$ est le concept universel $\top$ qui, par définition, est vérifié par toutes les entités du graphe. $\top$ sert de racine à la taxonomie, puisque c'est le seul axiome dont on soit sûr \textit{a priori} qu'il définisse toutes les entités.
 La taxonomie $\Tpred$ est réduite à un seul sommet $\top$ et ne contient donc aucune arête. 
 
-Tant que la file $A$ n'est pas vide, on retire son premier élément $a$, qui sert d'axiome d'entrée pour cette étape. On prélève aléatoirement, dans le graphe $\KG$, $N$ entités parmi celles qui vérifient $a$; cette étape correspond à la fonction \texttt{Preleve} de l'algorithme \ref{algo:texp-main}. Dans notre implémentation, le graphe est représenté \textit{via} une librairie Python spécifique, mais dans d'autres contextes, le langage de requête SPARQL pourrait être utilisé à cette fin. Les plongements de ces entités donne un nuage de points $\cal{D}_a$ de dimension $d \times N$, avec $d$ la dimension des entités.
+Tant que la file $\mathcal{AT}$ n'est pas vide, on retire son premier élément $a$, qui sert d'axiome d'entrée pour cette étape. On prélève aléatoirement, dans le graphe $\KG$, $N_e$ entités parmi celles qui vérifient $a$; cette étape correspond à la fonction \texttt{Preleve} de l'algorithme \ref{algo:texp-main}. Dans notre implémentation, le graphe est représenté grâce à une librairie Python spécifique, mais dans d'autres contextes, le langage de requête SPARQL pourrait être utilisé à cette fin. Les plongements de ces entités donne un nuage de points $\cal{D}_a$ de dimension $d \times N_e$, avec $d$ la dimension des plongements.
 
-Sur ce nuage de point $\cal{D}_a$, on effectue un regroupement hiérarchique, similaire à celui décrit dans la section \ref{subsec:te-clustering}, qui correspond à la fonction \texttt{Regroupe} de l'algorithme \ref{algo:texp-main}. À nouveau, on considère deux choix de paramètres de cet algorithmes : distance euclidienne avec critère de Ward, et distance cosinus avec liaison moyenne. La première fusionne les clusters de façon à minimiser la variance du nouveau cluster créé. À l'étape $t$, notons $\cal{C}_t$ les clusters existant; les clusters $C_1$ et $C_2$ à fusionner sont choisis selon l'équation :
-\begin{equation}
-    C_1, C_2 = \argmin_{C_1, C_2 \in \cal{C}_t} 
-    \frac{1}{| C_1 + C_2 |} \sum_{\bf{e} \in C_1 \cup C_2} \| \bf{e} - \frac{1}{| C_1 + C_2 |} \sum_{\bf{e'} \in C_1 \cup C_2} \bf{e'} \|_2^2 
-\end{equation}
-La seconde fusionne les clusters dont les entités ont la distance moyenne la plus faible. On fusionnera donc $C_1$ et $C_2$ tels que :
+Sur ce nuage de point $\cal{D}_a$, on effectue un regroupement hiérarchique, similaire à celui décrit dans la section \ref{subsec:te-clustering}, qui correspond à la fonction \texttt{Regroupe} de l'algorithme \ref{algo:texp-main}.
+Ici, on regroupe en utilisant comme mesure de similarité la distance cosinus, et comme critère de liaison le saut moyen. Autrement dit, on fusionne les clusters qui ont la plus faible distance cosinus moyenne entre leurs éléments. À l'étape $t$, notons $\cal{C}_t$ les clusters existants; les clusters $C_1$ et $C_2$ à fusionner sont choisis selon l'équation :
 \begin{equation}
     C_1, C_2 = \argmin_{C_1, C_2 \in \cal{C}_t} \frac{1}{|C_1| \times |C_2|} \sum_{\bf{e_1}\in C_1} \sum_{\bf{e_2} \in C_2} d_\text{cos}(\bf{e_1, e_2})
 \end{equation}
 
-Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N$ éléments de $\cal{D}_a$. 
+Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N_e$ éléments de $\cal{D}_a$. 
 
-On effectue alors un parcours de l'arbre $X_a$, en excluant la racine $a$ qui est déjà étiquettée : pour un cluster $C$, on calcule $\alpha(C)$ pour trouver l'axiome associé à $C$. Si $\alpha(C) = \texttt{indéfini}$, le cluster $C$ n'a pas de signification logique accessible, et on poursuit la recherche dans les sous-clusters. Au contraire, si $\alpha(C)$ existe, on interrompt la recherche, et on ajoute $\alpha(C)$ à la file d'axiomes à visiter. Au-delà d'une certaine profondeur $D_\text{max}$ dans l'arbre, on arrête la recherche. On note $L_\alpha(a)$ l'ensemble des cluster $C$ étiquettés rencontrés lors de la recherche.
+\subsection{Parcours et étiquettage de l'arbre}
 
-On donne un exemple de ce parcours à la figure \ref{fig:texp-stebbstep}. Dans cet exemple, l'axiome de départ $a$ est la classe nommée \texttt{dbo:MeanOfTransportation}, et la profondeur maximale de recherche est fixée à $4$. L'arbre de clustering est parcouru en profondeur (figure \ref{subfig:texp-sbs1}), et trois sous-axiomes de $a$ sont extraits : \texttt{dbo:Automobile}, $\texttt{dbo:Ship} \lor \texttt{dbo:Aircraft}$ et $\texttt{dbo:Ship} \lor \texttt{dbo:Aircraft}$. On peut voir que toutes les entités ne sont pas couvertes par un axiome : en effet, le cluster 6 n'est pas étiquetté. Cela signifie potentiellement que les trois axiomes extraits ne couvrent pas l'intégralité des instances de \texttt{dbo:MeanOfTransportation} et qu'il reste donc de nouveaux concepts à découvrir : on ajoute donc le nœud spécial \texttt{<?>} pour indiquer cela (figure \ref{subfig:texp-sbs2}).
+Dans cette section, on se donne une fonction d'extraction d'axiome $\alpha$, telle que $\alpha(C)$ est un axiome logique qui qualifie le cluster $C$, si un tel axiome existe, et qui renvoie un symbole spécial \texttt{indéfini} dans le cas contraire. Un exemple d'une telle fonction est donné dans la section suivante. 
+
+On effectue un parcours de l'arbre $X_a$, en excluant la racine $a$ qui est déjà étiquettée : pour un cluster $C$, on calcule $\alpha(C)$ pour trouver l'axiome associé à $C$. Si $\alpha(C) = \texttt{indéfini}$, le cluster $C$ n'a pas de signification logique accessible, et on poursuit la recherche dans les sous-clusters. Au contraire, si $\alpha(C)$ existe, on interrompt la recherche, et on ajoute $\alpha(C)$ à la file d'axiomes à visiter. Au-delà d'une certaine profondeur $D_\text{max}$ dans l'arbre, on arrête la recherche. On note $L_\alpha(a)$ l'ensemble des cluster $C$ étiquettés rencontrés lors de la recherche.
+
+
+On construit alors la sous-taxonomie extraite $T_a$ à partir de $X_a$ : $T_a$ contient tous les axiomes extraits, c'est-à-dire les étiquettes de $X_a$, et sa structure reflète la structure entre les clusters, la subsumption entre axiomes correspondant à l'inclusion des clusters associés :
+\begin{align}
+    T_a = (& \{ \alpha(C) : C \in L_\alpha(a) \}, \nonumber \\
+        & \{ (\alpha(C), \alpha(C')) : C, C' \in L_\alpha(a) \textrm{ et } C \subset C' \textrm{ et} \nonumber  \\
+    & \forall D \in X_a, (C \subset D \subset C' \implies \alpha(D) = \texttt{indéfini})\})
+\end{align}
+
+Il s'agit du même principe que l'extraction de taxonomie de la méthode Hard Mapping présentée à l'équation \ref{eq:te-extract-tax-from-mapping} de la section \ref{ssubsec:te-hardmapping} : le parent d'un cluster étiquetté $C$ est le premier cluster étiquetté $C'$ qui contient $C$.
+
+
+Enfin, si au moins l'une des feuilles de $X_a$ n'est pas couverte par un axiome $\alpha(C)$, c'est-à-dire s'il existe au moins une branche allant des feuilles à la racine qui ne contient pas d'étiquette, c'est qu'une partie de l'arbre n'a pas été décrite par un axiome, et qu'il reste potentiellement de nouveaux axiomes à extraire. Dans ce cas, un nœud spécial \texttt{<?>} est ajouté à $T_a$ et relié directement à $a$. La signification logique de ce nœud s'écrit :
+\begin{equation}
+    \texttt{<?>} = a \land \left( \bigwedge\limits_{C \in L_\alpha(a)} \neg \alpha(C) \right)
+    \label{eq:texp-special-node}
+\end{equation}
+Soit, en langage courant, l'ensemble des éléments qui vérifient $a$ mais ne vérifient aucun des sous-axiomes $\alpha(C)$ de $a$. Cette définition purement négative n'est pas d'une grande utilité dans une taxonomie expressive, puisqu'elle exprime simplement la tautologie $C \lor \neg C = \top$. On utilise donc le symbole \texttt{<?>} pour signifier que la recherche n'est pas encore finie pour $a$ et qu'il reste des sous-axiomes de $a$ à trouver.
+
+On donne un exemple de ce parcours à la figure \ref{fig:texp-stebbstep}. Dans cet exemple, l'axiome de départ $a$ est la classe \texttt{dbo:MeanOfTransportation}, et la profondeur maximale de recherche est fixée à $4$. L'arbre de clustering est parcouru en profondeur (figure \ref{subfig:texp-sbs1}), et trois sous-axiomes de $a$ sont extraits : \texttt{dbo:Automobile}, $\texttt{dbo:Ship} \lor \texttt{dbo:Aircraft}$ et $\exists \texttt{dbo:totalLaunches} . \texttt{integer}$. On peut voir que toutes les entités ne sont pas couvertes par un axiome : en effet, le cluster 6 n'est pas étiquetté. Cela signifie potentiellement que les trois axiomes extraits ne couvrent pas l'intégralité des instances de \texttt{dbo:MeanOfTransportation} et qu'il reste donc de nouveaux concepts à découvrir : on ajoute donc le nœud spécial \texttt{<?>} (figure \ref{subfig:texp-sbs2}).
 
 \begin{figure}
     \centering
@@ -123,57 +150,119 @@ On donne un exemple de ce parcours à la figure \ref{fig:texp-stebbstep}. Dans c
         \label{subfig:texp-sbs2}
     \end{subfigure}
     %\input{fig/texp-stepbstep}
-    \caption{Un exemple d'étiquettage d'un arbre de clustering. \textbf{En haut}, chaque nœud représente un cluster de $X_a$; on représente en rouge les clusters qui sont visités au cours de l'extraction (le chiffre indiquant l'ordre de visite), et en gris ceux qui ne sont pas visités. Les flèches rouges figurent l'ordre de parcours dans l'arbre. En bleu, on représente l'axiome associé à chaque cluster visité; on indique par une bordure rouge épaisse les clusters qui sont effectivement étiquettés et qui apparaissent dans la taxonomie $T_a$. \textbf{En bas}, on représente la taxonomie partielle obtenue $T_a$.}
+    \caption{Un exemple d'étiquettage d'un arbre de clustering $X_a$, avec $a = \texttt{dbo:MeanOfTransportation}$. \textit{En haut}, chaque nœud représente un cluster de $X_a$; on représente en rouge les clusters qui sont visités au cours de l'extraction (les flèches rouges indiquent le parcours effectué, et le chiffre l'ordre de visite des clusters), et en gris ceux qui ne sont pas visités. En bleu, on représente l'axiome associé à chaque cluster visité; on indique par une bordure rouge épaisse les clusters qui sont effectivement étiquettés et qui apparaissent dans la taxonomie $T_a$. \textit{En bas}, on représente la taxonomie partielle obtenue $T_a$.}
     \label{fig:texp-stebbstep}
 \end{figure}
 
-Finalement, on construit la sous-taxonomie extraite $T_a$ à partir de $X_a$ en suivant la procédure décrite à la section \ref{subsec:te-taxconstruction} : $T_a$ ne contient que les sommets de $X_a$ qui sont étiquettés, et qui laisse la relation de succession entre clusters inchangée :
-\begin{align}
-    T_a = (&\{C \in X_a : \alpha(C) \neq \texttt{indéfini}\}, \nonumber \\
-    &\{(C, C' \in X_a : \exists C_1, \ldots, C_k \in X_a, \alpha(C_1) = \ldots = \alpha(C_k) = \texttt{indéfini} \nonumber \\
-    &\text{ et } C \prec C_1 \prec \ldots \prec C_k \prec C'\})
-\end{align}
-Autre formulation\todo{choisir entre les deux notations} :
-\begin{align}
-    T_a = (L_\alpha(a), \nonumber 
-    \{(C, C' \in X_a : \exists C_1, \ldots, C_k \in X_a \setminus L_\alpha(a), C \prec C_1 \prec \ldots \prec C_k \prec C'\})
-\end{align}
+%\begin{figure}
+%    \centering
+%    \input{fig/texp-tree-expansion}
+%    \caption[Principe de construction récursive d'une taxonomie]{Représentation de $\Tpred$ au cours des trois premières étapes de l'algorithme : à l'origne, $\Tpred$ est réduite au concept universel $\top$, puis deux sous-concepts $A$ et $B$ sont identifiés et rajoutés à $\Tpred$; c'est ensuite au tour de $A$ d'être exploré et ses sous-concepts $A_1, A_2, A_3$ sont ajoutés. On représente en rouge les axiomes non-encore explorés; la bordure épaisse représente le prochain axiome à explorer.}
+%    \label{fig:texp-tree-expansion-old}
+%\end{figure}
 
-Enfin, si au moins l'une des feuilles de $X_a$ n'est pas couverte par un axiome $\alpha(C)$, c'est-à-dire s'il existe au moins une branche allant des feuilles à la racine qui ne contient pas d'étiquette, c'est qu'une partie de l'arbre n'a pas été décrite par un axiome, et qu'il reste potentiellement de nouveaux axiomes à extraire. Dans ce cas, un nœud spécial \texttt{<?>} est ajouté à $T_a$ et relié directement à $a$. La signification logique de ce nœud s'écrit :
+
+Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été trouvé en parcourant l'arbre $X_a$, alors $a$ n'aura pas de sous-axiome dans la taxonomie extraite et restera une feuille de $\Tpred$. Sinon, on remplace le nœud $a$ de $\Tpred$ par la sous-taxonomie $T_a$. Cette fusion de $\Tpred$ et $T_a$ correspond à la fonction \texttt{Fusionne} de l'algorithme \ref{algo:texp-main}, dont le code est décrit dans l'algorithme \ref{algo:texp-fusionne}. Une fois $\Tpred$ et $T_a$ fusionnées, on répète l'étape précédente, tant que la file d'axiomes $\mathcal{AT}$ n'est pas vide.
+
+\paragraph{Extraction mono-niveau ou multi-niveaux}
+
+
+Comme l'illustre la figure \ref{fig:texp-tree-expansion}, notre algorithme de parcours d'arbre peut fonctionner avec deux modes d'extraction : mono-niveau ou multi-niveaux. Dans le premier cas, dès qu'on identifie un axiome pour le cluster $C$, on interrompt la recherche dans les sous-clusters. La taxonomie $T_a$ extraite à partir de $X_a$ ne contient donc qu'un seule niveau, elle a donc pour sommets les axiomes extraits $\alpha(C_1), \ldots, \alpha(C_k)$ pour tous les $C_1, \ldots, C_k$ étiquettés, reliés directement à la racine $a$. La taxonomie $T_a$ s'écrit donc simplement :
 \begin{equation}
-    \texttt{<?>} = a \land \left( \bigwedge\limits_{C \in L_\alpha(a)} \neg \alpha(C) \right)
-    \label{eq:texp-special-node}
+    T_a = ( \{ \alpha(C) : C \in L_\alpha \}, \{ (\alpha(C), a) : C \in L_\alpha \} )
 \end{equation}
-Soit, en langage courant, l'ensemble des éléments qui vérifient $a$ mais ne vérifient aucun des sous-axiomes $\alpha(C)$ de $a$. Cette définition purement négative n'est pas d'une grande utilité dans une taxonomie expressive, puisqu'elle exprime simplement la tautologie $C \sqcup \neg C = \top$. On utilise donc le symbole \texttt{<?>} pour signifier que la recherche n'est pas encore finie pour $a$ et qu'il reste des sous-axiomes de $a$ à trouver.
 
-\begin{figure}
+\begin{figure}[h]
     \centering
-    \input{fig/texp-tree-expansion}
-    \caption[Principe de construction récursive d'une taxonomie]{Représentation de $\Tpred$ au cours des trois premières étapes de l'algorithme : à l'origne, $\Tpred$ est réduite au concept universel $\top$, puis deux sous-concepts $A$ et $B$ sont identifiés et rajoutés à $\Tpred$; c'est ensuite au tour de $A$ d'être exploré et ses sous-concepts $A_1, A_2, A_3$ sont ajoutés. On représente en rouge les axiomes non-encore explorés; la bordure épaisse représente le prochain axiome à explorer.}
+    
+    \begin{subfigure}{\textwidth}
+        \centering
+        \input{fig/texp-tree-singlelevel}
+        \caption{Extraction mono-niveau}
+        \label{subfig:tree-singlelevel}
+    \end{subfigure}
+    
+    \begin{subfigure}{\textwidth}
+        \centering
+        \input{fig/texp-tree-multilevels}
+        \caption{Extraction multi-niveaux}
+        \label{subfig:tree-multilevel}
+    \end{subfigure}
+    
+    \caption[Extraction mono-niveau et extraction multi-niveaux]{Représentation de $\Tpred$ au cours des trois premières étapes de l'algorithme, pour une extraction mono-niveau (\textit{en haut}) et une extraction multi-niveaux (\textit{en bas}). Dans les deux cas, $\Tpred$ est réduite au concept universel $\top$ lors de l'initialisation. Dans le premier cas, on ajoute un unique niveau à chaque étape; dans le second, on s'autorise à en ajouter plusieurs. On représente en rouge les axiomes non-encore explorés, qui appartiennnent donc à la file d'axiomes non-traités $A$; la bordure épaisse représente le prochain axiome à explorer; les cercles indiquent les axiomes qui viennent d'être extraits.}
     \label{fig:texp-tree-expansion}
 \end{figure}
 
 
-Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été trouvé en parcourant l'arbre $X_a$, alors $a$ n'aura pas de sous-axiome dans la taxonomie extraite et restera une feuille de $\Tpred$. Sinon, on remplace le nœud $a$ de $\Tpred$ par la sous-taxonomie $T_a$. Cette fusion de $\Tpred$ et $T_a$ correspond à la fonction \texttt{Fusionne} de l'algorithme \ref{algo:texp-main}, dont le code est décrit dans l'algorithme \ref{algo:texp-fusionne}. Une fois $\Tpred$ et $T_a$ fusionnées, on répète l'étape précédente, tant que la file d'axiomes $A$ n'est pas vide.
+Ainsi, dans la figure \ref{subfig:tree-singlelevel}, on extrait $A \sqsubset \top$ et $B \sqsubset \top$ à l'étape une, puis $A_1 \sqsubset A$, $A_2 \sqsubset A$, $A_3 \sqsubset A$ à l'étape deux.
+
+À l'inverse, dans le cas multi-niveaux, on poursuit la recherche dans les sous-clusters de $C$, même quand $C$ est étiquetté, et ce, jusqu'à atteindre la profondeur maximale $D$. La taxonomie $T_a$ a donc potentiellement plusieurs niveaux. Cette approche est illustrée à la figure \ref{subfig:tree-multilevel} : trois niveaux sont extraits lors de la première étape, et deux autres lors de la seconde. À chaque étape, seules les feuilles de $T_a$ sont ajoutées à la file d'axiomes $\mathcal{AT}$.
 
 
 
-\paragraph{Le cas des nœuds spéciaux \texttt{<?>}} Dans l'étape précédente, le cas où l'axiome de départ $a$ est l'axiome spécial \texttt{<?>} est traité un peu différemment du cas général. Les données d'entrées sont toujours tirées aléatoirement, suivant la formule \ref{eq:texp-special-node}; le regroupement hiérarchique et l'extraction de la sous-taxonomie $T_a$ suit une procédure identique. Ensuite, on rattache $T_a$ à $\Tpred$. La taxonomie $\Tpred$ en cours d'extraction contient alors toujours le nœuds spécial \texttt{<?>}, qu'on ne souhaite pas garder : on modifie alors $\Tpred$ en rattachant directement les successeurs directs de \texttt{<?>} avec le prédecesseur direct de \texttt{<?>}, on ré-écrit donc les chemins $\alpha \rightarrow \texttt{<?>} \rightarrow \beta$ en $\alpha \rightarrow \beta$, et on supprime \texttt{<?>} de $\Tpred$.
+
+L'approche multi-niveaux permet de réduire le nombre d'étapes de plongement-regroupement nécessaires – et donc potentiellement diminuer la durée d'extraction totale, tout en tirant au maximum parti de la structure d'arbre de $X_a$. À l'inverse, dans le cas mono-niveau, la structure d'arbre sert principalement à déterminer dynamiquement le nombre de clusters pertinents. Dans nos essais, on utilisera uniquement la méthode mono-niveau (quitte à exécuter un plus grand nombre d'étapes), car elle est moins sensible aux changements de paramètres et paraît globalement plus robuste. L'algorithme \ref{algo:texp-trouve} contient le pseudo-code de cette approche.
+
+\begin{algorithm}
+\SetKwFunction{Etiq}{EtiquetteArbre}
+\SetKwData{NT}{NonVisités}
+\SetKwData{root}{racine}
+\SetKwData{indef}{indéfini}
+\SetKwData{addspe}{ajouteNoeudSpecial}
+\SetKwFunction{TrouveAxiomes}{TrouveAxiomes}
+
+\KwInput{un arbre de clustering $X_a$}
+\KwOutput{une taxonomie partielle $T_a$}
+\Parameter{profondeur maximale du parcours $D$}
+\SetKwProg{Fn}{Fonction}{:}{}
+\Fn{\Etiq{$X_a$}}{
+    \root $\leftarrow$ racine de $X_a$ \;
+    \NT $\leftarrow \{$ sous-clusters de \root $\}$ \;
+    $L_\alpha \leftarrow \varnothing$ \;
+    \addspe $\leftarrow \texttt{Faux}$ \; 
+    \While{\NT n'est pas vide}{
+        $C \leftarrow $ premier élément de \NT \;
+        $\alpha(C) \leftarrow $ \TrouveAxiomes{$C, \delta$} \;
+        \eIf{$\alpha(C)$ n'est pas \indef}{
+            ajouter $C$ à $L_\alpha$ \;
+        }{
+            \eIf{la profondeur de $C$ est inférieure à $D$}{
+                ajouter les sous-clusters de $C$ à \NT \;
+            }{
+                $\addspe \leftarrow \texttt{Vrai}$ \;
+            }
+        }
+    }
+    $V_a \leftarrow \{ \alpha(C) \}_{C \in L_\alpha}$ \;
+    $E_a \leftarrow \{ (\alpha(C), \root) : C \in L_\alpha \}$ \;
+    \If{\addspe est vrai}{
+        ajouter \texttt{<?>} à $V_a$\;
+        ajouter $(\texttt{<?>}, \root)$ à $E_a$ \; 
+    }
+    $T_a \leftarrow (V_a, E_a)$ \;
+    \Return{$T_a$}
+}
+\caption{Pseudo-code pour la fonction \texttt{EtiquetteArbre} de l'algorithme \ref{algo:texp-main}. Cette fonction parcourt l'arbre de clustering $X_a$ et cherche à étiquetter les clusters avec des axiomes, et renvoie une taxonomie partielle sur ces axiomes. La fonction \texttt{TrouveAxiomes} est décrite dans la section \ref{subsec:texp-exaxiom}.}
+\label{algo:texp-trouve}
+\end{algorithm}
+
+\paragraph{Le cas des nœuds spéciaux \texttt{<?>}} Dans l'étape précédente, le cas où l'axiome de départ $a$ est l'axiome spécial \texttt{<?>} est traité un peu différemment du cas général. Les données d'entrées sont toujours tirées aléatoirement, suivant la formule \ref{eq:texp-special-node}; le regroupement hiérarchique et l'extraction de la sous-taxonomie $T_a$ suit une procédure identique. Ensuite, on rattache $T_a$ à $\Tpred$. La taxonomie $\Tpred$ en cours d'extraction contient alors toujours le nœud spécial \texttt{<?>}, qu'on ne souhaite pas garder : on modifie alors $\Tpred$ en rattachant directement les successeurs directs de \texttt{<?>} avec le prédecesseur direct de \texttt{<?>}, on ré-écrit donc les chemins $\alpha \rightarrow \texttt{<?>} \rightarrow \beta$ en $\alpha \rightarrow \beta$, et on supprime \texttt{<?>} de $\Tpred$.
 
 \begin{algorithm}
 \SetKwFunction{Fusionne}{Fusionne}
 \SetKwProg{Fn}{Fonction}{:}{}
-\Fn{\Fusionne{$T_1, T_2, \alpha$}}{
+\Fn{\Fusionne{$T_1, T_2$}}{
+    $a \leftarrow$ axiome racine de $T_2$ \;
     $(V_1, E_1) \leftarrow T_1$ \;
     $(V_2, E_2) \leftarrow T_2$ \;
     $V \leftarrow V_1 \cup V_2$ \;
     $E \leftarrow E_1 \cup E_2$ \;
-    \If{$\alpha$ est de la forme \texttt{<?>}}{
-        \For{$u, v \in V$ tels que $u \rightarrow \alpha \rightarrow v$}{
-            \tcp{on relie directement u à v}
-            $E \leftarrow \left(E \setminus \{ (u , \alpha), (\alpha, v) \}\right) \cup \{ (u, v) \} $ \;
+    \If{$a$ est de la forme \texttt{<?>}}{
+        \For{$\alpha, \beta \in V$ tels que $\alpha \rightarrow a \rightarrow \beta$}{
+            \tcp{on relie directement beta à alpha}
+            $E \leftarrow \left(E \setminus \{(\beta, a), (a , \alpha) \}\right) \cup \{ (\beta, \alpha) \} $ \;
         }
-        $V \leftarrow V \setminus \{ \alpha \}$ \;
+        $V \leftarrow V \setminus \{ a \}$ \;
     }
     $T \leftarrow (V, E)$ \;
     \Return{$T$}
@@ -183,36 +272,7 @@ Si $T_a = (\varnothing, \varnothing)$, c'est-à-dire qu'aucun axiome n'a été t
 \end{algorithm}
 
 
-\begin{algorithm}
-\SetKwFunction{Fusionne}{EtiquetteArbre}
-\SetKwData{NT}{NonVisités}
-\SetKwData{root}{racine}
-\SetKwData{indef}{indéfini}
-\SetKwFunction{TrouveAxiomes}{TrouveAxiomes}
-\SetKwProg{Fn}{Fonction}{:}{}
-\Fn{\Fusionne{$X_a, \delta, D$}}{
-    \root $\leftarrow$ racine de $X_a$ \;
-    \NT $\leftarrow \{$ sous-clusters de \root $\}$ \;
-    $L_\alpha \leftarrow \varnothing$ \;
-    \While{\NT n'est pas vide}{
-        $C \leftarrow $ premier élément de \NT \;
-        $\alpha(C) \leftarrow $ \TrouveAxiomes{$C, \delta$} \;
-        \eIf{$\alpha(C)$ n'est pas \indef}{
-            ajouter $C$ à $L_\alpha$ \;
-        }{
-            \If{la profondeur de $C$ est inférieure à $D$}{
-                ajouter les sous-clusters de $C$ à \NT \;
-            }
-        }
-    }
-    $V_a \leftarrow \{ \alpha(C) \}_{C \in L_\alpha}$ \;
-    $E_a \leftarrow \{ (\alpha(C), \root) : C \in L_\alpha \}$ \;
-    $T_a \leftarrow (V_a, E_a)$ \;
-    \Return{$T_a$}
-}
-\caption{Pseudo-code pour la fonction \texttt{Fusionne} de l'algorithme \ref{algo:texp-main}. Cette fonction ajoute la taxonomie $T_2$ à la taxonomie $T_1$, en traitant éventuellement le cas où $a$ (l'axiome qui a servi à construire $T_2$) est un nœud spécial \texttt{<?>}.}
-\label{algo:texp-trouve}
-\end{algorithm}
+
 
 % \begin{figure}
 %     \centering
@@ -262,14 +322,14 @@ Soit $C = \{e_1, e_2, \ldots, e_n \} \subseteq \Ent$ un cluster contenant $n$ en
 \begin{equation}
 C = L \sqcup R
 \end{equation}
-Pour un axiome logique $A$ et une entité $x \in \Ent$, on note $A(x)$ si $x$ vérifie l'axiome $A$. On se propose d'expliquer la séparation du cluster $C$ en ses deux sous-clusters, c'est-à-dire d'identifier des axiomes qui sont vrais dans $L$ mais pas dans $R$. Si on trouve un tel axiome, on pourra alors l'utiliser comme étiquette pour le cluster $L$. Si on en trouve pas, $L$ portera l'étiquette \texttt{indéfini}. Pour étiquetter $R$, il suffit d'inverser les rôles de $L$ et $R$.
+Pour un axiome logique $A$ et une entité $x \in \Ent$, on note $A(x)$ si $x$ vérifie l'axiome $A$. On se propose d'expliquer la séparation du cluster $C$ en ses deux sous-clusters, c'est-à-dire d'identifier des axiomes qui sont vrais dans $L$ mais pas dans $R$. Si on trouve un tel axiome, on pourra alors l'utiliser comme étiquette pour le cluster $L$. Si on n'en trouve pas, $L$ portera l'étiquette \texttt{indéfini}. Pour étiquetter $R$, il suffit d'inverser les rôles de $L$ et $R$.
 
 On peut voir ce problème comme une recherche inductive d'axiomes à partir d'un ensemble d'exemples positifs $E^+ = L$ et d'un ensemble d'exemples négatifs $E^- = R$. 
 
 % Si un tel axiome existe, il 
 % Ce choix a d'abord été fait dans le but de mieux comprendre le fonctionnement du regroupement hiérarchique et d'analyser l'arbre de clustering obtenu. Toutefois, il est apparu que cette approche pouvait servir également à étiquetter des clusters, et donc à leur attribuer des axiomes.
 
-Expliquer la division de $C$ en $L \sqcup R$ nécessite de trouver un axiome $A$ tel que $A$ est valide pour tous les éléments de $L$ et pour aucun élément de $R$ :
+Expliquer la division de $C$ en $L \sqcup R$ nécessite de trouver un axiome $A$ tel que $A$ soit valide pour tous les éléments de $L$ et pour aucun élément de $R$ :
 \begin{equation}
     \left(\forall x \in L, A(x)  \right) \land \left(\forall x \in R, \neg A(x) \right)
 \end{equation}
@@ -278,11 +338,11 @@ Soit, de manière équivalente :
     \forall x \in C = L \sqcup R, A(x) \oplus (x \in R)
     \label{eq:exaxiom-xor-def}
 \end{equation}
-Avec $\oplus$ l'opérateur «ou exclusif». L'équation \ref{eq:exaxiom-xor-def} signifie qu'une entité de $C$ ne peut pas à la fois être dans $R$ et vérifier $A$, et elle ne peut pas non plus être dans $L$ sans vérifier $A$. Cette équation correspond au cas optimal où il existe un axiome qui divise parfaitement $C$ en $L$ et $R$ : en pratique, la plupart des clusters ne peuvent pas être parfaitement divisés, et il nous faut donc mesurer à quel point on se trouve de l'optimalité. Pour cela, on commence par définir la \textit{précision} d'un axiome $A$ par rapport à un ensemble d'éléments $E \sqsubset \Ent$ quelconque comme la proportion d'éléments de $E$ qui vérifient $A$ :
+Avec $\oplus$ l'opérateur «ou exclusif». L'équation \ref{eq:exaxiom-xor-def} signifie qu'une entité de $C$ ne peut pas à la fois être dans $R$ et vérifier $A$, et elle ne peut pas non plus être dans $L$ sans vérifier $A$. Cette équation correspond au cas optimal où il existe un axiome qui divise parfaitement $C$ en $L$ et $R$ : en pratique, la plupart des clusters ne peuvent pas être parfaitement divisés, et il nous faut donc mesurer à quel point on s'écarte de l'optimalité. Pour cela, on commence par définir la \textit{précision} d'un axiome $A$ par rapport à un ensemble d'éléments $E \sqsubset \Ent$ quelconque comme la proportion d'éléments de $E$ qui vérifient $A$ :
 \begin{equation}
     \text{prec}(A, E) = \frac{|\{ x \in E, A(x)\}|}{| E |}
 \end{equation}
-On mesure alors la capacité d'un axiome $A$ à expliquer la division $C = L \sqcup R$ avec deux métriques : d'une part, sa \textit{couverture}, définie comme la proportion d'éléments de $L$ qui vérifient $A$; d'autre part, sa \textit{spécificité}, qui indique la proportion d'éléments de $R$ qui ne vérifient pas $A$. Ces deux métriques se calculent à partir de la précision comme suit :
+On mesure alors la capacité d'un axiome $A$ à expliquer la division $C = L \sqcup R$ avec deux métriques : d'une part, sa \textit{couverture}, définie comme la proportion d'éléments de $L$ qui vérifient $A$; d'autre part, sa \textit{spécificité}, qui indique la proportion d'éléments de $R$ qui ne vérifient pas $A$. Les deux doivent être proches de 1. Ces deux métriques se calculent à partir de la précision comme suit :
 \begin{align}
     \text{cov}_{L \sqcup R}(A) &= \text{prec}(A, L) \\
     \text{spe}_{L \sqcup R}(A) &= 1 - \text{prec}(A, R)
@@ -292,10 +352,11 @@ On combine ces deux mesures en un seul indicateur synthétique, que l'on appelle
     % \text{part}_{L \sqcup R}(A) = \left(  \text{cov}_{L \sqcup R}(A)^{-1} + \text{sep}_{L \sqcup R}(A)^{-1} \right)^{-1}
     \text{part}_{L \sqcup R}(A) = \frac{|L| \cdot \text{cov}_{L \sqcup R}(A) + |R| \cdot \text{spe}_{L \sqcup R}(A)}{|L| + |R|}
 \end{equation}
+Dans la suite, on omettra l'indice $L \sqcup R$ lorsqu'il n'y a pas d'ambiguïté.
 
 On peut vérifier que l'on retrouve bien l'intuition derrière l'équation \ref{eq:exaxiom-xor-def}. Notons $n, n_1, n_2$ les effectifs des cluster $C$, $L$ et $R$ respectivement. La proportion d'éléments qui vérifient la condition de séparation \ref{eq:exaxiom-xor-def} est donnée par :
 \begin{equation}
-    \text{xor}(A) = \frac{| \{x \in C : A(x) \oplus (x \in R) \}|}{| C |}
+    \text{xor}(A) = \frac{| \{x \in C : A(x) \oplus (x \in R) \}|}{n}
 \end{equation}
 Par définition de l'opérateur ou exclusif, on peut écrire :
 \begin{equation}
@@ -385,20 +446,112 @@ On considère les types d'axiomes atomiques suivants :
 \end{itemize}
 Lorsqu'on combine ces axiomes comme dans le paragraphe suivant, on obtient la logique descriptive $\mathcal{EL}$, à laquelle s'ajoute l'union $\lor$.
 
-On note à nouveau $C$ le cluster d'entrée,  $L$ et $R$ ses deux sous-clusters, et on cherche à étiquetter le sous-cluster $L$.
+On note à nouveau $C$ le cluster d'entrée,  $L$ et $R$ ses deux sous-clusters, et on cherche à étiquetter le sous-cluster $L$. Comme précédemment, pour étiquetter $R$, il suffit d'inverser les rôles de $L$ et $R$.
+
+\paragraph{Extraction des atomes}
 
 Pour chaque entité $x$ du cluster d'entrée, on extrait l'ensemble des triplets $(x, r, y)$ dont $x$ est le sujet. Si $r$ est la relation \rdf{type}, alors $y$ représente une classe, et le triplet $(x, r, y)$ est transformé en l'axiome atomique $y$. Si $y$ est un littéral, on extrait son type $t$, et on obtient l'axiome atomique $\exists r.t$. Autrement, on liste les classes $C_1, C_2, \ldots, C_m$ dont $y$ fait partie, et on extrait les axiomes atomiques $\exists r.\{y\}, \exists r.C_1, \ldots, \exists r.C_m$. On obtient ainsi une liste d'axiomes atomiques $\mathcal{A}_\text{atomes}$ pour l'entièreté du cluster; cette liste est filtrée et seuls les atomes vérifiés par plus de $\delta_\text{filtre} = 10\%$ des entités du cluster sont conservés. Notons que cette étape est commune à la recherche d'axiomes de $L$ et de $R$, elle peut donc être effectuée une seule fois.
 
-Ensuite, on génère une liste d'axiomes candidates $\cal{A}_\text{candidats}$ à partir de cette liste d'axiomes atomiques. Initialement, les axiomes candidats sont simplement les axiomes atomiques. On évalue chaque axiome $a$ parmi les candidats, en calculant sa couverture, sa spécificité et son score. On compare alors ce score à un seuil $\delta$, par exemple $\delta = 0.9$. Si $\text{cov}(a) < \delta$, l'axiome $A$ ne couvre pas assez d'entités : on l'améliore alors itérativement en ajoutant des clauses OU. Pour chaque axiome atomique $b$, on génère un nouvel axiome candidat $a \lor b$, et on l'ajoute à la liste des axiomes candidats. D'après l'équation \ref{eq:cov-disjunct}, $\cov(a \lor b) \geq \cov(a)$.
-À l'inverse, si $\spe(a) < \delta$, alors l'axiome est insuffisamment spécifique : il est vérifié par trop d'éléments de $R$. Suivant l'équation \ref{eq:cov-conjunct} : $\forall b, \spe(a \land b) \geq \spe(a)$, on peut améliorer cette spécificité en ajoutant une conjonction. Pour tout axiome atomique $b$, on génère l'axiome $a \land b$ et on l'ajoute à la liste des axiomes candidats. 
-Si on a à la fois $\spe(a) < \delta$ et $\cov(a) < \delta$, alors l'axiome $a$ ne permet pas d'expliquer la partition $C = L \sqcup R$ et il est retiré de la liste des candidats. Enfin, si $\cov(a) > \delta$ et $\spe(a) > \delta$, l'axiome est conservé tel quel.
+\paragraph{Amélioration des axiomes}
 
-À chaque itération, on limite le nombre de candidats qui sont améliorés (c'est-à-dire étendus par des disjonctions ou des conjonctions) : seuls les $N_\text{ax}$ axiomes candidats avec le plus haut score de partition sont conservés, avec $N_\text{ax}$ un paramètre fixé empiriquement, typiquement $N_\text{ax} = 10$. La recherche d'axiomes s'arrête lorsqu'il n'y a plus d'axiomes candidats à améliorer ou lorsque le nombre d'itérations dépasse une certaine limite $N_\text{iter}$.
+Ensuite, on génère une liste d'axiomes candidates $\cal{A}_\text{candidats}$ à partir de cette liste d'axiomes atomiques. Initialement, les axiomes candidats sont simplement les axiomes atomiques. On évalue chaque axiome $a$ parmi les candidats, en calculant sa couverture, sa spécificité et son score. On compare alors ce score à un seuil $\delta$, par exemple $\delta = 0.9$. Si $\text{cov}(a) < \delta$, l'axiome $A$ ne couvre pas assez d'entités : on le généralise alors en ajoutant des disjonctions (clauses OU). %l'améliore alors itérativement en ajoutant des clauses OU. 
+Pour ça, on génère un nouvel axiome candidat $a \lor b$ pour chaque atome $b$, 
+% Pour chaque axiome atomique $b$, on génère un nouvel axiome candidat $a \lor b$, 
+et on l'ajoute à la liste des axiomes candidats. D'après l'équation \ref{eq:cov-disjunct}, $\cov(a \lor b) \geq \cov(a)$.
+À l'inverse, si $\spe(a) < \delta$, alors l'axiome est insuffisamment spécifique : il est vérifié par trop d'éléments de $R$. 
+%Suivant l'équation \ref{eq:cov-conjunct} : $\forall b, \spe(a \land b) \geq \spe(a)$, on peut améliorer cette spécificité en ajoutant une conjonction. 
+On le spécialise en ajoutant des conjonctions (clauses ET).
+Pour tout axiome atomique $b$, on génère donc l'axiome $a \land b$ et on l'ajoute à la liste des axiomes candidats. 
+Si l'on a à la fois $\spe(a) < \delta$ et $\cov(a) < \delta$, alors l'axiome $a$ ne permet pas d'expliquer la partition $C = L \sqcup R$ et il est retiré de la liste des candidats. Enfin, si $\cov(a) > \delta$ et $\spe(a) > \delta$, l'axiome est conservé tel quel et il n'est plus amélioré.
+
+À chaque itération, on limite le nombre de candidats qui sont améliorés (c'est-à-dire étendus par des disjonctions ou des conjonctions) : seuls les $N_\text{ax}$ axiomes candidats avec le plus haut score de partition sont conservés, avec $N_\text{ax}$ un paramètre fixé empiriquement, typiquement $N_\text{ax} = 10$. La recherche d'axiomes s'arrête lorsqu'il n'y a plus d'axiomes candidats à améliorer ou lorsque le nombre d'itérations dépasse une certaine limite \texttt{max\_étapes}. % $N_\text{iter}$.
 
 Le résultat de cet algorithme est un ensemble $\cal{A}(L)$ (éventuellement vide) d'axiomes capables de qualifier le sous-cluster $L$ par opposition au sous-cluster $R$, avec les scores associés. Si $\cal{A}(L) = \varnothing$, aucun axiome satisfaisant aux critères n'a été trouvé, et le cluster $L$ n'est donc pas étiquetté : on renvoie l'étiquette \texttt{indéfini}. Sinon, on étiquette $L$ avec l'axiome de plus haut score :
 \begin{equation}
-    \alpha(L) = \argmax_{a \in \cal{A}(L)}(\xscore(a))
+    \alpha(L) = \argmax_{a \in \cal{A}(L)}(\text{part}(a))
 \end{equation}
+
+L'algorithme \ref{algo:extraction} contient le pseudo-code correspondant à cette méthode d'extraction d'axiome. On y désigne par \texttt{Evalue} la fonction qui, à un axiome $A$ et deux ensembles $E^+$ et $E^-$ contenant des exemples positifs et négatifs, associe le triplet ($\cov_{E^+ \sqcup E^-}(A)$, $\spe_{E^+ \sqcup E^-}(A)$, $\textrm{part}_{E^+ \sqcup E^-}(A)$).
+
+
+\begin{algorithm}[h]
+\SetKwFunction{Fusionne}{ExtraitAxiome}
+\SetKwFunction{Evalue}{Evalue}
+\SetKwProg{Fn}{Fonction}{:}{}
+
+\SetKwData{mingain}{gain\_min}
+\SetKwData{maxstep}{max\_étapes}
+\SetKwData{atoms}{atomes}
+\SetKwData{cands}{candidats}
+\SetKwData{ax}{axiome}
+\SetKwData{at}{atome}\SetKwData{OP}{OP}
+\SetKwData{cov}{couv}
+\SetKwData{spe}{spécif}
+\SetKwData{sco}{score}
+\SetKwData{indef}{indéfini}
+\SetKwData{nsco}{nouveauScore}
+\SetKwData{bsco}{scoreInit}
+\SetKwData{improv}{améliorés}
+\SetKwData{none}{None}
+\SetKwData{nc}{nouveauCandidat}
+\SetKw{Continue}{continuer}
+\SetKw{Break}{interrompre}
+
+\KwInput{un ensemble d'exemples positifs $E^+$ et négatifs $E^-$ (typiquement, un cluster cible et son voisin), et une liste d'atomes}
+\KwOutput{liste d'axiomes $\mathcal{A}$ vérifiés par les entités de $E^+$ mais pas par celles de $E^-$}
+\Parameter{nombre maximal d'étapes \maxstep, gain minimal \mingain, seuil de score $\delta$, longueur maximale des axiomes $N_{\text{ax}}$}
+
+\Fn{\Fusionne{$E^+, E^-$, \atoms}}{
+    $\mathcal{A} \leftarrow \varnothing$ \;
+    \tcp{initialisation des candidats}
+    $\cands \leftarrow \varnothing$ \;
+    \For{\at dans \atoms}{
+        $\cov, \spe, \sco \leftarrow $ \Evalue{\at, $E^+, E^-$} \;
+        \lIf{$\sco > \delta$}{ajouter \at à $\mathcal{A}$}
+        \tcp{spécificité insuffisante : on spécialise avec ET}
+        \lElseIf{$\spe < \delta$}{ajouter $(\at, \sco, \land)$ à \cands}
+        \tcp{couverture insuffisante : on généralise avec OU}
+        \lElseIf{$\cov < \delta$}{ajouter $(\at, \sco, \lor)$ à \cands}
+    }
+    \tcp{amélioration des candidats}
+    $t \leftarrow 0$ \;
+    \While{$t \leq \maxstep$}{
+        $\improv \leftarrow \varnothing$ \; 
+        \For{$(\ax, \bsco, \OP)$ dans \cands}{
+          \For{\at dans \atoms}{
+            $\nc \leftarrow$ \at \OP \ax \;
+            $\cov, \spe, \sco \leftarrow $ \Evalue(\nc, $E^+, E^-$) \;
+            \uIf{$\sco > \delta$}{
+                \tcp{\nc a un score suffisant : on le garde}
+                ajouter \nc à $\mathcal{A}$ \;
+                \Continue
+            }
+            \uElseIf{
+            $\cov < \delta$ et $\spe < \delta$ ou $\sco - \bsco < \mingain$}{
+                \Continue
+                %\tcp{\nc est meilleur que \ax, mais pas encore suffisant : on poursuit l'amélioration}
+                %ajouter $(\nc, \nsco)$ à \improv\;
+            }
+            \tcp{\nc est meilleur que \ax, mais pas encore suffisant : on poursuit l'amélioration}
+            \lElseIf{$\spe < \delta$}{ajouter $(\nc, \sco, \land)$ à \improv}
+            \lElseIf{$\cov < \delta$}{ajouter $(\nc, \sco, \lor)$ à \improv}
+          }
+        }
+          \If{\improv est vide}{
+            \tcp{aucun nouvel axiome n'a été trouvé : la recherche s'arrête}
+            \Break
+        }
+            $\cands \leftarrow$ les $N_{\textrm{ax}}$ meilleurs axiomes de \improv \;
+            $t \leftarrow t + 1$ \;
+    }
+    \Return le meilleur axiome de $\mathcal{A}$ (ou \indef si $\mathcal{A}$ est vide) \;
+}
+
+ \caption{Pseudo-code pour extraire un axiome à partir d'une liste d'axiomes atomiques, et d'exemples positifs et négatifs.}
+ \label{algo:extraction}
+\end{algorithm}
+
+\iffalse {
 
 \begin{algorithm}[h]
 \SetKwFunction{Fusionne}{ExtraitAxiome}
@@ -422,7 +575,7 @@ Le résultat de cet algorithme est un ensemble $\cal{A}(L)$ (éventuellement vid
 \SetKw{Continue}{continuer}
 \SetKw{Break}{interrompre}
 
-\KwInput{un ensemble d'exemples positifs $E^+$ et négatifs $E^-$ (par exemple, le cluster cible et son voisin), et une liste d'atomes}
+\KwInput{un ensemble d'exemples positifs $E^+$ et négatifs $E^-$ (typiquement, un cluster cible et son voisin), et une liste d'atomes}
 \KwOutput{liste d'axiomes $\mathcal{A}$ vérifiés par les entités de $E^+$ mais pas par celles de $E^-$}
 \Parameter{nombre maximal d'étapes \maxstep, gain minimal \mingain, seuil de score $\delta$, longueur maximale des axiomes $N_{\text{ax}}$}
 
@@ -482,6 +635,9 @@ Le résultat de cet algorithme est un ensemble $\cal{A}(L)$ (éventuellement vid
  \label{algo:extraction}
 \end{algorithm}
 
+} 
+\fi
+
 % \todo{Mentionner l'autre idée (TF-IDF) ?} %Autre principe : TF-IDF based
 
 \iffalse {
@@ -511,6 +667,8 @@ Discussion sur les paramètres
 
 Phase finale : ajout des classes manquantes (si disponible), restriction des patterns}
 \fi 
+
+\FloatBarrier
 
 \section{Évaluation et discussion}
 
