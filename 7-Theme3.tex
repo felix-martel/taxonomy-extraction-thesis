@@ -683,14 +683,43 @@ que celle d'une taxonomie non-expressive, car il n'existe pas de référence à 
 \subsection{Évaluation quantitative par comparaison avec l'ontologie existante}
 
 
+\begin{table}[h]
+    \centering
+    \caption{Évaluation de la taxonomie non-expressive extraite à partir de DBpédia, en comparaison de l'ontologie de DBpédia.}
+    \begin{tabular}{|lrrr|}
+        \hline
+             & Précision  & Rappel & $F_1$ \\
+        \hline
+        Directe   &	68,94	&	68,79	&	68,87 \\
+        Transitive  &	98,28	&	85,99	&	91,72 \\
+        Moyenne & 83.61 & 77,39 & 80,30 \\
+        \hline
+    \end{tabular}
+    \label{tab:extraction-results}
+\end{table}
 
 
 
-\subsection{Évaluation qualitative des axiomes obtenus}
+\subsection{Analyse qualitative des axiomes obtenus}
 
+On discute maintenant des axiomes obtenus lors de l'extraction de taxonomie expressive. Un exemple de taxonomie expressive est présenté à l'adresse \href{http://labowest.ca/sdb2020/expressive.html}{labowest.ca/sdb2020/expressive.html} (en anglais). Cette taxonomie a été obtenue en utilisant un score adaptatif variant de $\delta = 0,9$ à $\delta = 0,5$ avec un pas de $0,05$, une extraction mono-niveau avec profondeur maximale $D=4$ et $350$ étapes de prélevement-regroupement. Une fois ces 350 étapes effectuées, on effectue $100$ étapes en se restreignant à la recherche de classes nommées, avec un seuil bas $\delta = 0,15$ et une profondeux maximale $D=10$, afin d'ajouter les classes rares ou mal définies à la taxonomie extraite.
+
+Lorsqu'on trouve plusieurs bons candidats $\alpha_1(C), \ldots, \alpha_k(C)$ pour étiquetter un cluster $C$, on choisit toujours l'axiome avec le score le plus élevé $\alpha^*(C) = \argmax_{\alpha_i(C)} \textrm{part}(\alpha_i(C))$, mais on garde également en mémoire les autres candidats, à condition qu'ils aient un score au moins égal à 90\% du meilleur score. Si ces candidats alternatifs existent, le cluster est affiché en bleu sur la page Web indiquée, et les candidats alternatifs sont affichés au survol de la souris.
+Ces candidats peuvent être utilisés à des fins d'analyse, pour mieux comprendre les informations que l'algorithme extrait; ils pourraient aussi servir pour enrichir l'ontologie (par exemple, en ajoutant les axiomes $\alpha^*(C) \equiv \alpha_i(C)$ ou $\alpha_i(C) \sqsubseteq \alpha^*(C)$) ou pour identifier les relations associées à un concept spécifique.
+
+Dans l'exemple présenté, notre approche extrait 106 classes expressives qui s'ajoutent aux 455 classes nommées de l'ontologie DBpédia.
+Ce nombre varie beaucoup selon les paramètres choisis (en particulier, le seuil $\delta$, le gain minimal \texttt{gain\_min}, et la longueur maximale des axiomes \texttt{max\_étapes}), et on peut obtenir des taxonomies avec très peu de classes expressives, ou au contraire avec davantage de classes expressives que de classes nommées.
+
+Certaines de ces classes expressives subsument un ensemble de classes existantes. Par exemple, une classe $\dbo{Film} \lor \dbo{TelevisionShow}$, également étiquettée par l'axiome expressif $\exists \dbo{runtime}.\texttt{xsd:integer} \lor \exists \dbo{starring}.\dbo{Person}$, qui regroupe les films et les séries télévisées. Parmi les regroupements qui paraissent cohérents mais qui n'existent pas dans l'ontologie DBpédia, on retrouve également les fusées et les navettes spatiales, associées notamment à la relation \texttt{totalLaunches}; les romans et les bandes dessinées; les épisodes de série et ceux de dessins animés; les programmes télévisuels et radiophoniques; les journaux quotidiens et les magazines; les montagnes et les volcans, etc. Les regroupements de plus de deux classes sont plus rares : on trouve notamment la réunion des mammifères, reptiles, oiseaux, poissons dans une grande classe d'animaux excluant les insectes, ou différents types de plantes réunis avec les champignons. Certains regroupements sont plus étonnants, par exemple la réunion des œuvres écrites (\dbo{WrittenWork}) et des logiciels (\dbo{Software}), ou celle des bateaux avec les avions; d'autres sont des erreurs, comme \hl{exemple}
+
+À l'inverse, certaines classes expressives précisent des classes existantes, et permettent donc d'augmenter la spécificité de la taxonomie. Un exemple est fourni par la classe \dbo{Language} : dans DBpédia, cette classe possède une unique sous-classe \dbo{ProgrammingLanguage}. Dans notre taxonomie expressive, une nouvelle sous-classe a été identifiée : $\exists \dbo{spokenIn}.\dbo{Place}$, qui contient les langues naturelles.
 %
+Toutefois, la plupart de ces classes spécifiques sont difficiles à interpréter : ainsi, la classe $\exists \dbo{latestReleaseDate}.\texttt{xsd:date} \land$ $\exists \dbo{operatingSystem}.\dbo{Software}$ (sous-classe de \dbo{Software}) semble être construite par opposition aux jeux vidéos, mais les axiomes qui la décrivent sont peu explicites.
 %
-% ??????????????
-%
-%
-%
+On trouve également des classes d'une très grande spécificité, comme $(\exists \dbo{language} \{ \dbo{Tamil\_Language} \lor \exists \dbo{language}.\{ \dbo{Telugu\_Language} \}) \land \dbo{Album}$, qui contient des albums musicaux en langue tamoule ou télougou, deux langues parlées dans le sud de l'Inde. 
+
+On voit ici apparaître un risque, celui d'une spécificité variable de la taxonomie extraite : dans cet exemple, il n'est pas nécessairement justifié d'avoir une classe pour qualifier tel genre musical et pas tel autre. 
+Ce risque est d'autant plus marqué que Wikipédia (et, par suite, DBpédia) est biaisée\footnote{En 2015, \cite{nickel2015review} notait que Wikipédia contenait des articles sur 18 000 acteurs états-uniens, 2 600 acteurs indiens et moins de 100 acteurs nigérians, alors que l'Inde et le Nigéria sont les deux plus gros producteurs de films au monde.}; une méthode d'extraction inductive risque de refléter ces biais, voire de les renforcer en les fixant dans une taxonomie.
+
+
+
