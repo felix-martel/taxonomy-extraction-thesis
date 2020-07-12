@@ -515,7 +515,7 @@ L'algorithme \ref{algo:extraction} contient le pseudo-code correspondant à cett
     }
     \tcp{amélioration des candidats}
     $t \leftarrow 0$ \;
-    \While{$t \leq \maxstep$}{
+    \While{$t < \maxstep$}{
         $\improv \leftarrow \varnothing$ \; 
         \For{$(\ax, \bsco, \OP)$ dans \cands}{
           \For{\at dans \atoms}{
@@ -638,8 +638,6 @@ L'algorithme \ref{algo:extraction} contient le pseudo-code correspondant à cett
 } 
 \fi
 
-% \todo{Mentionner l'autre idée (TF-IDF) ?} %Autre principe : TF-IDF based
-
 \iffalse {
 \subsubsection{Détails pratiques}
 
@@ -683,6 +681,12 @@ que celle d'une taxonomie non-expressive, car il n'existe pas de référence à 
 \subsection{Évaluation quantitative par comparaison avec l'ontologie existante}
 
 
+L'évaluation quantitative sur la tâche non-expressive permet de vérifier que notre approche identifie correctement les hiérarchies entre les classes nommées; identifier ces hiérarchies est un préalable nécessaire à l'extraction de nouvelles classes et à l'extraction d'axiomes plus complexes.
+
+On utilise donc la méthode décrite plus haut, mais on restreint les axiomes atomiques aux seules classe nommées $C$, et on fixe \texttt{max\_étapes} à $0$, ce qui revient à interdire les clauses ET et OU. On effectue 300 étapes de prélevement-regroupement, on utilise un seuil adaptatif $\delta$ allant de $0,9$ à $0,5$ par pas de $0,05$, et on considère une profondeur maximale $D=4$. Le résultat est accessible en ligne, à l'adresse \href{http://labowest.ca/sdb2020/non_expressive.html}{labowest.ca/sdb2020/non\_expressive.html}.
+
+On compare la taxonomie obtenue $\Tpred$ à la taxonomie de référence de DBpédia $T^*$, qui contient 455 classes. Cette comparaison se fait selon les modalités décrites à la section \ref{subsec:te-results} : on calcule la précision, le rappel et le $F_1$ entre d'un côté, l'ensemble des axiomes de subsumption contenus dans $\Tpred$, et de l'autre les axiomes de subsumption contenus dans $T^*$ – c'est l'évaluation \textit{directe}. On recalcule ensuite ces trois métriques pour les clôtures transitives de $\Tpred$ et $T^*$, qui constituent l'évaluation \textit{transitive}. On moyenne alors chacune des trois métriques sur les deux modes d'évaluation, ce qui donne l'évaluation \textit{moyenne}. Les résultats sont présentés dans le tableau \ref{tab:extraction-results}.
+
 \begin{table}[h]
     \centering
     \caption{Évaluation de la taxonomie non-expressive extraite à partir de DBpédia, en comparaison de l'ontologie de DBpédia.}
@@ -698,6 +702,10 @@ que celle d'une taxonomie non-expressive, car il n'existe pas de référence à 
     \label{tab:extraction-results}
 \end{table}
 
+On obtient un $F_1$ de 68,9\% sur l'évaluation directe, et de 91,7\% sur l'évaluation transitive. La précision transitive est très élevée (98,2\%), ce qui indique que l'algorithme commet peu d'erreurs de haut niveau. En revanche, l'écart entre cette précision transitive et la précision directe indique que l'algorithme ne parvient pas à extraire toute la hiérarchie et a tendance à «aplatir» la taxonomie; autrement dit, il n'extrait pas suffisamment de niveaux de hiérarchie. Cela est corroboré par l'examen manuel de la taxonomie produite. Celle-ci contient seulement deux axiomes aberrants (\dbo{TimePeriod} $\sqsubset$ \dbo{Economist}, et \dbo{PersonFunction} $\sqsubset$ \dbo{Astronaut}). En revanche, un type d'erreur fréquent est la prédiction de $A \sqsubset C$ et $B \sqsubset C$ à la place de $A \sqsubset B \sqsubset C$, soit effectivement un aplatissement de la hiérarchie. De plus, un certains nombres de classes, et particulièrement de classes rares, sont rattachées directement à la racine.
+
+% Ces résultats ne sont pas comparables avec 
+
 
 
 \subsection{Analyse qualitative des axiomes obtenus}
@@ -710,28 +718,33 @@ Ces candidats peuvent être utilisés à des fins d'analyse, pour mieux comprend
 Dans l'exemple présenté, notre approche extrait 106 classes expressives qui s'ajoutent aux 455 classes nommées de l'ontologie DBpédia.
 Ce nombre varie beaucoup selon les paramètres choisis (en particulier, le seuil $\delta$, le gain minimal \texttt{gain\_min}, et la longueur maximale des axiomes \texttt{max\_étapes}), et on peut obtenir des taxonomies avec très peu de classes expressives, ou au contraire avec davantage de classes expressives que de classes nommées.
 
-Certaines de ces classes expressives subsument un ensemble de classes existantes. Par exemple, une classe $\dbo{Film} \lor \dbo{TelevisionShow}$, également étiquettée par l'axiome expressif $\exists \dbo{runtime}.\texttt{xsd:integer} \lor \exists \dbo{starring}.\dbo{Person}$, qui regroupe les films et les séries télévisées. Parmi les regroupements qui paraissent cohérents mais qui n'existent pas dans l'ontologie DBpédia, on retrouve également les fusées et les navettes spatiales, associées notamment à la relation \texttt{totalLaunches}; les romans et les bandes dessinées; les épisodes de série et ceux de dessins animés; les programmes télévisuels et radiophoniques; les journaux quotidiens et les magazines; les montagnes et les volcans, etc. Les regroupements de plus de deux classes sont plus rares : on trouve notamment la réunion des mammifères, reptiles, oiseaux, poissons dans une grande classe d'animaux excluant les insectes, ou différents types de plantes réunis avec les champignons. Certains regroupements sont plus étonnants, par exemple la réunion des œuvres écrites (\dbo{WrittenWork}) et des logiciels (\dbo{Software}), ou celle des bateaux avec les avions; d'autres sont des erreurs, comme \hl{exemple}
+Certaines de ces classes expressives subsument un ensemble de classes existantes. Par exemple, une classe $\dbo{Film} \lor \dbo{TelevisionShow}$, également étiquettée par l'axiome expressif $\exists \dbo{runtime}.\texttt{xsd:integer} \lor \exists \dbo{starring}.\dbo{Person}$, qui regroupe les films et les séries télévisées. Parmi les regroupements qui paraissent cohérents mais qui n'existent pas dans l'ontologie DBpédia, on retrouve également les fusées et les navettes spatiales, associées notamment à la relation \texttt{totalLaunches}; les romans et les bandes dessinées; les épisodes de série et ceux de dessins animés; les programmes télévisuels et radiophoniques; les journaux quotidiens et les magazines; les montagnes et les volcans, etc. Les regroupements de plus de deux classes sont plus rares : on trouve notamment la réunion des mammifères, reptiles, oiseaux, poissons dans une grande classe d'animaux excluant les insectes, ou différents types de plantes réunis avec les champignons. Certains regroupements sont plus étonnants, par exemple la réunion des œuvres écrites (\dbo{WrittenWork}) et des logiciels (\dbo{Software}), ou celle des bateaux avec les avions; d'autres enfin sont incompréhensibles et s'apparentent à des erreurs pures et simples, comme le regroupement au sein d'une même classe de \dbo{Document}, \dbo{Sound} et \dbo{TimePeriod}. % sont des erreurs, comme \hl{exemple}
 
 À l'inverse, certaines classes expressives précisent des classes existantes, et permettent donc d'augmenter la spécificité de la taxonomie. Un exemple est fourni par la classe \dbo{Language} : dans DBpédia, cette classe possède une unique sous-classe \dbo{ProgrammingLanguage}. Dans notre taxonomie expressive, une nouvelle sous-classe a été identifiée : $\exists \dbo{spokenIn}.\dbo{Place}$, qui contient les langues naturelles.
 %
-Toutefois, la plupart de ces classes spécifiques sont difficiles à interpréter : ainsi, la classe $\exists \dbo{latestReleaseDate}.\texttt{xsd:date} \land$ $\exists \dbo{operatingSystem}.\dbo{Software}$ (sous-classe de \dbo{Software}) semble être construite par opposition aux jeux vidéos, mais les axiomes qui la décrivent sont peu explicites.
+Toutefois, la plupart de ces classes spécifiques sont difficiles à interpréter : ainsi, la classe $\exists \dbo{latestReleaseDate}.\texttt{xsd:date} \land$ $\exists \dbo{operatingSystem} \allowbreak .\dbo{Software}$ (sous-classe de \dbo{Software}) semble être construite par opposition aux jeux vidéos, mais les axiomes qui la décrivent sont peu explicites.
 %
 On trouve également des classes d'une très grande spécificité, comme $(\exists \dbo{language} \{ \dbo{Tamil\_Language} \lor \exists \dbo{language}.\{ \dbo{Telugu\_Language} \}) \land \dbo{Album}$, qui contient des albums musicaux en langue tamoule ou télougou, deux langues parlées dans le sud de l'Inde. 
 
 On voit ici apparaître un risque, celui d'une spécificité variable de la taxonomie extraite : dans cet exemple, il n'est pas nécessairement justifié d'avoir une classe pour qualifier tel genre musical et pas tel autre. 
-Ce risque est d'autant plus marqué que Wikipédia (et, par suite, DBpédia) est biaisée\footnote{En 2015, \cite{nickel2015review} notait que Wikipédia contenait des articles sur 18 000 acteurs états-uniens, 2 600 acteurs indiens et moins de 100 acteurs nigérians, alors que l'Inde et le Nigéria sont les deux plus gros producteurs de films au monde.}; une méthode d'extraction inductive risque de refléter ces biais, voire de les renforcer en les fixant dans une taxonomie.
+Ce risque est d'autant plus marqué que Wikipédia (et, par suite, DBpédia) est biaisée\footnote{En 2015, \cite{nickel2015review} notait que la version anglaise de Wikipédia contenait des articles sur 18 000 acteurs états-uniens, 2 600 acteurs indiens et moins de 100 acteurs nigérians, alors que l'Inde et le Nigéria sont les deux plus gros producteurs de films au monde.}; une méthode d'extraction inductive risque de refléter ces biais, voire de les renforcer en les fixant dans une taxonomie.
+
+Enfin, au-delà de la détection de nouvelles classes, la taxonomie extraite permet d'enrichir les classes existantes, notamment grâce aux candidats alternatifs mentionnés plus haut. L'examen de ces candidats alternatifs permet d'associer classes nommées et relations : \dbo{Person} est lié à \dbo{birthDate} et \texttt{foaf:gender}, \dbo{SportsTeamMember} à $\exists \dbo{squadNumber}.\allowbreak \texttt{xsd:nonNegativeInteger}$ et $\exists \dbo{team}. \allowbreak \dbo{SportsTeam}$, les instances de \dbo{WrittenWork} font partie de $\exists \dbo{author}. \allowbreak \dbo{Person}$ ou de \dbo{PeriodicalLitterature}, etc.
+Identifier ces régularités peut permettre de guider la complétion du graphe, en repérant les relations manquantes dans le graphe, de détecter le type d'une entité à partir des relations qu'elle vérifie ou encore d'améliorer l'extraction automatique de triplets RDF en sachant quelles sont les informations à extraire.
 
 
-Autres :
 
-utile pour explorer les classes, identifie des relations et notamment des relations manquantes (cf automobile par exemple, mais pas uniquement)
-
-classes mal gérées : notamment les lieux habités
-
-discussion : en l'état, plutôt un outil d'exploration de graphes de connaissance et d'aide à la création/mise à jour de taxonomie, + connaitre ces axiomes peut aider à guider l'extraction non supervisée de triplets rdf à partir de texte
-
-en revanche, on ne peut pas encore s'affranchir de supervision humaine et l'utiliser comme un outil non supervisé de bout en bout (doublons, varabilité des classes, pas encore au standard humain).
-
-future work : évaluer les axiomes extraits à l'aide de downstream tasks (lesquelles ?)
+\subsection{Discussion et limitations}
 
 
+En l'état, la taxonomie expressive qui est extraite par notre méthode n'est pas encore au niveau d'une taxonomie produite par des experts humains : elle contient des doublons, des axiomes peu informatifs ou faux, et n'identifie pas toutes les relations de subsumption. On ne peut pas encore s'affranchir totalement de la supervision humaine, qui reste nécessaire pour nettoyer et interpréter les axiomes extraits. 
+% Pas sûr de garder ça :
+%Pour surmonter ces limitations, on peut envisager plusieurs pistes : exécuter plusieurs fois l'extraction et combiner les résultats afin d'en augmenter la fiabilité; introduire un mécanisme de détection et d'élimination des doublons; \hl{quoi d'autre ?}
+
+En revanche, notre méthode peut constituer un outil pour explorer un graphe de connaissance et aider à la création ou la mise à jour d'une taxonomie, en identifiant les hiérarchies entre classes, en généralisant ou en spécialisant des classes existantes, et en extrayant des descriptions logiques de ces classes. 
+De manière générale, la taxonomie extraite donne un aperçu général du contenu d'un graphe, du point de vue de ses classes et de ses relations; on peut ensuite passer aisément au niveau des instances, en prélevant des entités qui vérifient ou non certains axiomes.
+
+Notons d'ailleurs que, par souci de simplicité et faute de temps, nous n'avons pas intégré à notre outil d'extraction d'axiomes certains aspects importants.
+En premier lieu, nous ne considérons pas les relations inverses, à savoir les relations $R^{-1}$ telles que $\rel{x}{R^{-1}}{y}$ si $\rel{y}{R}{x}$. 
+%(de la forme $R^{-1}$, vérifiée par une paire $(x, y)$ si $(y, R, x)$ existe dans le graphe). 
+Pourtant, la plupart des relations de DBpédia n'existent que dans un seul sens : par exemple, une œuvre est liée à son auteur par la relation \dbo{author}, mais il n'existe pas de lien inverse entre un auteur et ses œuvres. On ne pourra donc pas extraire un axiome du type $\exists \dbo{author}^{-1}. \allowbreak \dbo{Poem}$, qui aurait été susceptible de décrire les poètes. De même, une gestion minimale des \textit{valeurs} des littéraux (et pas seulement de leurs types) pourrait permettre de gérer les dates, donc les périodes historiques, les chiffres de population, les données économiques ou autres, et donc affiner l'identification ou la description des classes.
