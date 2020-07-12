@@ -1,15 +1,42 @@
 \Chapter{EXTRACTION DE TAXONOMIE EXPRESSIVE}
 \label{chap:texp}
 
+Dans le chapitre précédent, on a montré qu'il était possible de reconstituer une hiérarchie sur les types à partir d'un ensemble de plongements vectoriels typés mais non hiérarchisés. Toutefois, la taxonomie aini extraite est limitée aux types déjà connus, et suppose donc que une liste de types fixée à l'avance. De plus, cette taxonomie ne permet pas de caractériser ou de décrire les instances de ces types : on ne sait pas quelles relations elles vérifient, ou à quels types d'entités elles sont reliées.
 
-Dans le chapitre précédent, on a adopté un point de départ très restrictif pour extraire une taxonomie : une collection d'entités typées, représentées par leurs plongements vectoriels. On a essayé de reconstruire une information
+Ici, on adopte un point de départ beaucoup moins restrictif, puisqu'on s'autorise l'accès à tout le graphe de connaissance; de là, on cherche à extraire une taxonomie expressive, c'est-à-dire une hiérarchie sur des classes qui peuvent être soit des types nommés, soit des axiomes logiques. On cherche également à décrire les types existants au moyen d'axiomes. L'objectif est donc double : identification de nouveaux types, et caractérisation des types existants. On cherchera ainsi à illustrer le potentiel des méthodes d'extraction taxonomique basées sur le regroupement non-supervisé de plongements vectoriels, par opposition aux méthodes qui manipulent directement des types et à celles qui regroupent les plongements de façon supervisée.
+
+
+% Dans le chapitre précédent, on a adopté un point de départ très restrictif 
+% Dans le chapitre précédent, on a adopté un point de départ très restrictif pour extraire une taxonomie : une collection d'entités typées, représentées par leurs plongements vectoriels. On a essayé de reconstruire une information
 % déjà trop spécifique ?
-Le passage du graphe complet à ses plongements vectoriels entraîne nécessairement une perte d'information \hl{ref}.
-En pratique, l'information contenue dans DBpédia est bien plus riche que cela; on peut donc se demander ce que l'on serait capable d'extraire si on s'autorisait l'accès à l'ensemble de DBpédia 
-extraire des informations qui ne sont pas encore connues ?
-Plus particulièrement, on a expliqué en introduction que manipuler des groupes d'instances plutôt que des concepts devait théoriquement permettre d'identifier de nouvelles classes. 
+% Le passage du graphe complet à ses plongements vectoriels entraîne nécessairement une perte d'information \hl{ref}. En pratique, l'information contenue dans DBpédia est bien plus riche que cela; on peut donc se demander ce que l'on serait capable d'extraire si on s'autorisait l'accès à l'ensemble de DBpédia extraire des informations qui ne sont pas encore connues ?
+% Plus particulièrement, on a expliqué en introduction que manipuler des groupes d'instances plutôt que des concepts devait théoriquement permettre d'identifier de nouvelles classes. 
 
 \section{Motivation et principes généraux}
+
+Dans l'approche précédente, la restriction imposée sur les données d'entrées $\mathcal{D}$ a deux conséquences majeures qui rendent l'extraction de taxonomie délicate. On les présente ici, et on propose une solution pour les éviter dans le cas où, comme ici, on s'autorise l'accès à l'intégralité du graphe.
+
+
+Examinons le cas d'un graphe de connaissance constitué pour moitié d'agents, dont la moitié sont des personnes. Supposons que les personnes soient divisées en dix sous-classes de taille égale (athlètes, artistes, scientifiques, etc.), et les athlètes en vingt sous-classes de taille égale (joueurs de hockey, gymnastes, golfeurs, etc.). Dans un ensemble d'entités $\mathcal{D}$ tirées aléatoirement, le quart des entités seront des personnes, puis $1/40^\textrm{ième}$ seront des athlètes, et donc seulement $1/800^\textrm{ième}$ seront des joueurs de hockey. Si l'on tient compte des déséquilibres de tailles qui existent dans les graphes réels, ces chiffres peuvent varier. Toutefois, cet exemple illustre la difficulté de l'extraction de taxonomie à partir d'un ensemble de données \textit{fixe} : plus on s'enfonce dans la taxonomie, moins on dispose d'exemples, et cette diminution est exponentielle.
+
+D'autre part, un graphe de connaissance extrait de manière automatique ou semi-automatique est bruité; ses plongements vectoriels le sont aussi. Le regroupement hiérarchique est donc imparfait : si l'on suppose qu'à chaque division d'un cluster en deux sous-clusters, une certaine proportion des entités sont assignées au mauvais cluster, alors on assiste à une propagation des erreurs de clustering dans l'arbre, ce qui rend les clusters profonds délicats à interpréter et étiquetter. 
+
+Sur la base de ces constats, nous proposons donc une méthode de prélèvement-regroupement, qui consiste à :
+\renewcommand{\theenumi}{\alph{enumi}}
+\begin{enumerate}
+    \item prélever aléatoirement des entités dans le graphe en s'appuyant sur les informations que l'on a déjà extraites, afin d'obtenir des entités de départ de plus en plus homogènes et de plus en plus spécifiques. On évite ainsi la diminution exponentielle du nombre d'entités par type;
+    \item regrouper ce nouveau groupe d'entités. Ce faisant, on a moins besoin de s'enfoncer loin dans l'arbre de clustering, et on  limite ainsi la propagation des erreurs.
+\end{enumerate}
+
+Chaque étape de prélevement-regroupement peut être vue comme une tâche d'extraction de taxonomie sur un sous-ensemble du graphe complet; les sous-taxonomies ainsi extraites s'ajoutent les unes aux autres pour former une taxonomie unique. Lors des premières étapes, on extrait des taxonomies très générales sur les classes de haut niveau, puis on augmente progressivement la spécificité des entités prélevées, et donc la spécificité des sous-taxonomies extraites. Cette idée est décrite dans la section \ref{subsec:texp-clustering}.
+
+À ce principe général s'ajoute une méthode pour parcourir les arbres de clustering (section \ref{subsec:texp-tree-labelling}) et les étiquetter avec des axiomes expressifs (section \ref{subsec:texp-exaxiom}). Puisque les plongements vectoriels sont géométriquement proches au sein d'un cluster, les entités associées sont sémantiquement proches : on mène donc l'extraction d'axiome cluster par cluster; les liens entre clusters permettent de définir un ensemble d'exemples positifs et un ensemble d'exemples négatifs sur lesquels mener une recherche inductive d'axiomes.
+
+
+Dans la section \ref{sec:texp-results}, on applique notre méthode sur DBpédia, et on discute les résultats obtenus.
+
+\iffalse {
+
 
 Dans la section précédente, on a décrit une méthode pour extraire une hiérarchie entre les types à partir des seuls plongements d'entité. 
 
@@ -24,6 +51,8 @@ Schéma général proche de la méthode précédente: regroupement hiérarchique
 Pourquoi ça marche ? Parce qu'on travaille sur un groupe d'entités dont on sait qu'elles sont sémantiquement proches, de par la géométrie de leurs plongements. Donc on restreint la dimension de l'espace de recherche, qui est un goulot d'étranglement habituel des méthodes d'extraction d'axiomes.
 
 Toutefois, un ajout majeur : le retirage récursif des entités à regrouper pour limiter la propagation des erreurs dans l'arbre, limiter le bruit et affiner progressivement la spécificité des classes extraites.  % Plus un \textit{bag of tricks} pour que ça marche bien.
+}
+\fi 
 
 \paragraph{Remarque}
 
@@ -86,8 +115,8 @@ $\mathcal{AT} \leftarrow \{ \top \}$\;
 
 
 
-\subsection{Regroupement hiérarchique récursif avec retirage}
-
+\subsection{Prélèvement aléatoire et regroupement hiérarchique}
+\label{subsec:texp-clustering}
 
 
 % Ensuite, pour chacun des axiomes $a_1, \ldots, a_k$ obtenus, on tire aléatoirement des entités qui vérifient cet axiome, ce qui donne de nouveaux ensembles d'entrées $\cal{D}_{t+1}, \ldots, \cal{D}_{t+k}$.
@@ -110,7 +139,7 @@ Ici, on regroupe en utilisant comme mesure de similarité la distance cosinus, e
 Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N_e$ éléments de $\cal{D}_a$. 
 
 \subsection{Parcours et étiquettage de l'arbre}
-
+\label{subsec:texp-tree-labelling}
 Dans cette section, on se donne une fonction d'extraction d'axiome $\alpha$, telle que $\alpha(C)$ est un axiome logique qui qualifie le cluster $C$, si un tel axiome existe, et qui renvoie un symbole spécial \texttt{indéfini} dans le cas contraire. Un exemple d'une telle fonction est donné dans la section suivante. 
 
 On effectue un parcours de l'arbre $X_a$, en excluant la racine $a$ qui est déjà étiquettée : pour un cluster $C$, on calcule $\alpha(C)$ pour trouver l'axiome associé à $C$. Si $\alpha(C) = \texttt{indéfini}$, le cluster $C$ n'a pas de signification logique accessible, et on poursuit la recherche dans les sous-clusters. Au contraire, si $\alpha(C)$ existe, on interrompt la recherche, et on ajoute $\alpha(C)$ à la file d'axiomes à visiter. Au-delà d'une certaine profondeur $D_\text{max}$ dans l'arbre, on arrête la recherche. On note $L_\alpha(a)$ l'ensemble des cluster $C$ étiquettés rencontrés lors de la recherche.
@@ -669,17 +698,21 @@ Phase finale : ajout des classes manquantes (si disponible), restriction des pat
 \FloatBarrier
 
 \section{Évaluation et discussion}
-
+\label{sec:texp-results}
 
 L'évaluation d'une taxonomie expressive est plus difficile
-que celle d'une taxonomie non-expressive, car il n'existe pas de référence à laquelle la comparer. On propose ici deux modes d'évaluation. En premier lieu, on restreint les types d'axiomes recherchées aux seules classes nommées, ce qui nous ramène à l'extraction de taxonomie expressive et nous permet de mener une évaluation quantitative par comparaison avec l'ontologie DBpédia. En second lieu, on analyse qualitativement les axiomes extraits.
+que celle d'une taxonomie non-expressive, car il n'existe pas de référence à laquelle la comparer. On propose ici deux modes d'évaluation. En premier lieu, on restreint les types d'axiomes recherchées aux seules classes nommées, ce qui nous ramène à l'extraction de taxonomie expressive et nous permet de mener une évaluation quantitative, sur le modèle du chapitre précédent. % par comparaison avec l'ontologie DBpédia. 
+En second lieu, on analyse qualitativement les axiomes extraits.
+
+
+Dans toute la suite, on travaille sur le graphe DBpédia décrit au chapitre précédent, auquel on a retiré les triplets \texttt{rdfs:subClassOf}, \texttt{rdfs:domain} et \texttt{rdfs:range}. On utilise les plongements vectoriels TransE, car ce sont eux qui obtiennent les meilleurs résultats sur la tâche non-expressive présentée précédemment.
 
 %, pour comprendre les types d'axiomes qui sont correctement identifiés par notre approche, et ceux qui 
 %essayer de distinguer l'intérêt de notre méthode, les types d'axiomes qui sont extraits ou non, ainsi que les
 
 
 \subsection{Évaluation quantitative par comparaison avec l'ontologie existante}
-
+\label{subsec:texp-reslts-quant}
 
 L'évaluation quantitative sur la tâche non-expressive permet de vérifier que notre approche identifie correctement les hiérarchies entre les classes nommées; identifier ces hiérarchies est un préalable nécessaire à l'extraction de nouvelles classes et à l'extraction d'axiomes plus complexes.
 
@@ -709,6 +742,7 @@ On obtient un $F_1$ de 68,9\% sur l'évaluation directe, et de 91,7\% sur l'éva
 
 
 \subsection{Analyse qualitative des axiomes obtenus}
+\label{subsec:texp-reslts-quali}
 
 On discute maintenant des axiomes obtenus lors de l'extraction de taxonomie expressive. Un exemple de taxonomie expressive est présenté à l'adresse \href{http://labowest.ca/sdb2020/expressive.html}{labowest.ca/sdb2020/expressive.html} (en anglais). Cette taxonomie a été obtenue en utilisant un score adaptatif variant de $\delta = 0,9$ à $\delta = 0,5$ avec un pas de $0,05$, une extraction mono-niveau avec profondeur maximale $D=4$ et $350$ étapes de prélevement-regroupement. Une fois ces 350 étapes effectuées, on effectue $100$ étapes en se restreignant à la recherche de classes nommées, avec un seuil bas $\delta = 0,15$ et une profondeux maximale $D=10$, afin d'ajouter les classes rares ou mal définies à la taxonomie extraite.
 
