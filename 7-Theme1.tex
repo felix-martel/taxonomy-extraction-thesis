@@ -1,7 +1,7 @@
 \Chapter{PLONGEMENTS VECTORIELS DE GRAPHES DE CONNAISSANCES}
 \label{chap:kge}
 
-Ce chapitre introduit les modèles de plongement vectoriels, utilisés pour représenter les entités et les relations d'un graphe de connaissance sous forme vectorielle. Ces représentations vectorielles, dont la géométrie intègrent une partie de l'information sémantique contenue dans le graphe, permettent l'application d'outils d'apprentissage automatique, comme la complétion de triplets, la détection de triplets invalides, mais aussi l'extraction automatique de taxonomie qui fait l'objet de ce mémoire. Dans ce chapitre, on présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relation qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. % Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
+Ce chapitre introduit les modèles de plongement vectoriels, utilisés pour représenter les entités et les relations d'un graphe de connaissance sous forme vectorielle. Ces représentations vectorielles, dont la géométrie intègre une partie de l'information sémantique contenue dans le graphe, permettent l'application d'outils d'apprentissage automatique, comme la complétion de triplets, la détection de triplets invalides, mais aussi l'extraction automatique de taxonomie qui fait l'objet de ce mémoire. Dans ce chapitre, on présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relations qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. % Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
 
 Enfin, on présente une nouvelle tâche sur laquelle évaluer un modèle de plongement de graphe. Cette tâche vise explicitement à mesurer la capacité d'un modèle à envoyer des entités appartenant à une même classe dans une même région de l'espace – une propriété essentielle pour pouvoir extraire des informations taxonomiques à partir des plongements vectoriels, et un préalable aux méthodes présentées dans les chapitres suivants de ce mémoire.
 
@@ -13,11 +13,7 @@ Enfin, on présente une nouvelle tâche sur laquelle évaluer un modèle de plon
 \subsection{Introduction et motivation}
 \label{subsec:kge-general-intro}
 
-%La représentation des données est une question cruciale en apprentissage mathématique. Dans les systèmes logiques basés sur des axiomes et des règles d'inférence, on manipule des symboles et la question ne se pose pas. Ces raisonneurs trouvent toutefois leurs limites lorsque la taille des graphes augmentent; en particulier, ils sont impraticables pour 
 
-%; la plupart des algorithmes s'appuient sur 
-
-%Les graphes de connaissance permettent d'appliquer des algorithmes de raisonnement très puissants. Toutefois, dans les bases de grande taille comme DBpédia ou Wikidata, la complexité en temps de ces algorithmes augmente rapidement, au point de les rendre inutilisables. Hors des algorithmes dédiés, les entités et les relations d'un graphe sont représentés de façon purement symbolique. La nécessité est donc apparue d'obtenir une représentation plus expressive des entités et relations d'un graphe. Pour ce faire, et suivant la dynamique du traitement automatique des langues, on a recours à des modèles de plongement. 
 
 Dans toute cette section, on considérera un graphe de connaissance $\KG \subseteq \Ent \times \Rel \times \Ent$ dont on notera $n = | \Ent |$ le nombre d'entités, et $m = |\Rel |$ le nombre de relations.
 
@@ -42,7 +38,7 @@ Certains auteurs combinent URI et plongements lexicaux pour obtenir des représe
 
 %elle présente elle aussi des inconvénients. D'autre part, les plongements lexicaux sont appris sur des corpus textuels génériques et étrangers au graphe. Le contexte effectif de l'entité dans le graphe n'est donc pas pris en compte. (à détailler)
 
-Un \textbf{modèle de plongement} est une méthode pour obtenir une représentation vectorielle dense et sémantiquement cohérente des entités d'un graphe, à partir des triplets contenus dans le graphe. Dense, c'est-à-dire de faible dimension, et par opposition à la représentation sous forme de matrice d'adjacence. Sémantiquement cohérente, car on souhaite que la géométrie des plongements reflète le graphe de connaissance original : deux entités sémantiquement proches dans le graphe doivent avoir des plongements géométriquement proches. Enfin, contrairement à la méthode basée sur des plongements lexicaux, cette repésentation vectorielle est basée sur le graphe de connaissance et non sur des ressources externes, et doit donc tenir compte des spécificités de ce graphe.
+Un \textbf{modèle de plongement} est une méthode pour obtenir une représentation vectorielle dense et sémantiquement cohérente des entités d'un graphe, à partir des triplets contenus dans le graphe. Dense, c'est-à-dire de faible dimension, et par opposition à la représentation sous forme de matrice d'adjacence. Sémantiquement cohérente, car on souhaite que la géométrie des plongements reflète le graphe de connaissance original : deux entités sémantiquement proches dans le graphe doivent avoir des plongements géométriquement proches. Enfin, contrairement à la méthode basée sur des plongements lexicaux, cette représentation vectorielle est basée sur le graphe de connaissance et non sur des ressources externes, et doit donc tenir compte des spécificités de ce graphe.
 
 En toute généralité, un modèle de plongement vectoriel est un modèle qui associe à chaque entité $e \in \mathcal{E}$ un vecteur $\mathbf{e} \in \mathbb{R}^d$, et à chaque relation $r \in \mathcal{R}$ un vecteur $\mathbf{r} \in \mathbb{R}^{d'}$ (vecteur étant ici à comprendre au sens large de «point dans un espace vectoriel», ce qui inclut donc les matrices). On note $\mathbf{E} = \{\mathbf{e}\}_{e \in \mathcal{E}} $ l'ensemble des plongements d'entité, $\mathbf{R} = \{\mathbf{r}\}_{r \in \mathcal{R}} $ l'ensemble des plongements de relation et $\Theta = (\mathbf{E}, \mathbf{R})$ l'ensemble des paramètres du modèle. 
 
@@ -61,7 +57,7 @@ On souhaite alors minimiser la perte. Pour cela, on calcule alors $\displaystyle
 Dans la suite de la section, on se propose de détailler plus avant les procédures communes à tous les modèles, et particulièrement la constitution des données d'entraînement, la distinction entre fonction de score et fonction d'énergie, ainsi que les fonctions de pertes communément utilisées. }
 \fi
 
-\subsection{Données}
+\subsection{Génération de triplets d'entraînement}
 \label{subsec:kge-data}
 
 Pour entraîner un modèle de plongement, on a besoin d'un ensemble de triplets valides $\Delta_+$ (généralement, $\Delta_+ = \mathcal{KG}$), et un ensemble de triplets invalides $\Delta_-$. %Le modèle devra maximiser le score ou minimiser l'énergie des triplets valides, et minimiser celui des triplets invalides. 
@@ -81,14 +77,10 @@ La phase d'entraînement diffère d'un modèle à l'autre, mais l'enjeu est esse
 
 Par définition, tous les triplets présents dans le graphe sont valides, or un ensemble d'exemples négatifs $\Delta_-$ est nécessaire pour l'entraînement. Il faut donc une procédure pour construire des triplets invalides. La méthode la plus simple pour construire un triplet invalide consiste à choisir aléatoirement une triplet valide $(h, r, t) \in \KG$, et à le \textit{corrompre}, c'est-à-dire à choisir $h$ ou $t$, et à le remplacer par une autre entité $h' \in \Ent \setminus \{ h \}$ ou $t' \in \Ent \setminus \{ t \}$ pour donner un triplet corrompu $(h', r, t)$ ou $(h, r, t')$. Plus rarement, on choisit de corrompre la relation en tirant aléatoirement $r' \in \Rel \setminus \{ r \}$ et en créant le triplet invalide $(h, r', t)$. On suppose que les triplets corrompus sont effectivement invalides : c'est l'hypothèse du monde localement fermé. Cette hypothèse est empiriquement vérifiée en moyenne, dans tout graphe suffisamment grand. En effet, pour $h$ et $r$ fixés, l'ensemble des entités $t$ telles que $(h, r, t)$ est valide est, en moyenne, de petite taille comparé à l'ensemble des entités $t$ telles que $(h, r, t)$ est invalide.
 
-Toutefois, si elle est vérifiée en moyenne, cette hypothèse devient fragile pour les relations \textit{many-to-one} ou \textit{one-to-many}. Considérons une relation \textit{many-to-one}, par exemple la relation \texttt{rdf:type} qui lie une entité à son type. Dans la version de DBpédia utilisée dans cet article, il y a plus de trois millions d'entités, chacune étant sujet d'une relation \texttt{rdf:type}, contre environ 500 types; parmi ces trois millions, un million environ sont de type \dbo{Person}. Donc, en corrompant un triplet $(h, \texttt{rdf:type}, \dbo{Person})$ en un nouveau triplet $(h', \texttt{rdf:type}, \dbo{Person})$, on a une probabilité d'environ 1/3 d'obtenir un triplet valide, qui constituera alors un faux négatif. À l'inverse, si on remplace l'objet du triplet, c'est-à-dire qu'on produit un triplet corrompu  $(h, \texttt{rdf:type}, t)$ avec $t$ une entité aléatoire, la probabilité d'obtenir un faux négatif est d'environ $10^{-6}$ (une entité a généralement entre un et cinq types, d'où l'ordre de grandeur de un sur un million).
-Certains auteurs proposent donc d'amender cette procédure de corruption des triplets, en tenant compte du type de la relation $r$ : \textit{one-to-one}, \textit{one-to-many}, \textit{many-to-one}. Pour mesurer ce type, on définit deux quantités pour toute relation $r$ : le nombre moyen de sujets par objet pour une relation, noté $hpt$, et le nombre moyen d'objets par sujet, noté $tph$. Dans une relation \textit{one-to-many}, une même entité est reliée à de nombreuses autres entités, soit un nombre $tph$ élevé par rapport à $hpt$; inversement, dans une relation \textit{many-to-one}, c'est $hpt$ qui est élevé par rapport à $tph$. Enfin, les relations \textit{one-to-one} et \textit{many-to-many}, $tph$ et $hpt$ auront le même ordre de grandeur. Pour corrompre un triplet $(h, r, t)$, on choisit alors de corrompre le sujet $h$ avec probabilité $\frac{tph}{tph + hpt}$, et de corrompore l'objet $t$ avec probabilité $\frac{hpt}{tph + hpt}$. Ce mode de corruption est appellé \textit{bern} (car le choix de l'objet ou du sujet suit une loi de Bernoulli, de paramètre $\frac{tph}{tph + hpt}$), par opposition à \textit{unif} qui désigne le choix équiprobable de l'objet ou du sujet.
+Toutefois, si elle est vérifiée en moyenne, cette hypothèse devient fragile pour les relations \textit{many-to-one} ou \textit{one-to-many}. Considérons une relation \textit{many-to-one}, par exemple la relation \texttt{rdf:type} qui lie une entité à son type. Dans la version de DBpédia utilisée dans ce mémoire, il y a plus de trois millions d'entités, chacune étant sujet d'une relation \texttt{rdf:type}, contre environ 500 types; parmi ces trois millions, un million environ sont de type \dbo{Person}. Donc, en corrompant un triplet $(h, \texttt{rdf:type}, \dbo{Person})$ en un nouveau triplet $(h', \texttt{rdf:type}, \dbo{Person})$, on a une probabilité d'environ 1/3 d'obtenir un triplet valide, qui constituera alors un faux négatif. À l'inverse, si on remplace l'objet du triplet, c'est-à-dire qu'on produit un triplet corrompu  $(h, \texttt{rdf:type}, t)$ avec $t$ une entité aléatoire, la probabilité d'obtenir un faux négatif est d'environ $10^{-6}$ (une entité a généralement entre un et cinq types, d'où l'ordre de grandeur de un sur un million).
+\cite{transh} propose donc d'amender cette procédure de corruption des triplets, en tenant compte du type de la relation $r$ : \textit{one-to-one}, \textit{one-to-many}, \textit{many-to-one}. Pour mesurer ce type, on définit deux quantités pour toute relation $r$ : le nombre moyen de sujets par objet pour une relation, noté $hpt$, et le nombre moyen d'objets par sujet, noté $tph$. Dans une relation \textit{one-to-many}, une même entité est reliée à de nombreuses autres entités, soit un nombre $tph$ élevé par rapport à $hpt$; inversement, dans une relation \textit{many-to-one}, c'est $hpt$ qui est élevé par rapport à $tph$. Enfin, les relations \textit{one-to-one} et \textit{many-to-many}, $tph$ et $hpt$ auront le même ordre de grandeur. Pour corrompre un triplet $(h, r, t)$, on choisit alors de corrompre le sujet $h$ avec probabilité $\frac{tph}{tph + hpt}$, et de corrompore l'objet $t$ avec probabilité $\frac{hpt}{tph + hpt}$. Ce mode de corruption est appellé \textit{bern} (car le choix de l'objet ou du sujet suit une loi de Bernoulli, de paramètre $\frac{tph}{tph + hpt}$), par opposition à \textit{unif} qui désigne le choix équiprobable de l'objet ou du sujet.
 
-\subsubsection{Description des données}
-\label{subsec:kge-data-dbpedia}
-Pour entraîner nos modèles, nous avons utilisé la version de DBpédia publiée en octobre 2016, qui était la plus récente jusqu'à récemment, et dont on a exclu l'ontologie DBpédia\footnote{Cette ontologie est accessible au format OWL dans le fichier \texttt{\href{http://downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}{dbpedia\_2016-10.owl}}, disponible sur la page de téléchargement de DBpédia} : en particulier, cela signifie qu'aucun triplet \texttt{rdfs:subClassOf} n'est présent dans les données. Le graphe complet contient 3 millions d'entités (insérer le chiffre exacte) et 1.300 relations (idem). Ces entités sont réparties en 589 classes\footnote{On peut trouver la liste actualisée de ces classes à l'adresse : \href{mappings.dbpedia.org/server/ontology/classes/}{https://mappings.dbpedia.org/server/ontology/classes/}}, elle-mêmes distribuées sur sept niveaux de hiérarchie : au niveau 0, on trouve la classe racine \texttt{owl:Thing} dont toutes les entités font partie; au niveau 1, il y a vingt-quatre classes (dont les plus fréquentes sont \dbo{Agent}, \dbo{Place}, \dbo{Agent}), etc. 
 
-L'entraînement se fait avec la librairie OpenKE (ref). On choisit une dimension de plongement de $d=50$; pour les autres hyperparamètres, on utilise ceux fournis par les auteurs de chaque modèle.
 
 
 
@@ -102,10 +94,11 @@ L'entraînement se fait avec la librairie OpenKE (ref). On choisit une dimension
 \section{Modèles de plongement}
 \label{sec:kge-models}
 
-Cette section présente les modèles de plongement utilisés dans la suite de ce mémoire. On y distingue deux façons de concevoir ces modèles : la première est une approche algébrique, qui considère un graphe de connaissance comme un tenseur d'adjacence, et applique sur ce tenseur des techniques de réduction de la dimension. %et consiste à appliquer des techniques de réduction de la dimension à une représentation tensorielle du graphe de connaissance. 
-Cette approche algébrique est illustrée par trois modèles : RESCAL, DistMult et ComplEx. Une seconde approche est davantage géométrique : elle consiste à définir des contraintes géométriques pour les triplets valides du graphe, et à entraîner les plongements afin qu'ils respectent ces contraintes. %traduire géométriquement des propriétés 
-Cette approche géométrique est ici représentée par trois modèles, qui sont TransE, TransH, TransD. 
+Cette section présente les modèles de plongement utilisés dans la suite de ce mémoire. On y distingue deux grandes façons de concevoir ces modèles : la première est une approche algébrique, qui considère un graphe de connaissance comme un tenseur d'adjacence, et applique sur ce tenseur des techniques de réduction de la dimension. %et consiste à appliquer des techniques de réduction de la dimension à une représentation tensorielle du graphe de connaissance. 
+Cette approche algébrique est illustrée par trois modèles : RESCAL \cite{rescal}, DistMult \cite{distmult} et ComplEx \cite{complex}. Une seconde approche est davantage géométrique : elle consiste à définir des contraintes géométriques pour les triplets valides du graphe, et à entraîner les plongements afin qu'ils respectent ces contraintes. %traduire géométriquement des propriétés 
+Cette approche géométrique est ici représentée par trois modèles, qui sont TransE \cite{bordes2013translating}, TransH \cite{transh}, TransD \cite{transd}. 
 %Enfin, on présente un tour d'horizon d'autres approches existantes.
+Enfin, on présente RDF2Vec \cite{ristoski2016rdf2vec}, une troisième approche inspirée des modèles de plongements lexicaux.
 
 
 \subsection{Approche algébrique : RESCAL et ses variantes}
@@ -138,7 +131,7 @@ Dans toute la suite, $d \in \mathbb{N}$ désigne la dimension des plongements. O
 
 \subsubsection{RESCAL}
 
-Le modèle RESCAL \cite{nickel2011learning} s'appuie sur une factorisation approximative de $\bf{X}^{(r)}$, de rang $d$, qui s'écrit comme suit  :
+Le modèle RESCAL \cite{rescal} s'appuie sur une factorisation approximative de $\bf{X}^{(r)}$, de rang $d$, qui s'écrit comme suit  :
 \begin{equation}
     \bf{X}^{(r)} \approx \bf{E} \cdot \bf{W}_r \cdot \bf{E}^\top
     \label{eq:kge-rescal-factorization}
@@ -146,7 +139,7 @@ Le modèle RESCAL \cite{nickel2011learning} s'appuie sur une factorisation appro
 
 Où $\bf{E} \in \R^{n \times d}$ contient la représentation vectorielles des entités, et $\bf{W}_r \in \R^{d \times d}$ modélise l'interaction entre les composants du sujet et de l'objet pour la relation $r$.
 
-Notons $\bf{E} = (\bf{e}_1, \bf{e}_2, \ldots, \bf{e}_n)^\top$ : $\bf{e}_i$ désigne la $i$-ème ligne de $\bf{E}$ et constitue la représentation vectorielle en $d$ dimension de l'entité $e_i$, soit le plongement vectoriel recherché. L'équation \ref{eq:kge-rescal-factorization} présente deux caractéristiques importantes : d'une part, la représentation des entités ne dépend pas de la relation $r$; d'autre part, les entités sont représentées de la même manière selon qu'elle sont sujet ou objet dans la relation. On peut résumer RESCAL avec les deux caractéristiques suivantes :
+Notons $\bf{E} = (\bf{e}_1, \bf{e}_2, \ldots, \bf{e}_n)^\top$ : $\bf{e}_i$ désigne la $i$-ème ligne de $\bf{E}$ et constitue la représentation vectorielle en $d$ dimension de l'entité $e_i$, soit le plongement vectoriel recherché. L'équation \ref{eq:kge-rescal-factorization} présente deux caractéristiques importantes : d'une part, la représentation des entités ne dépend pas de la relation $r$; d'autre part, les entités sont représentées de la même manière selon qu'elles soient sujet ou objet dans la relation. On peut résumer RESCAL avec les deux caractéristiques suivantes :
 \begin{itemize}
     \item les entités sont représentés par un vecteur de dimension $d$, qui est le même pour chaque relation et quelle que soit la position de l'entité dans le triplet. 
     \item une relation consiste en une interaction entre les représentations vectorielles de son sujet et de son objet. Cette interaction se traduit mathématiquement par une matrice carrée, a priori non symétrique. La matrice étant asymétrique, le rôle des deux entités impliquées (sujet ou objet) est pris en compte.
@@ -158,7 +151,7 @@ Ce dernier point est visible lorqu'on ré-écrit l'équation \ref{eq:kge-rescal-
 \end{equation*}
 Et $\hat{\cal{T}} = [\hat{\bf{X}}^{(r_1)}, \hat{\bf{X}}^{(r_2)}, \ldots, \hat{\bf{X}}^{(r_m)}]$ l'approximation de rang $d$ du tenseur d'adjacence complet. On peut alors approximer la validité d'un triplet $(e_i, r_k, e_j)$ par :
 \begin{equation}
-    \hat{\cal{T}}_{i, j, k} = \bf{e}_i^\top \cdot \bf{W}_r \cdot \bf{e}_j
+    \hat{\cal{T}}_{i, j, k} = \bf{e}_i^\top \cdot \bf{W}_{r_k} \cdot \bf{e}_j
 \end{equation}
 
 Cette équation est fondamentale, puisqu'elle permet d'estimer la validité d'un triplet à partir de ses plongements. On la ré-écrit sous forme plus générique, en interprétant la quantité $\hat{\cal{T}}_{i, j, k}$ comme le \textit{score} associé au triplet $(e_i, r_k, e_j)$ : 
@@ -173,21 +166,21 @@ Le but est donc d'obtenir des plongements tels que le score $s$ d'un triplet val
     \label{eq:kge-rescal-loss-function}
 \end{equation}
 
-Le terme $g$ étant caractérisé par un paramètre $\lambda$ qui indique l'intensité de la régularisation, et défini par :
+On rappelle que $\| \cdot \|_F$ désigne la norme de Frobenius, une norme matricielle définie par $\| \bf{M} \|_F = \sqrt{\sum_{i, j} |M_{i, j}|^2}$. Le terme $g$ est caractérisé par un paramètre $\lambda$ qui indique l'intensité de la régularisation, et défini par :
 \begin{equation}
     g(\Theta) = \frac{1}{2} \lambda \left( \| \bf{E} \|_F^2 + \sum_{r \in \Rel} \| \bf{W}_r \|_F^2 \right)
 \end{equation}
 
 
-Pour harmoniser les notations avec les autres modèles de plongement, on peut réécrire la perte $J(\Theta)$ à l'aide de la fonction de score $s$. Pour cela,
-reprenons l'ensemble d'entraînement $\Delta$ défini dans la section \ref{subsec:kge-data}, constitué de paires $(h, r, t), y$ où $(h, r, t)$ est un triplet et $y$ son label : 0 si le triplet est invalide, 1 sinon.
-On a alors :
+Pour harmoniser les notations avec les autres modèles de plongement, on peut réécrire la perte $J(\Theta)$ à l'aide de la fonction de score $s$ et de 
+%. Pour cela, reprenons 
+l'ensemble d'entraînement $\Delta$ défini dans la section \ref{subsec:kge-data} : % constitué de paires $(h, r, t), y$ où $(h, r, t)$ est un triplet et $y$ son label : 0 si le triplet est invalide, 1 sinon. On a alors :
 \begin{equation}
     J(\Theta) = \frac{1}{2} \sum_{(h, r, t), y \in \Delta} \left(y - s(h, r, t) \right)^2
     + g(\Theta)
 \end{equation}
 
-La perte est donc égale aux carrés de la distance entre le score d'un triplet et son label, plus un terme de régularisation. Muni de cette fonction de perte, l'entraînement des plongements se fait en initialisant aléatoirement les paramètres, puis par descente de gradient sur $J$ jusqu'à atteindre un nombre maximal d'itérations, ou jusqu'à remplir un critère de convergence. Les auteurs proposent le critère de convergence suivant :
+La perte est donc égale aux carrés de la distance entre le score d'un triplet et son label, plus un terme de régularisation. Muni de cette fonction de perte, l'entraînement des plongements se fait en initialisant aléatoirement les paramètres, puis par descente de gradient sur $J$ jusqu'à atteindre un nombre maximal d'itérations, ou jusqu'à remplir un critère de convergence. Les auteurs \cite{rescal} proposent le critère de convergence suivant :
 \begin{equation}
     \frac{\displaystyle \frac{1}{2} \sum_{r \in \Rel} \left\| \bf{X}^{(r)} - \hat{\bf{X}}^{(r)} \right\|_F^2}{\| \cal{T} \|_F^2} < \epsilon
 \end{equation}
@@ -318,7 +311,7 @@ Notons toutefois que la fonction de score est continue en $\bf{W}_r$ : même si 
 On introduit ici une seconde approche, davantage géométrique, que l'on présente à travers l'exemple des modèles translationnels. Un modèle géométrique abandonne la référence au graphe vu comme un tenseur d'adjacence. Il est caractérisé par deux éléments : d'une part, des plongements vectoriels $\bf{E} = \{ \bf{e} \}_{e \in \Ent} \subset \R^d$ représentant les entités; d'autre part, une famille d'opérateurs géométriques $\{ F_r \}_{r \in \Rel}$ qui combinent les plongements de deux entités. % en fonction d'une relation. 
 En appliquant l'opérateur $F_r$ aux plongements $\bf{h}$ et $\bf{t}$, on obtient un nombre réel positif appelé l'\textit{énergie} du triplet $(h, r, t)$ et noté $E(h, r, t)$. L'objectif d'un modèle de plongement géométrique est de minimiser l'énergie des triplets valides, et de maximiser celle des triplets invalides.
 
-Dans cette section, on examine une unique famille de modèles géométriques, les modèles translationnels. L'opérateur $F_r$ d'un modèle translationnel est précisément la translation du sujet d'un triplet vers l'objet du triplet, la translation étant paramétrée par la relation considérée. Le premier de ces modèles a été TransE; il a inspiré un grand nombre de variantes dont on présente deux exemples : TransH et TransD.
+Dans cette section, on examine une unique famille de modèles géométriques, les modèles translationnels. L'opérateur $F_r$ d'un modèle translationnel est précisément la translation du sujet d'un triplet vers l'objet du triplet, la translation étant paramétrée par la relation considérée. Le premier de ces modèles a été TransE \cite{bordes2013translating}; il a inspiré un grand nombre de variantes dont on présente deux exemples : TransH \cite{transh} et TransD \cite{transd}.
 
 \subsubsection{TransE \cite{bordes2013translating}}
 
@@ -376,7 +369,7 @@ La force de TransE réside dans sa simplicité théorique et son faible nombre d
 
 Pour résoudre ces problèmes, plusieurs modèles basés sur TransE ont été proposés. Leur idée consiste à ajouter une étape préalable à la translation : le plongement d'une entité $e$ est d'abord envoyé dans un nouvel espace, qui dépend de $r$ et éventuellement de $e$, avant d'être translaté dans ce nouvel espace.
 
-Ainsi, on peut définir le cadre générale suivant pour décrire un modèle translationnel :
+Ainsi, on peut définir le cadre général suivant pour décrire un modèle translationnel :
 \begin{itemize}
     \item une fonction de transformation $F_{e, r} : \mathbb{R}^d \rightarrow \mathbb{R}^{k}$
     \item une fonction d'énergie $E_\Theta(h, r, t) = \| F_{h, r}(\mathbf{h}) + \mathbf{r} - F_{t, r}(\mathbf{t}) \|_2 $
@@ -387,8 +380,7 @@ Dans le cas de TransE, la fonction de transformation est la fonction identité :
     \forall e, r, F_{e, r} : \bf{u} \mapsto \bf{u}
 \end{equation}
 
-On présente maintenant deux modèles basés sur cette idée, le premier utilisant comme fonction de transformation la projection sur un hyperplan, le second une application linéaire générée dynamiquement.
-
+On présente maintenant deux modèles basés sur cette idée, le premier utilisant comme fonction de transformation la projection sur un hyperplan, le second une application linéaire qui dépend du triplet considéré.
 
 \FloatBarrier
 \iffalse {
@@ -449,16 +441,16 @@ Il s'écrit :
 
 Dans le cas de TransH, on apprend comme dans TransE des plongements vectoriels de dimension $d$ pour toutes les entités et les relations du graphe, mais on y ajoute un vecteur normal $\bf{w}_r$ pour chaque relation $r$. Ce vecteur normal permet d'associer à chaque relation $r$ un hyperplan $H_r$, selon l'équation \ref{eq:kge-transh-hyperplane}.
 %
-Pour une relation $r$ donnée, et une entité $e$, on note $\bf{e_\bot} = p_{\bf{w}_r}(\bf{e})$ le projeté orthogonale du plongement de $e$ sur l'hyperplan $H_r$. On impose de surcroît $\bf{r} \in H_r$ pendant l'entraînement.
+Pour une relation $r$ donnée, et une entité $e$, on note $\bf{e_\bot} = p_{\bf{w}_r}(\bf{e})$ le projeté orthogonal du plongement de $e$ sur l'hyperplan $H_r$. On impose de surcroît $\bf{r} \in H_r$ pendant l'entraînement.
 
 L'énergie d'un triplet s'écrit alors :
 \begin{equation}
     E(h, r, t) = \| \bf{h_\bot + r - t_\bot} \|_2
     \label{eq:kge-transh-main}
 \end{equation}
-Si l'on remplace les projetés orthogonaux par leurs formules, on retrouve l'équation de TransE avec un terme correcteur:
+Si l'on remplace les projetés orthogonaux par leurs formules, on retrouve l'équation de TransE avec un terme correcteur $\bf{w}_r^\top \cdot (\bf{h - t}) \cdot \bf{w}_r$:
 \begin{equation}
-    E(h, r, t) = \| \bf{h + r - t} - \bf{w}_r^\top \cdot (\bf{h - t}) \cdot \bf{w}_r \|_2
+    E(h, r, t) = \left\| \bf{h + r - t} - \left( \bf{w}_r^\top \cdot (\bf{h - t}) \cdot \bf{w}_r \right) \right\|_2
     \label{eq:kge-transh-long}
 \end{equation}
 
@@ -474,7 +466,7 @@ Si l'on remplace les projetés orthogonaux par leurs formules, on retrouve l'éq
 TransD est une seconde extension de TransE, dans laquelle les entités à translater sont transformées via une fonction de transformation linéaire qui dépend à la fois de la relation considérée et de l'entité à transformer. Outre les plongements usuels $\bf{e}, \bf{r}$ définis pour chaque entité $e \in \Ent $ et chaque relation $r \in \Rel$, le modèle TransD entraîne aussi des vecteurs de projection $\bf{e_p}$ et $\bf{r_p}$. Ces vecteurs servent à construire dynamiquement une matrice de tranformation $M_{e, r}$:
 \begin{equation}
     \label{eq:kge-transd-matrix}
-    \bf{M}_{e, r} = \bf{r_p \cdot e_p^\top + I_{d' \times d}}
+    \bf{M}_{e, r} = \bf{r_p \cdot e_p^\top + I_{d \times d}}
 \end{equation}
 % TODO: indices sont gras ou pas ?
 
@@ -531,9 +523,14 @@ TransD & $\mathbf{e, e_p} \in \mathbb{R}^d$ & $\mathbf{r, r_p} \in \mathbb{R}^d$
 
 Le modèle RDF2Vec s'inspire du modèle de plongement Word2Vec (ref), très utilisé pour produire des plongements lexicaux.
 
-Il fonctionne en deux étapes : d'abord, des chemins sont prélevés dans le graphe de connaissance au moyen de marches aléatoires – ces chemins sont simplement des suites d'entités et de relations connectés entre eux. % Pour les prélever, on commence par tirer aléatoirement une entité 
-Un \textit{chemin} sur le graphe est une suite d'entités et de relations $(x_1, x_2, \ldots, x_T)$ tels que, pour tout $k \in \{1, 2, \ldots, \frac{T}{2}\}$, $x_{2k-1}$ est une entité, $x_{2k}$ est une relation, et $(x_{2k-1}, x_{2k}, x_{2k+1})$ est un triplet valide de $\KG$. Par exemple, la séquence \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga, dbo:country, dbr:Spain)} est un chemin de longueur 5, constitué des triplets \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga)} et \texttt{(dbr:Málaga, dbo:country, dbr:Spain)}.
-Pour chaque entité $e$ du graphe, on effectue des marches aléatoires de longueur $T$ au départ de $e$ pour former un ensemble de séquences $S_e$ : il suffit pour cela d'effectuer une recherche en profondeur à partir de $e$, et de s'arrêter lorqu'on atteint une profondeur $T$. Ces marches aléatoires constitueront le jeu d'entraînement.
+Il fonctionne en deux étapes : d'abord, des chemins sont prélevés dans le graphe de connaissance au moyen de marches aléatoires – ces chemins sont simplement des suites d'entités et de relations connectées entre elles. % Pour les prélever, on commence par tirer aléatoirement une entité 
+Un \textit{chemin} sur le graphe est une suite d'entités et de relations $(x_1, x_2, \ldots, x_T)$ tels que, pour tout $k \in \{1, 2, \ldots, \frac{T}{2}\}$, $x_{2k-1}$ est une entité, $x_{2k}$ est une relation, et $(x_{2k-1}, x_{2k}, x_{2k+1})$ est un triplet valide de $\KG$. Par exemple, la séquence \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga, dbo:country, dbr:Spain)} est un chemin de longueur 5, constitué des triplets \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga)} et \texttt{(dbr:Málaga, \allowbreak dbo:country, dbr:Spain)}. 
+Dans un tel chemin, le \textit{contexte} d'un élément $x_i$ est l'ensemble des $c$ éléments précédant $x_i$ et des $c$ éléments le suivant, avec $c$ un paramètre appelé la \textit{longueur}
+du contexte. On le note :
+ \begin{equation}
+    x_{t \pm c} = (x_{t-c}, x_{t-c+1}, \ldots, x_{t-1}, x_{t+1}, \ldots, x_{t+c})
+\end{equation}
+ Pour chaque entité $e$ du graphe, on effectue des marches aléatoires de longueur $T$ au départ de $e$ pour former un ensemble de séquences $S_e$ : il suffit pour cela d'effectuer une recherche en profondeur à partir de $e$, et de s'arrêter lorqu'on atteint une profondeur $T$. Ces marches aléatoires constituent le jeu d'entraînement.
 
 % Ajouter l'équation pour définir une marche aléatoire
 
@@ -541,11 +538,13 @@ Ensuite, ces chemins sont passés en entrée à un réseau de neurones. Deux var
 
 \paragraph{C-BoW}
 
-Dans cette variante, le réseau de neurone prend en entrée une partie d'un chemin, constituée des $c$ éléments précédant l'élément $x_t$ et des $c$ éléments le suivant. La longueur du contexte $c$ est un paramètre; ces $2c$ éléments sont appelés le \textit{contexte} de $x_t$ et sont notés :
-\begin{equation}
-    x_{t \pm c} = (x_{t-c}, x_{t-c+1}, \ldots, x_{t-1}, x_{t+1}, \ldots, x_{t+c})
-\end{equation}
-L'objectif du modèle est de prédire l'élément cible $x_t$ à partir de son contexte $x_{t \pm c}$.
+Dans cette variante, le réseau de neurones prend en entrée le contexte  $x_{t \pm c}$ d'un élément; son objectif est de prédire l'élément cible $x_t$ à partir de ce contexte.
+
+%Dans cette variante, le réseau de neurone prend en entrée une partie d'un chemin, constituée des $c$ éléments précédant l'élément $x_t$ et des $c$ éléments le suivant. La longueur du contexte $c$ est un paramètre; ces $2c$ éléments sont appelés le \textit{contexte} de $x_t$ et sont notés :
+%\begin{equation}
+%    x_{t \pm c} = (x_{t-c}, x_{t-c+1}, \ldots, x_{t-1}, x_{t+1}, \ldots, x_{t+c})
+%\end{equation}
+%L'objectif du modèle est de prédire l'élément cible $x_t$ à partir de son contexte $x_{t \pm c}$.
 
 Tout élément $x \in \Ent \cup \Rel$ possède un plongement vectoriel $\bf{x}$ dans $\R^d$, obtenu par une couche de projection. Le contexte $x_{t \pm c}$ est représenté comme la moyenne des plongements de ses éléments :
 \begin{equation}
@@ -606,6 +605,6 @@ On moyenne alors cette probabilité pour tous les éléments du contexte, pour c
 \FloatBarrier
 
 
-\section{Séparabilités des plongements vectoriels}
+\section{Séparabilité des plongements vectoriels}
 \input{sections/7-3-separabilite}
 
