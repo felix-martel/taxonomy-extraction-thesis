@@ -1,6 +1,7 @@
 \Chapter{EXTRACTION DE TAXONOMIE EXPRESSIVE}
 \label{chap:texp}
 
+
 Dans le chapitre précédent, on a montré qu'il était possible de reconstituer une hiérarchie sur les types à partir d'un ensemble de plongements vectoriels typés mais non hiérarchisés. Toutefois, la taxonomie ainsi extraite est limitée aux types déjà connus, et suppose donc une liste de types fixée à l'avance. De plus, cette taxonomie ne permet pas de caractériser ou de décrire les instances de ces types : on ne sait pas quelles relations elles vérifient, ou à quels types d'entités elles sont reliées.
 
 Ici, on adopte un point de départ beaucoup moins restrictif, puisqu'on s'autorise l'accès à tout le graphe de connaissance; de là, on cherche à extraire une taxonomie expressive, c'est-à-dire une hiérarchie sur des classes qui peuvent être soit des types existants, soit des axiomes logiques. On cherche également à décrire les types existants au moyen d'axiomes. L'objectif est donc double : identification de nouveaux types, et caractérisation des types existants. On cherchera ainsi à illustrer le potentiel des méthodes d'extraction taxonomique basées sur le regroupement non-supervisé de plongements vectoriels, par opposition aux méthodes qui manipulent directement des types et à celles qui regroupent les plongements de façon supervisée.
@@ -793,7 +794,7 @@ Identifier ces régularités peut permettre de guider la complétion du graphe, 
 
 
 \subsection{Discussion et limitations}
-
+\label{subsec:texp-reslts-limits}
 
 En l'état, la taxonomie expressive qui est extraite par notre méthode n'est pas encore au niveau d'une taxonomie produite par des experts humains : elle contient des doublons, des axiomes peu informatifs ou faux, et n'identifie pas toutes les relations de subsumption. On ne peut pas encore s'affranchir totalement de la supervision humaine, qui reste nécessaire pour nettoyer et interpréter les axiomes extraits. 
 % Pas sûr de garder ça :
