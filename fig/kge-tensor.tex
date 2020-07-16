@@ -1,0 +1,61 @@
+\begin{tikzpicture}[
+  box/.style={draw=gray, thick, align=center},
+  arrow/.style={->, shorten >=3pt, gray!80},
+  node/.style={draw=gray, fill=gray!20},
+  hnode/.style={draw=accent1, fill=accent1!20},
+  snode/.style={draw=accent1, fill=accent1!20, very thick},
+  point/.style={circle, draw=gray!80, fill=gray!30, node distance=1cm and 0.5cm, inner sep=0, minimum height=0.25cm},
+  spoint/.style={circle, draw=gray!80, fill=gray!30, node distance=1cm and 0.3cm, inner sep=0, minimum height=0.25cm},
+  pointA/.style={fill=accent1, draw=accent1},
+  pointB/.style={fill=accent2, draw=accent2},
+]
+
+\def\l{4}
+\def\delta{0.2}
+\def\sep{0.1}
+\draw[fill=white, draw=black] (0+5*\delta, \l+5*\delta) rectangle (\l+5*\delta, 0+5*\delta);
+\draw[fill=white, thick, draw=accent1] (0+3*\delta, \l+3*\delta) rectangle (\l+3*\delta, 0+3*\delta);
+
+\draw[fill=white, draw=black] (0+\delta, \l+\delta) rectangle (\l+\delta, 0+\delta);
+\draw[fill=white, draw=black] (0, \l) rectangle (\l, 0);
+
+\draw[draw=accent1, dashed] (0+3*\delta, \l+3*\delta) rectangle (\l+3*\delta, 0+3*\delta);
+
+
+
+\node[anchor=north west] at (\l+\sep, -\sep) {$r_1$};
+\node[anchor=north west, rotate=45] at (\l+\sep+\delta, 0.5*\delta - \sep) {$\scriptstyle \hdots$};
+\node[anchor=north west, rotate=45] at (\l+\sep+3.5*\delta, 3*\delta - \sep) {$\scriptstyle \hdots$};
+\node[anchor=north west, text=accent1] at (\l+3*\delta+\sep, 3*\delta-\sep) {$r_k$};
+\node[anchor=north west] at (\l+5*\delta+\sep, 5*\delta) {$r_m$};
+
+\node[anchor=east] at (-\sep, \l) {$e_1$};
+\node[anchor=east] at (-\sep, \l-6*\sep) {$e_2$};
+\node[anchor=east] at (-1.5*\sep, 0.5*\l) {$\vdots$};
+\node[anchor=east] at (-\sep, 0) {$e_n$};
+
+
+\node[anchor=south] at (0+5*\delta, \l+5*\delta+\sep) {$e_1$};
+\node[anchor=south] at (0+5*\delta+6*\sep, \l+5*\delta+\sep) {$e_2$};
+\node[anchor=south] at (0+5*\delta+0.5*\l, \l+5*\delta+\sep) {$\hdots$};
+\node[anchor=south] at (\l+5*\delta, \l+5*\delta+\sep) {$e_n$};
+
+\node[draw=accent1, label={[accent1]15:$\mathcal{T}_{ijk}$}] (ijk) at (0.4*\l, 0.7*\l) {};
+\draw[dotted, red] (3*\delta, 0.7*\l) to node[near start, below] {$i$} (ijk);
+\draw[dotted, red] (0.4*\l, \l+3*\delta) to node[left, anchor=east] {$j$} (ijk);
+
+\node (eq) at (1.4*\l, 0.9*\l) {};
+\draw[->, red] (ijk.315) to[bend right] (eq);
+
+\matrix[matrix of math nodes,left delimiter=\lbrace, right=0.1cm of eq] (mat)
+{
+0 \textrm{ si } (e_i, r_k, e_j) \notin \mathcal{KG} \\
+1 \textrm{ sinon} \\
+};
+
+% \node[above left=0.01 of ijk] (r1) {};
+% \node[below right=0.01 of ijk] (r2) {};
+% \draw[red, dashed] (r1) rectangle (r2);
+
+
+\end{tikzpicture}

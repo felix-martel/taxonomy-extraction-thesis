@@ -1,0 +1,112 @@
+\begin{tikzpicture}[
+  box/.style={draw=gray, thick, align=center},
+  arrow/.style={->, shorten >=3pt},
+  node/.style={draw=gray, fill=gray!20},
+  hnode/.style={draw=accent1, fill=accent1!20},
+  snode/.style={draw=accent1, fill=accent1!20, very thick},
+  point/.style={circle, draw=accent2, fill=accent2, node distance=1.3cm and 0.5cm, inner sep=0, minimum height=0.25cm},
+  verysure/.style={very thick},
+  sure/.style={thick},
+  unsure/.style={line width=0.01cm, draw=black!50},
+  medsure/.style={draw=black!80}
+]
+
+\def\y{1.5cm};
+\def\x{0.5cm};
+
+\begin{scope}
+
+\node[point] (root) at (0, 0) {};
+\node[point, below left=of root] (a1) {};
+\node[point, below right=of root] (a2) {};
+\node[point, below left=of a1] (b1) {};
+\node[point, below left=of a2] (b2) {};
+\node[point, below right=of a2] (b3) {};
+\node[point, below left=of b3] (c1) {};
+\node[point, below=of b3] (c2) {};
+\node[point, below right=of b3] (c3) {};
+
+\draw[arrow, verysure] (root) to (a1);
+\draw[arrow, sure] (root) to (a2);
+\draw[arrow, unsure] (root) to (b2);
+\draw[arrow, medsure] (root) to[bend left] (b3);
+\draw[arrow, unsure] (root) to[bend right] (b1);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a2) to (b2);
+\draw[arrow, sure] (a2) to (b3);
+\draw[arrow, medsure] (a2) to (c1);
+\draw[arrow, unsure] (b2) to (c1);
+\draw[arrow, verysure] (b3) to (c1);
+\draw[arrow, medsure] (b3) to (c2);
+\draw[arrow] (b3) to (c3);
+
+\node[right=of a2] (l1) {};
+\node[right=2cm of l1] (l2) {};
+\draw[very thick, red, ->] (l1) to (l2);
+
+\node[below=2.6cm of b2, anchor=south] {$G$};
+\end{scope}
+
+\begin{scope}[xshift=6cm]
+
+\node[point] (root) at (0, 0) {};
+\node[point, below left=of root] (a1) {};
+\node[point, below right=of root] (a2) {};
+\node[point, below left=of a1] (b1) {};
+\node[point, below left=of a2] (b2) {};
+\node[point, below right=of a2] (b3) {};
+\node[point, below left=of b3] (c1) {};
+\node[point, below=of b3] (c2) {};
+\node[point, below right=of b3] (c3) {};
+
+\draw[arrow, verysure] (root) to (a1);
+\draw[arrow, sure] (root) to (a2);
+% \draw[arrow, unsure] (root) to (b2);
+% \draw[arrow, medsure] (root) to[bend left] (b3);
+% \draw[arrow, unsure] (root) to[bend right] (b1);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a2) to (b2);
+\draw[arrow, sure] (a2) to (b3);
+% \draw[arrow, medsure] (a2) to (c1);
+\draw[arrow, unsure] (b2) to (c1);
+\draw[arrow, verysure] (b3) to (c1);
+\draw[arrow, medsure] (b3) to (c2);
+\draw[arrow] (b3) to (c3);
+
+\node[right=of a2] (l1) {};
+\node[right=2cm of l1] (l2) {};
+\draw[very thick, red, ->] (l1) to (l2);
+
+\node[below=2.6cm of b2, anchor=south] {$G_\textrm{red}$};
+\end{scope}
+
+\begin{scope}[xshift=12cm]
+
+\node[point] (root) at (0, 0) {};
+\node[point, below left=of root] (a1) {};
+\node[point, below right=of root] (a2) {};
+\node[point, below left=of a1] (b1) {};
+\node[point, below left=of a2] (b2) {};
+\node[point, below right=of a2] (b3) {};
+\node[point, below left=of b3] (c1) {};
+\node[point, below=of b3] (c2) {};
+\node[point, below right=of b3] (c3) {};
+
+\draw[arrow, verysure] (root) to (a1);
+\draw[arrow, sure] (root) to (a2);
+% \draw[arrow, unsure] (root) to (b2);
+% \draw[arrow, medsure] (root) to[bend left] (b3);
+% \draw[arrow, unsure] (root) to[bend right] (b1);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a2) to (b2);
+\draw[arrow, sure] (a2) to (b3);
+% \draw[arrow, medsure] (a2) to (c1);
+%\draw[arrow, unsure] (b2) to (c1);
+\draw[arrow, verysure] (b3) to (c1);
+\draw[arrow, medsure] (b3) to (c2);
+\draw[arrow] (b3) to (c3);
+
+\node[below=2.6cm of b2, anchor=south] {$\hat{T}$};
+\end{scope}
+
+\end{tikzpicture}

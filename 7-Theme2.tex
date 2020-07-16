@@ -287,8 +287,9 @@ On obtient donc une formule qui attribue une probabilité à chaque axiome de su
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\textwidth]{img/softmapping.jpg}
-    \caption[Principe de la méthode Soft Mapping]{(brouillon, il faut lire $Z_B \subset Z_A$ plutôt que $Z_A \prec Z_B$) Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
+    \input{fig/te-sm-main}
+    %\includegraphics[width=0.7\textwidth]{img/softmapping.jpg}
+    \caption[Principe de la méthode Soft Mapping]{Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
     \label{fig:te-softmapping-example}
 \end{figure}
 
@@ -426,7 +427,8 @@ Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiomes de subsu
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
+    % \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
+    \input{fig/te-sm-graphreduction}
     \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes (méthode Soft Mapping) : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis le graphe est transformé en arbre en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
     \label{fig:softmapping-extraction}
 \end{figure}

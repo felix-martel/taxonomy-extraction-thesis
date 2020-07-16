@@ -1,0 +1,122 @@
+\begin{tikzpicture}[
+  box/.style={draw=gray, thick, align=center},
+  arrow/.style={->, shorten >=3pt, gray!80},
+  node/.style={draw=gray, fill=gray!20},
+  hnode/.style={draw=accent1, fill=accent1!20},
+  snode/.style={draw=accent1, fill=accent1!20, very thick},
+  point/.style={circle, draw=gray!80, fill=gray!30, node distance=1cm and 0.5cm, inner sep=0, minimum height=0.25cm},
+  spoint/.style={circle, draw=gray!80, fill=gray!30, node distance=1cm and 0.3cm, inner sep=0, minimum height=0.25cm},
+  pointA/.style={fill=accent1, draw=accent1},
+  pointB/.style={fill=accent2, draw=accent2},
+]
+
+\def\y{1.5cm};
+\def\x{0.5cm};
+
+\begin{scope}[xshift=-3cm]
+\node[point, fill=accent1!60, label={[accent1]10:$0,3$}] (root) at (0, 0) {};
+\node[point, below left=of root, fill=accent1!80, label={[accent1]130:$0,5$}] (a1) {};
+\node[point, below right=of root] (a2) {};
+\node[point, below left=of a1, fill=accent1!20, label={[accent1]180:$0,1$}] (b1) {};
+\node[point, below left=of a2, fill=accent1!20, label={[accent1]0:$0,1$}] (b2) {};
+
+% \node[point, below right=of a1] (b2) {};
+
+\node[text=accent1, anchor=west] at (-2.75, 0.75cm) {Loi de $Z_A$};
+\draw[draw=accent1] (-2.75cm, 1cm) rectangle (2cm, -3cm);
+
+\draw[arrow] (root) to (a1);
+\draw[arrow] (root) to (a2);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a1) to (b2);
+\end{scope}
+%%%%%%%
+% ZB
+%%%%%%%%
+\begin{scope}[xshift=3cm]
+\node[point] (root) at (0, 0) {};
+\node[point, below left=of root, fill=accent2!80, label={[accent2]130:$0,5$}] (a1) {};
+\node[point, below right=of root, fill=accent2!60, label={[accent2]0:$0,3$}] (a2) {};
+\node[point, below left=of a1] (b1) {};
+\node[point, below left=of a2, fill=accent2!40, label={[accent2]0:$0,2$}] (b2) {};
+% \node[point, below right=of a1] (b2) {};
+
+\node[text=accent2, anchor=west] at (-2.75, 0.75cm) {Loi de $Z_B$};
+\draw[draw=accent2] (-2.75cm, 1cm) rectangle (2cm, -3cm);
+
+\draw[arrow] (root) to (a1);
+\draw[arrow] (root) to (a2);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a1) to (b2);
+\end{scope}
+
+\node at (0, -4cm) {$B \sqsubset A \iff Z_B \subset Z_A$ : 4 cas possibles};
+
+
+\def\shift{1.5cm}
+\def\shifty{-5cm}
+\begin{scope}[yshift=\shifty, xshift=-3*\shift]
+\node[spoint, pointA] (root) at (0, 0) {};
+\node[spoint, pointB, below left=of root] (a1) {};
+\node[spoint, below right=of root] (a2) {};
+\node[spoint, below left=of a1] (b1) {};
+\node[spoint, below left=of a2] (b3) {};
+\node[spoint, below right=of a1] (b2) {};
+\draw[arrow] (root) to (a1);
+\draw[arrow] (root) to (a2);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a1) to (b2);
+\node[below=0.5cm of b2] (eq)  {\textcolor{accent1}{$0,3$} $\times$ \textcolor{accent2}{$0,5$}};
+\node[right=0.3cm of eq] {$+$};
+\end{scope}
+
+
+\begin{scope}[yshift=\shifty, xshift=-\shift]
+\node[spoint, pointA] (root) at (0, 0) {};
+\node[spoint, below left=of root] (a1) {};
+\node[spoint, below right=of root] (a2) {};
+\node[spoint, below left=of a1] (b1) {};
+\node[spoint, below left=of a2] (b3) {};
+\node[spoint, pointB, below right=of a1] (b2) {};
+\draw[arrow] (root) to (a1);
+\draw[arrow] (root) to (a2);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a1) to (b2);
+\node[below=0.5cm of b2] (eq)  {\textcolor{accent1}{$0,3$} $\times$ \textcolor{accent2}{$0,2$}};
+\node[right=0.3cm of eq] {$+$};
+\end{scope}
+
+
+\begin{scope}[yshift=\shifty, xshift=\shift]
+\node[spoint, pointA] (root) at (0, 0) {};
+\node[spoint, below left=of root] (a1) {};
+\node[spoint, pointB, below right=of root] (a2) {};
+\node[spoint, below left=of a1] (b1) {};
+\node[spoint, below left=of a2] (b3) {};
+\node[spoint, below right=of a1] (b2) {};
+\draw[arrow] (root) to (a1);
+\draw[arrow] (root) to (a2);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a1) to (b2);
+\node[below=0.5cm of b2] (eq)  {\textcolor{accent1}{$0,3$} $\times$ \textcolor{accent2}{$0,3$}};
+\node[right=0.3cm of eq] {$+$};
+\end{scope}
+
+
+\begin{scope}[yshift=\shifty, xshift=3*\shift]
+\node[spoint] (root) at (0, 0) {};
+\node[spoint, pointA, below left=of root] (a1) {};
+\node[spoint, below right=of root] (a2) {};
+\node[spoint, below left=of a1] (b1) {};
+\node[spoint, below left=of a2] (b3) {};
+\node[spoint, pointB, below right=of a1] (b2) {};
+\draw[arrow] (root) to (a1);
+\draw[arrow] (root) to (a2);
+\draw[arrow] (a1) to (b1);
+\draw[arrow] (a1) to (b2);
+\node[below=0.5cm of b2] (eq)  {\textcolor{accent1}{$0,5$} $\times$ \textcolor{accent2}{$0,2$}};
+\end{scope}
+
+\node[draw=black, inner sep=0.3cm] at (0, -9.5cm) {$P(B \sqsubset A) = P(Z_B \subset Z_A) = 0,4$};
+
+\end{tikzpicture}
