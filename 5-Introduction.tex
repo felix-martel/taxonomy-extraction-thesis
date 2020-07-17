@@ -8,7 +8,7 @@
 % portée.
 \Chapter{INTRODUCTION}\label{sec:Introduction}  % 10-12 lignes pour introduire le sujet.
 
-Les graphes de connaissance constituent historiquement l'ossature du Web sémantique, et trouvent aujourd'hui des applications toujours plus variées : ils servent pour la recherche d'information \cite{bounhas2019building, dietz2018utilizing}, la recommandation de contenu \cite{ying2018graph, wang2018ripplenet, wang2019explainable} ou la réponse automatique aux questions \cite{zhang2018variational, lukovnikov2017neural, saha2018complex}.  %
+Les graphes de connaissance constituent l'ossature du Web sémantique, et trouvent aujourd'hui des applications toujours plus variées : ils servent pour la recherche d'information \cite{bounhas2019building, dietz2018utilizing}, la recommandation de contenu \cite{ying2018graph, wang2018ripplenet, wang2019explainable} ou la réponse automatique aux questions \cite{zhang2018variational, lukovnikov2017neural, saha2018complex}.  %
 Au-delà de l'informatique, ils sont désormais utilisés dans des domaines aussi divers que les sciences biomédicales \cite{bakal2018exploiting, sousa2020evolving}, la recherche historique \cite{hyvonen2019knowledge, wilcke2017user} ou les sciences sociales \cite{heling2019building}.
 
 %, mais aussi pour la recherche biomédicale \cite{bakal2018exploiting, sousa2020evolving}.
@@ -27,11 +27,11 @@ Par rapport au texte, qui constitue un autre moyen dominant pour représenter la
 
 Pour tirer pleinement profit de cette structure, il faut disposer d'une ontologie aussi complète que possible. %, c'est-à-dire d'un ensemble d'axiomes décrivant les données. La forme la plus simple d'un axiome relie simplement une entité à un ou plusieurs concepts
 %
-En effet, une ontologie permet la détection d'incohérences au sein d'un graphe \cite{inconsistencies2012dbpedia}, le typage automatique d'entités \cite{typing2017kejriwal} ou l'inférence de faits nouveaux \cite{inference2015dinto}. Elle facilite également la fusion de graphes de connaissance, c'est-à-dire la mise en correspondance de plusieurs graphes, grâce à des méthodes d'\textit{alignement d'ontologies} \cite{otero2015ontology}. Dans le cas d'un graphe extrait automatiquement, une ontologie peut être utilisée pour l'extraction, le nettoyage ou l'uniformisation des données \cite{webmining2011bhatia, webmining2014li}. Les ontologies constituent également une piste prometteuse dans le domaine de l'intelligence artificelle explicable (\textit{explainable AI}) \cite{explainable2018holzinger, explainable2019cardillo, explainable2019semantic}.
+En effet, une ontologie permet la détection d'incohérences au sein d'un graphe \cite{inconsistencies2012dbpedia}, le typage automatique d'entités \cite{typing2017kejriwal} ou l'inférence de faits nouveaux \cite{inference2015dinto}. Les ontologies facilitent également la fusion de graphes de connaissance, c'est-à-dire la mise en correspondance de plusieurs graphes, grâce à des méthodes d'alignements \cite{otero2015ontology}. Dans le cas d'un graphe extrait automatiquement, une ontologie peut être utilisée pour l'extraction, le nettoyage ou l'uniformisation des données \cite{webmining2011bhatia, webmining2014li}. Les ontologies constituent également une piste prometteuse dans le domaine de l'intelligence artificelle explicable (\textit{explainable AI}) \cite{explainable2018holzinger, explainable2019cardillo, explainable2019semantic}.
 
 Or construire une ontologie manuellement est coûteux, d'autant plus que la plupart des graphes sont dynamiques et changent au cours du temps : des nouvelles entités, relations, classes apparaissent; des axiomes qui étaient vrais ne le sont plus et inversement. L'ontologie doit changer elle aussi pour refléter ces changements. Dans ces conditions, pouvoir construire automatiquement une ontologie à partir du graphe est un enjeu important pour l'extraction et la maintenance automatique et à grande échelle de graphes de connaissance.
 
-Le problème de l'extraction automatique d'ontologie est très étudié, et notamment sous une forme particulière : l'extraction de \textit{taxonomie}. Une taxonomie est une hiérarchie entre les classes d'un graphe; on peut la voir comme une ontologie réduite à des axiomes de la forme $A \sqsubset B$, qui indique que la classe $A$ est une sous-classe de $B$, et donc que toutes les entités qui font partie de $A$ font également partie de $B$. De tels axiomes sont appelés axiomes de \textit{subsumption}; un exemple de taxonomie est donné à la figure \ref{fig:intro-taxo}.
+Le problème de l'extraction automatique d'ontologies est très étudié, et notamment sous une forme particulière : l'extraction de \textit{taxonomies}. Une taxonomie est une hiérarchie entre les classes d'un graphe; on peut la voir comme une ontologie réduite à des axiomes de la forme $A \sqsubset B$, qui indique que la classe $A$ est une sous-classe de $B$, et donc que toutes les entités qui font partie de $A$ font également partie de $B$. De tels axiomes sont appelés axiomes de \textit{subsumption}; un exemple de taxonomie est donné à la figure \ref{fig:intro-taxo}.
 
 \begin{figure}[h]
     \centering
@@ -75,9 +75,9 @@ Dans le présent mémoire, nous proposons au contraire une identification non-su
 %%
 \section{Objectifs de recherche}  % 0.5 page
 
-On cherche à extraire une taxonomie à partir d'un graphe, et si possible une taxonomie expressive. 
+Dans ce mémoire, nous cherchons à extraire une taxonomie expressive à partir des plongements vectoriels d'un graphe de connaissance.
 %
-Notre hypothèse est que les plongements vectoriels intègrent dans leur géométrie des notions de proximité entre entités, mais aussi des informations de nature taxonomique, et
+Notre hypothèse est en effet que les plongements vectoriels intègrent dans leur géométrie des notions de proximité entre entités, mais aussi des informations de nature taxonomique, et
 %
 qu'il doit donc être possible de les utiliser à la fois pour l'identification de groupes d'entités et pour la hiérarchisation de ces groupes. 
 %
@@ -115,9 +115,9 @@ Pour résoudre ce problème, nous proposons d'utiliser un regroupement hiérachi
 
 % On présente d'abord une panorama de la littérature existante. Y sont introduits les concepts fondamentaux du Web sémantique : les graphes de connaissance, qui permettent une représentation structurée de la connaissance, et la logique descriptive, qui permet d'enrichir ces graphes de règles logiques dont la somme constitue une taxonomie ou une ontologie, selon leur complexité. On décrit ensuite les techniques existantes pour extraire automatiquement ces taxonomies, soit à partir d'un graphe, soit à partir de corpus textuels. On propose finalement un survol des méthodes pour inférer de nouveaux axiomes à partir d'un graphe.
 
-On présente d'abord un panorama de la littérature existante au chapitre \ref{chap:revue}. On y introduit les concepts fondamentaux du Web sémantique, et notamment la logique descriptive. On décrit ensuite les techniques existantes pour extraire automatiquement ontologies ou taxonomies, que ce soit à partir de texte ou de graphes.
+On présente d'abord un panorama de la littérature existante au chapitre \ref{chap:revue}. On y introduit les concepts fondamentaux du Web sémantique, et notamment la logique descriptive. On décrit ensuite les techniques existantes pour extraire automatiquement des ontologies ou des taxonomies, que ce soit à partir de textes ou de graphes.
 
-Le chapitre \ref{chap:kge} est consacré aux modèles de plongement, qui permettent une représentation vectorielle des éléments d'un graphe et servent de base à notre travail. On présente plusieurs familles de modèles, et on propose une nouvelle tâche pour l'évaluation de ces modèles.
+Le chapitre \ref{chap:kge} est consacré aux modèles de plongement, qui permettent une représentation vectorielle des éléments d'un graphe et servent de base à notre travail. On présente plusieurs familles de modèles, et on propose une méthode pour l'évaluation de ces modèles.
 
 
 % On présente différents modèles concurrents, en s'efforçant de dégager les intuitions et les hypothèses qui ont dirigé leur conception, et de mettre en évidence leurs limitations théoriques et pratiques. On définit ensuite une nouvelle tâche pour l'évaluation de ces modèles, et on présente les résultats de cette évaluation.
@@ -125,7 +125,12 @@ Le chapitre \ref{chap:kge} est consacré aux modèles de plongement, qui permett
 
 % Dans le chapitre \ref{chap:te}, nous présentons une nouvelle approche pour extraire automatiquement  que 
 
-Les deux chapitres suivants sont consacrés à l'extraction de taxonomie à partir d'un graphe. Nous montrons que le regroupement non-supervisée de plongements vectoriels peut servir à reconstituer une taxonomie sur les classes existantes (chapitre \ref{chap:te}), %
+Les deux chapitres suivants sont consacrés à notre méthodologie d'extraction de taxonomie à partir de graphes. Nous montrons que le regroupement non-supervisée de plongements vectoriels peut servir à reconstituer une taxonomie sur les classes existantes (chapitre \ref{chap:te}). Pour cela, nous proposons deux méthodes pour assigner un type à des groupes qui émergent d'un processus de regroupement hiérarchique.
+
+
+
+Enfin, nous montrons que le regroupement non-supervisé permet également d'identifier de nouvelles classes, et donc de produire une taxonomie expressive : 
+, %
 et qu'il permet de surcroît d'identifier de nouvelles classes, et donc de produire une taxonomie expressive à partir du graphe (chapitre \ref{chap:texp}).
 
 %puis nous l'utilisons pour extraire de nouvelles classes et les décrire au moyen d'axiomes logiques (c'est le cas expressif, décrit au chapitre \ref{chap:texp}).

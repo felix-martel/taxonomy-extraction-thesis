@@ -11,17 +11,18 @@
 \section{Synthèse des travaux}
 
 
-Dans ce travail, on s'est intéressé au problème de l'extraction de taxonomie à partir d'un graphe de connaissance. Plus particulièrement, notre idée était d'utiliser les plongements vectoriels pour identifier des groupes d'entités cohérents, et établir des liens taxonomiques entre ces groupes. L'objectif est donc d'établir une hiérarchie entre les classes existantes, mais aussi de pouvoir découvrir et caractériser de nouvelles classes. 
+Dans ce travail, nous nous sommes intéressés au %on s'est intéressé au 
+problème de l'extraction de taxonomie à partir d'un graphe de connaissance. Plus particulièrement, notre idée était d'utiliser les plongements vectoriels issus d'un graphe de connaissance pour identifier des groupes d'entités cohérents, et établir des liens taxonomiques entre ces groupes. L'objectif est donc d'établir une hiérarchie entre les classes existantes, mais aussi de pouvoir découvrir et caractériser de nouvelles classes. 
 
 Pour cela, nous commençons par une étude des modèles de plongement vectoriel, sous l'angle de la \textit{séparabilité} : nous mesurons la capacité des modèles de plongement à plonger des entités de types différents dans des régions différentes de l'espace. % Sur cette tâche, la hiérarchie entre les modèles n'est pas celle que l'on obtient sur les tâches d'évaluation usuelles.
 %
-Cette nouvelle tâche permet de nuancer l'état de l'art en matière de plongements vectoriels : en effet, sur les tâches d'évaluation usuelles que sont la prédiction de lien ou la complétion de triplets, TransE obtient des performances inférieures à des modèles plus expressifs comme ComplEx; ici, la hiérarchie est inversée.
+Cette tâche permet de nuancer l'état de l'art en matière de plongements vectoriels : en effet, sur les tâches d'évaluation usuelles que sont la prédiction de liens ou la complétion de triplets, TransE obtient des performances inférieures à des modèles plus expressifs comme ComplEx; ici, la situation est inversée.
 
 
 Nous abordons ensuite le problème de l'extraction de taxonomie à partir d'un graphe de connaissance, en se basant sur DBpedia. Puisque l'on veut pouvoir identifier de nouvelles classes, on se base sur un regroupement non-supervisé des plongements vectoriels : cela nous permet d'extraire une structure d'arbre sur les groupes d'entités sans aucune supervision. À partir de cette structure, on peut décliner l'approche pour obtenir une taxonomie expressive ou non-expressive.
 
 %si l'on injecte une liste de types connus
-Si l'on fait correspondre ces groupes à des types connus, on obtient une taxonomie non-expressive. Au chapitre \ref{chap:te}, nous proposons deux méthodes pour établir cette correspondance, l'une qui détermine une injection optimale des types vers les groupes, l'autre qui propose une association multiple entre les uns et les autres. Nous montrons que ces deux méthodes sont capables d'égaler et même de dépasser une méthode basée sur un regroupement supervisé.
+Si l'on fait correspondre ces groupes à des types connus, on obtient une taxonomie sur ces types. Au chapitre \ref{chap:te}, nous proposons deux méthodes pour établir cette correspondance, l'une qui détermine une injection optimale des types vers les groupes, l'autre qui propose une association multiple entre les uns et les autres. Nous montrons que ces deux méthodes sont capables d'égaler et même de dépasser une méthode basée sur un regroupement supervisé.
 
 Au chapitre \ref{chap:texp}, on associe au contraire les groupes à des axiomes logiques expressifs, et on ajoute un mécanisme d'itération pour fiabiliser le résultat : d'une part, le regroupement hiérarchique est répété sur des groupes d'entités de plus en plus spécifiques, et d'autre part la taxonomie extraite est étendue petit à petit sur la base de ce regroupement. Nous obtenons ainsi une taxonomie expressive de DBpedia.
 
@@ -32,36 +33,10 @@ Au chapitre \ref{chap:texp}, on associe au contraire les groupes à des axiomes 
 
 %d'une part, la hiérarchie que nous obtenons entre modèles n'est pas celle obtenue sur les tâches d'évaluation usuelles; d'autre part, 
 
-\iffalse {
-Nous montrons au chapitre \ref{chap:te} que cette méthode est capable d'égaler, et même de dépasser une méthode basée sur un regroupement supervisé. 
 
-on extrait une taxonomie non-expressive
+\section{Limites et pistes d'améliorations}
 
-Dans le chapitre \ref{chap:te}, on montre qu'il est possible, avec un regroupement non-supervisé, d'égaler et même de dépasser une méthode basée sur un regroupement supervisé. Pour cela, nous proposons deux approches pour associer des groupes d'entités à des types existants, l'une qui trouve une injection optimale des types vers les groupes, l'autre qui propose une association multiple entre les uns et les autres. Les résultats obtenus fournissent également une évaluation des modèles de plongement, et montrent qu'un modèle simple est capable de surpasser des modèles plus complexes sur la tâche d'extraction de taxonomie.
-
-% Cette tâche nous fournit également un nouveau moyen d'évaluer les modèles de plongement
-
-Nous proposons ensuite une méthode pour extraire une taxonomie non-expressive d'un graphe de connaissance. 
-
-
-La plupart des méthodes utilisant des plongements sont incapables d'identifier de nouvelles classes
-
-
-pareil chap par chap 
-séparabilité : la hiérarchie n'est pas la même que sur le link prediction + comportemnt différencié selon les modèles
-
-Au chapitre \ref{chap:kge}, nous avons mesuré la capacité de plusieurs modèles de plongement à plonger des entités de types différents dans des régions différentes de l'espace. Sur cette nouvelle tâche, la hiérarchie entre modèles n'est pas celle que l'on obtient sur la complétion ou la classification de triplets, ce qui indique 
-
-
-
-Au chapitre \ref{chap:te}, nous proposons une méthode d'extraction automatique de taxonomie, qui se distingue des méthodes existantes par le regroupement hiérarchique non-supervisé d'entités, à partir de leurs plongements vectoriels. Ce regroupement hiérarchique est couplée à une étape d'association entre groupes d'entités et types, pour laquelle nous proposons deux solutions : l'une est basée sur une injection des types vers les groupes; l'autre sur une association multiple entre types et groupes. Quoique ces deux méthodes obtiennent des résultats proches dans nos expériences, 
-
-Nous étendons cette idée à l'extraction de taxonomie expressive, 
-}
-\fi 
-\section{Limitations et pistes d'améliorations}
-
-Nous identifions ici quelques limitations des travaux présentés ici, et proposons des pistes pour les surmonter. Nous esquissons aussi des directions de recherche pour poursuivre ou prolonger le travail entamé dans ce mémoire.
+Nous identifions ici quelques limites des travaux présentés ici, et proposons des pistes pour les surmonter. Nous esquissons aussi des directions de recherche pour poursuivre ou prolonger le travail entamé dans ce mémoire.
 
 
 \paragraph{Modèles de plongement}
@@ -80,9 +55,9 @@ On peut par exemple tirer des entités appartenant à $k$ classes différentes, 
 
 \paragraph{Extraction de taxonomie non-expressive}
 
-Notre approche pour l'extraction automatique de taxonomie non-expressive est limitée par l'étape de regroupement. Pour des questions de performance, la taille des données à regrouper est limitée, ce qui, d'une part, empêche d'utiliser l'intégralité des entités du graphe, et d'autre part, entraîne la décroissance exponentielle du nombre d'entités par classes. Ces deux facteurs compliquent le traitement des classes rares ou très spécifiques. En l'état, notre méthode n'est donc pas applicable à toute la taxonomie DBpedia.
+Notre approche pour l'extraction automatique de taxonomie non-expressive est limitée par l'étape de regroupement. Pour des questions de performance, la taille des données à regrouper est limitée, ce qui, d'une part, empêche d'utiliser l'intégralité des entités du graphe, et d'autre part, entraîne la décroissance exponentielle du nombre d'entités par classe. Ces deux facteurs compliquent le traitement des classes rares ou très spécifiques. En l'état, notre méthode n'est donc pas applicable à tout le graphe DBpedia.
 
-Une solution possible consisterait à itérer la méthode Soft Mapping avec des données d'entrée tirées aléatoirement dans le graphe : à chaque étape, on tire des entités aléatoirement, on les regroupe, et on calcule la probabilité des axiomes de subsumption. On peut alors maintenir une matrice contenant ces probabilités, et la mettre à jour à chaque étape. De plus, on peut utiliser la géométrie des plongements pour tirer les entités dans une région donnée de l'espace, ce qui permettrait d'augmenter la spécificité des données et donc de la taxonomie extraite – il s'agirait en fait d'adapter la méthode expressive présentée à la section \ref{subsec:texp-clustering} au cas où l'on n'a pas accès au graphe complet.
+Une solution possible consisterait à itérer la méthode Soft Mapping avec des données d'entrée tirées aléatoirement dans le graphe : à chaque étape, on tire des entités aléatoirement, on les regroupe, et on calcule la probabilité des axiomes de subsumption. On peut alors maintenir une matrice contenant ces probabilités, et la mettre à jour à chaque étape. De plus, on peut utiliser la géométrie des plongements pour tirer les entités dans une région donnée de l'espace, ce qui permettrait d'augmenter la spécificité des données et donc de la taxonomie extraite – il s'agirait en fait d'adapter la méthode expressive présentée à la section \ref{subsec:texp-clustering} au cas où l'on n'ait pas accès au graphe complet.
 
 
 \paragraph{Extraction de taxonomie expressive}
@@ -90,7 +65,7 @@ Une solution possible consisterait à itérer la méthode Soft Mapping avec des 
 
 Notre méthode d'extraction d'axiomes présente plusieurs limites : d'une part, les axiomes atomiques sont limités et laissent de côté les relations inverses, la composition de relations, les restrictions universelles, etc. D'autre part, on combine à chaque étape un axiome (complexe ou non) avec un atome : on ne peut donc pas combiner un axiome complexe avec un autre axiome complexe, ce qui interdit par exemple des axiomes de la forme $(A \land B) \lor (C \land D)$. Il serait également intéressant d'expérimenter d'autres approches pour l'extraction d'axiomes : comme l'espace de recherche est un sous-ensemble d'entités de petite taille et sémantiquement cohérent, il devrait être possible d'employer des méthodes plus complexes et capables d'extraire des axiomes plus expressifs.
 
-Quant aux faiblesses des taxonomies expressives extraites par notre approche, elles ont été discutées à la section \ref{subsec:texp-reslts-limits} : les axiomes extraits sont inégalement informatifs, parfois redondants ou trop spécifiques. La piste d'amélioration la plus évidente consiste à expérimenter des valeurs différentes pour les paramètres. Ceux-ci sont en effet nombreux, à chaque étape : on peut modifier les modalités du tirage aléatoire, la méthode de regroupement, l'ordre de parcours de l'arbre de clustering et sa profondeur maximale, le mode d'extracion (mono-niveau ou multi-niveaux), le nombre d'étapes et l'évolution du seuil $\delta$. Toutefois, pour systématiser une telle recherche, il est nécessaire de concevoir une méthode d'évaluation qualitative fiable des taxonomies produites. Pour ce faire, on peut envisager la démarche suivante : identifier des tâches externes susceptibles de tirer profit d'axiomes logiques (par exemple, typage automatique d'entités, réponse automatique à des questions, ou autre), et comparer, sur ces tâches, les performances d'un modèle utilisant seulement le graphe aux performances d'un modèle utilisant à la fois le graphe et la taxonomie prédite. On obtient ainsi une évaluation indirecte de cette taxonomie, qui permet de mesurer son utilité pratique.
+Quant aux faiblesses des taxonomies expressives extraites par notre approche, elles ont été discutées à la section \ref{subsec:texp-reslts-limits} : les axiomes extraits sont inégalement informatifs, parfois redondants ou trop spécifiques. La piste d'amélioration la plus évidente consiste à expérimenter des valeurs différentes pour les paramètres. Ceux-ci sont en effet nombreux, à chaque étape : on peut modifier les modalités du tirage aléatoire, la méthode de regroupement, l'ordre de parcours de l'arbre de clustering et sa profondeur maximale, le mode d'extraction (mono-niveau ou multi-niveaux), le nombre d'étapes et l'évolution du seuil $\delta$. Toutefois, pour systématiser une telle recherche, il est nécessaire de concevoir une méthode d'évaluation qualitative fiable des taxonomies produites. Pour ce faire, on peut envisager la démarche suivante : identifier des tâches externes susceptibles de tirer profit d'axiomes logiques (par exemple, typage automatique d'entités, réponse automatique à des questions, ou autre), et comparer, sur ces tâches, les performances d'un modèle utilisant seulement le graphe aux performances d'un modèle utilisant à la fois le graphe et la taxonomie extraite. On obtient ainsi une évaluation indirecte de cette taxonomie, qui permet de mesurer son utilité pratique.
 
 % ce qui devrait autoriser l'emploi de méthodes 
 
