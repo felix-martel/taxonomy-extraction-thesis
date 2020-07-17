@@ -277,37 +277,6 @@ Enfin, plusieurs travaux ont suggéré de quitter l'espace euclidien et de privi
 \end{figure}
 
 
-\iffalse {
-Une paire de mots $(x_k, y_k)$ est représentée par la différence entre ses plongements $\textbf{x}_k - \textbf{y}_k$ : 
-
-
-\cite{fu2014learning} utilise des plongements lexicaux généralistes et entraînent ensuite un classifieur capable d'identifier les relations d'hyperonymie à partir de ces plongements; à l'inverse \cite{}
-
-en combinant les représentations de A et de B et en calculant un score.
-
-Les méthodes distributionnelles s'appuyent sur des plongements lexicaux tels que \cite{mikolov2013distributed} pour obtenir des représentations riches des mots d'un corpus, et évalue ensuite si une paire de mots correspond à une relation d'hyperonymie à l'aide d'une fonction de score qui dépende des plongements de ces mots. Elles reposent sur l'«hypothèse d'inclusion distributionnelle» (ou \textit{Distributional Inclusion Hypothesis}) \cite{geffet2005distributional} : si A est un hyperonyme de B, alors les contextes dans lesquels B apparaît forment un sous-ensemble des contextes dans lesquels A apparaît. Intuitivement, cela signifie que l'on peut remplacer les occurrences de B par A tout en gardant un texte valide.
-
-Une méthode distributionnelle repose donc sur (a) une méthode de plongement lexicale, capable d'obtenir des représentations denses et de faible dimension des mots; (b) une fonction de classification, qui combine les plongements de deux mots et évalue si le premier mot est un hyperonyme du second. 
-%De nombreuses méthodes existent, selon des plongements 
-% Class-based
-
-% HyperVec
-% Poincaré Embeddings
-
-% Autres approches :
-% Ontology Completion Using Graph Convolutional Networks
-% Petrucci & Rospocher
-}
-\fi 
-
-% TIEmb / NICKEL
-% TaxoGen
-% Gupta ?
-% Petrucci, Rospocher
-% GCN Li/Bouraoui
-
-
-
 \subsubsection{Regroupement hiérarchique sur les plongements lexicaux}
 
 Parmi les méthodes qui reposent sur des plongements lexicaux, on s'intéresse ici à celles qui réalisent un regroupement ou partitionnement des données (en anglais : \textit{clustering}).
