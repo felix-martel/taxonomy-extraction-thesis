@@ -59,7 +59,12 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{img/clustering_tree.png}
+    \begin{adjustwidth}{0in}{-0.5in}
+        \resizebox{1.1\textwidth}{!}{%
+            \input{fig/te-clustering-tree}
+        }%
+    \end{adjustwidth}
+    
     \caption[Principe du regroupement hiérarchique ascendant]{Exemple d'arbre de clustering obtenu par regroupement hiérarchique ascendant. La couleur des points représente leur étiquette $y_i$ et n'est pas utilisée lors du regroupement.}
     \label{fig:clustering_tree}
 \end{figure}
@@ -504,7 +509,6 @@ Si l'on évalue les modèles de plongement sur leur capacité à intégrer géom
         \end{center}
     \end{adjustwidth}
 \end{table}
-
 
 
 

@@ -1,0 +1,182 @@
+\begin{tikzpicture}[
+  arrow/.style={->, shorten >=3pt, gray!80},
+  point/.style={circle,inner sep=0, minimum height=0.25cm, draw=#1, fill=#1, node distance=0.1cm},
+  g1/.style={point=red},
+  g2/.style={point=pink},
+  g3/.style={point=purple},
+  g4/.style={point=blue},
+  g5/.style={point=cyan},
+  cluster/.style={draw=gray, rounded corners=0.2cm},
+  invisible/.style={inner sep=0}
+]
+
+\def\l{4}
+\def\delta{0.2}
+\def\sep{0.1}
+\def\xmain{1}
+\def\y{1}
+\def\lstep{0.5cm}
+\def\mid{0.05cm}
+
+
+\foreach \pos [count=\i] in {0, 1, ..., 19}
+    \node[invisible] (i0\i) at (\xmain*\pos, 0) {};
+
+\node[anchor=south, below=\lstep of i01] {$\{e_1\}$};
+\node[anchor=south, below=\lstep of i02] {$\{e_2\}$};
+\node[anchor=south, below=0.7cm of i03] {$\ldots$};
+\node[anchor=south, below=\lstep of i019] {$\{e_N \}$};
+
+\foreach \pos [count=\i] in {0, 3, 5, 7, 9, 12, 14, 17}
+    \node[invisible] (i1\i) at (\xmain*\pos+0.5*\xmain, \y) {};
+
+\foreach \pos [count=\i] in {1, 6.5, 10, 15}
+    \node[invisible] (i2\i) at (\xmain*\pos, 2*\y) {};
+    
+\foreach \pos [count=\i] in {4.5, 11.5, 16.5}
+    \node[invisible] (i3\i) at (\xmain*\pos, 3*\y) {};
+    
+\foreach \pos [count=\i] in {2.5, 13.5}
+    \node[invisible] (i4\i) at (\xmain*\pos, 4.5*\y) {};
+    
+\node[invisible] (i51) at (8.5*\xmain, 5.2*\y) {};
+
+
+
+\draw[arrow, |->] (20*\xmain, 6.5*\y) to (20*\xmain, -\y);
+\node[above] at (20*\xmain, 6.5*\y) {profondeur};
+\foreach \yi [count=\i from 0] in {5.6, 4.3, 3, 2, 1, 0}{
+    \draw (20*\xmain-0.1, \yi) -- (20*\xmain+0.1, \yi);
+    \node[right] at (20*\xmain, \yi) {$\i$};
+}
+\foreach \col [count=\i] in {1, 1, 1, 2, 2, 3, 2, 3, 3, 4, 4, 4, 4, 4, 4, 1, 5, 5, 5}
+{
+    \node[g\col] (a0\i) at (i0\i) {};
+    \node[cluster, fit=(a0\i) ] (c0\i) {};
+ } 
+ 
+\tikzset{bicluster/.style n args={3}{%
+    g#1,
+    left=\mid of i#3,
+    append after command={\pgfextra{\let\main=\tikzlastnode}
+        node[g#2, right=of \main] (a1#3) {} %
+        node[cluster, fit=(\main)(a1#3)] (c#3) {} %
+    }}
+}
+
+% \node[g1, left=\mid of i11] (a110) {};
+% \node[g1, right=\mid of i11] (a111) {};
+% \node[cluster, fit=(a110)(a111)] {};
+
+\foreach \x/\y [count=\i] in {1/1, 2/2, 3/2, 3/3, 4/4, 4/4, 4/1, 5/5}
+    \node[bicluster={\x}{\y}{1\i}] {};
+    
+\foreach \pos [count=\i] in {1, 4, 6, 8, 10, 13, 15, 18}
+    {
+    \draw[arrow] (c1\i) to (c0\pos);
+}
+\foreach \pos [count=\i] in {2, 5, 7, 9, 11, 14, 16, 19}
+    {
+    \draw[arrow] (c1\i) to (c0\pos);
+}
+% Triclusters
+\node[g1] (a211) at (i21) {};
+\node[g1, left=of a211] (a210) {};
+\node[g1, right=of a211] (a212) {};
+\node[cluster, fit=(a210)(a211)(a212)] (c21) {};
+\draw[arrow] (c21) to (c11);
+\draw[arrow] (c21) to (c03);
+
+\node[g2, left=\mid of i22] (a221) {};
+\node[g3, left=of a221] (a220) {};
+\node[g3, right=\mid of i22] (a222) {};
+\node[g3, right=of a222] (a223) {};
+\node[cluster, fit=(a220)(a221)(a222)(a223)] (c22) {};
+\draw[arrow] (c22) to (c13);
+\draw[arrow] (c22) to (c14);
+
+\node[g4] (a231) at (i23) {};
+\node[g4, left=of a231] (a230) {};
+\node[g4, right=of a231] (a232) {};
+\node[cluster, fit=(a230)(a231)(a232)] (c23) {};
+\draw[arrow] (c23) to (c15);
+\draw[arrow] (c23) to (c012);
+
+\node[g1] (a241) at (i24) {};
+\node[g4, left=of a241] (a240) {};
+\node[g5, right=of a241] (a242) {};
+\node[cluster, fit=(a240)(a241)(a242)] (c24) {};
+\draw[arrow] (c24) to (c17);
+\draw[arrow] (c24) to (c017);
+
+\node[g3, above=\mid of i31] (a311) {};
+\node[g3, left=of a311] (a310) {};
+\node[g2, right=of a311] (a312) {};
+\node[g3, below=of a310] (a313) {};
+\node[g2, right=of a313] (a314) {};
+\node[g2, right=of a314] (a315) {};
+\node[cluster, fit=(a310)(a311)(a312)(a313)(a314)(a315)] (c31) {};
+\draw[arrow] (c31) to (c22) {};
+\draw[arrow] (c31) to (c12) {};
+
+\node[g4, above=\mid of i32] (a320) {};
+\node[g4, left=of a320] (a321) {};
+\node[g4, right=of a320] (a322) {};
+\node[g4, below right=\mid and \mid of i32] (a323) {};
+\node[g4, below left=\mid and \mid of i32] (a324) {};
+\node[cluster, fit=(a320)(a321)(a322)(a323)(a324)] (c32) {};
+\draw[arrow] (c32) to (c23);
+\draw[arrow] (c32) to (c16);
+
+\node[g1, above=\mid of i33] (a330) {};
+\node[g4, left=of a330] (a331) {};
+\node[g5, right=of a330] (a332) {};
+\node[g5, below right=\mid and \mid of i33] (a333) {};
+\node[g5, below left=\mid and \mid of i33] (a334) {};
+\node[cluster, fit=(a330)(a331)(a332)(a333)(a334)] (c33) {};
+\draw[arrow] (c33) to (c24);
+\draw[arrow] (c33) to (c18);
+
+\node[g3] (a410) at (i41) {};
+\node[g1, above=of a410] (a411) {};
+\node[g1, left=of a411] (a412) {};
+\node[g1, right=of a411] (a413) {};
+\node[g3, left=of a410] (a414) {};
+\node[g2, right=of a410] (a415) {};
+\node[g2, below=of a410] (a416) {};
+\node[g3, left=of a416] (a417) {};
+\node[g2, right=of a416] (a418) {};
+\node[cluster, fit=(a410)(a412)(a418), label=115:{gauche(\texttt{racine})}] (c41) {};
+\draw[arrow] (c41) to (c21);
+\draw[arrow] (c41) to (c31);
+
+\node[g4, left=\mid of i42] (a420) {};
+\node[g4, right=of a420] (a421) {};
+\node[g1, right=of a421] (a422) {};
+\node[g4, left=of a420] (a423) {};
+\node[g4, above=0.15cm of i42] (a424) {};
+\node[g4, left=of a424] (a425) {};
+\node[g4, right=of a424] (a426) {};
+\node[g5, below=0.15cm of i42] (a427) {};
+\node[g5, right=of a427] (a428) {};
+\node[g5, left=of a427] (a429) {};
+\node[cluster, fit=(a424)(a427)(a422)(a423), label=45:{droite(\texttt{racine})}] (c42) {};
+\draw[arrow] (c42) to (c32);
+\draw[arrow] (c42) to (c33);
+
+\node[g5] (x1) at (i51) {};
+\node[g5, right=of x1] (x2) {};
+\node[g5, right=of x2] (x3) {};
+\node[g1, left=of x1] (x4) {};
+\node[g4, left=of x4] (x5) {};
+\foreach \i in {1, 2, ..., 5}
+    \node[g4, above=of x\i] (y\i) {};
+\foreach \i/\j in {1/3, 2/3, 3/3, 4/2, 5/2}
+    \node[g\j, above=of y\i] (z\i) {};
+\foreach \i in {1, 2, 3}
+    \node[g1, above=of z\i] (w\i) {};
+\node[g2, above=of z4] {};
+\node[cluster, fit=(w3)(x5), label={$\texttt{racine} = \{ e_1, e_2, \ldots, e_N \}$}] (c51) {};
+\draw[arrow] (c51) to (c41);
+\draw[arrow] (c51) to (c42);
+\end{tikzpicture}
