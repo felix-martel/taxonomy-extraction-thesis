@@ -1,9 +1,28 @@
 Puisque le but général de ce travail est d'identifier des groupes sémantiquement cohérents d'entités à partir de leur proximité géométrique, il nous est nécessaire d'évaluer la capacité d'un modèle à plonger les instances d'une même classe dans la même région de l'espace euclidien. On formalise cette exigence en définissant une \textit{tâche de séparabilité}, dont le but est de mesurer si des groupes d'entités appartenant à deux classes différentes sont linéairement séparables.
 
+L'hypothèse sous-jacente est la suivante : plus les classes sont nettement délimitées sur le plan géométrique, plus l'identification non-supervisée de ces classes (et donc l'extraction de taxonomie) sera facile. Pour mesurer si deux classes sont bien délimitées, on mesure leur \textit{séparabilité linéaire}, ou plus précisément la séparabilité linéaire des plongements vectoriels de leurs instances. % de leurs plongements vectoriels.
+%
+Deux groupes de points sont linéairement séparables s'il est possible de faire passer un hyperplan entre les deux; en deux dimensions, cela signifie que l'on peut trouver une droite telle que tous les points du premier groupe soient situés d'un côté de la droite, et tous les points du second groupe soient de l'autre côté. 
+Notre idée est de mesurer si cette condition est respectée entre les plongements vectoriels de deux classes différentes.
+%
+La condition de séparabilité linéaire présente l'avantage d'être conceptuellement simple et facile à calculer, tout en imposant une condition forte sur les plongements.
+trois propriétés intéressantes : elle est conceptuellement simple, facile à calculer, et impose une condition forte sur les plongements. 
+
+la délimitation entre les classes, on choisit 
+
+
+Deux groupes de points sont linéairement séparables s'il est possible de faire passer un hyperplan entre les deux; en deux dimensions, cela signifie que l'on peut trouver une droite telle que tous les points du premier groupe soient situés d'un côté de la droite, et tous les points du second groupe soient de l'autre côté.
+Notre idée est de mesurer si cette condition est respectée entre les plongements vectoriels de deux classes différentes. %Le choix d'une séparabilité \textit{linéaire} est une exigence assez forte
+
+Ici, notre hypothèse est que, plus les classes sont géométriquement délimitées, plus l'identification non-supervisée de ces classes (et donc l'extraction de taxonomie) sera facile. 
+En choisissant une séparabilité \textit{linéaire}, on impose une condition assez forte
+C'est pourquoi on choisit de mesurer une séparabilité \textit{linéaire}, qui constitue une condition assez forte, en plus d'être calculable efficacement.
+
+% La séparabilité linéaire entre les plongements de deux classes
 
 \subsection{Données}
 \label{subsec:kge-data-dbpedia}
-Pour entraîner nos modèles, nous avons utilisé la version de DBpédia publiée en octobre 2016, qui était la plus récente jusqu'à récemment, et dont on a exclu l'ontologie DBpédia\footnote{Cette ontologie est accessible au format OWL dans le fichier \texttt{\href{http://downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}{dbpedia\_2016-10.owl}}, disponible sur la page de téléchargement de DBpédia} : en particulier, cela signifie qu'aucun triplet \texttt{rdfs:subClassOf} n'est présent dans les données. Le graphe complet contient 3 millions d'entités (insérer le chiffre exacte) et 1.300 relations (idem). Ces entités sont réparties en 589 classes\footnote{On peut trouver la liste actualisée de ces classes à l'adresse : \href{mappings.dbpedia.org/server/ontology/classes/}{https://mappings.dbpedia.org/server/ontology/classes/}}, elle-mêmes distribuées sur sept niveaux de hiérarchie : au niveau 0, on trouve la classe racine \texttt{owl:Thing} dont toutes les entités font partie; au niveau 1, il y a vingt-quatre classes (dont les plus fréquentes sont \dbo{Agent}, \dbo{Place}, \dbo{Agent}), etc. 
+Pour entraîner nos modèles, nous avons utilisé la version de DBpédia publiée en octobre 2016, qui était la plus récente jusqu'à récemment, et dont on a exclu l'ontologie DBpédia\footnote{Cette ontologie est accessible au format OWL dans le fichier \texttt{\href{http://downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}{dbpedia\_2016-10.owl}}, disponible sur la page de téléchargement de DBpédia} : en particulier, cela signifie qu'aucun triplet \texttt{rdfs:subClassOf} n'est présent dans les données. Le graphe complet contient 63,6 millions de triplets (63 550 208 exactement) impliquant 1 274 relations et 3,4 millions d'entités (3 388 747 exactement). Ces entités sont réparties en 589 classes\footnote{On peut trouver la liste actualisée de ces classes à l'adresse : \href{mappings.dbpedia.org/server/ontology/classes/}{https://mappings.dbpedia.org/server/ontology/classes/}}, elle-mêmes distribuées sur sept niveaux de hiérarchie : au niveau 0, on trouve la classe racine \texttt{owl:Thing} dont toutes les entités font partie; au niveau 1, il y a vingt-quatre classes (parmi lesquelles \dbo{Agent}, \dbo{Place}, \dbo{Event}), etc. 
 
 L'entraînement se fait avec la librairie OpenKE \cite{openke}. On choisit une dimension de plongement de $d=50$; pour les autres hyperparamètres, on utilise ceux fournis par les auteurs de chaque modèle.
 
@@ -31,6 +50,8 @@ La mesure $F_1$ est la moyenne arithmétique de la précision et du rappel :
 \end{equation*}
 Dans nos expériences, on choisit $N=1000$; si une classe possède moins que ces $N$ instances, on utilise toutes les instances de cette classe.
 
+
+
 \subsubsection{Variables d'analyse}
 
 La difficulté qu'il y a à séparer une classe $A$ d'une classe $B$ dépend beaucoup de $A$ et de $B$ : intuitivement, il est plus difficile de distinguer un \dbo{College} d'une \dbo{University} qu'un \dbo{Aircraft} d'une \dbo{Person}. De plus, on peut imaginer que la taille de la classe (c'est-à-dire le nombre d'instances qui en font partie) influe aussi sur la difficulté, comme c'est souvent le cas en apprentissage automatique. Nous avons donc mis au point trois métriques pour évaluer la difficulté \textit{a priori} de la tâche de séparation pour toute paire de classe $(A, B)$. La première de ces métriques est la distance lexicale entre les classes, mesurée grâce à des plongements lexicaux; la deuxième est une distance taxonomique entre les classes, basée sur la distance entre les classes dans la taxonomie; la troisième est un indicateur de la fréquence des deux classes dans la base de connaissance.
@@ -40,12 +61,14 @@ Ces métriques permettent d'interpréter les résultats de séparabilité obtenu
 
 \paragraph{Distance lexicale}
 
-La première de nos métriques est une distance entre les classes, basée sur la proximité sémantique des noms de ces classes. Pour une classe $X$ quelconque, on commence par séparer les mots qui composent son URI : dans DBpédia, la convention de nommage pour les classes est le \textit{CamelCase}, donc l'entité \texttt{SportsTeamMember} est séparée en \texttt{"sports"}, \texttt{"team"} et \texttt{"member"}. On utilise alors des plongements lexicaux pour représenter chacun de ces mots par un vecteur de $\R^d$, et on moyenne ensuite ces vecteurs pour obtenir une représentation vectorielle $\mathbf{X}$ de la classe $X$ de départ. On peut alors définir la distance entre deux classes $A$ et $B$ comme la distance euclidienne entre leurs représentants :
+La première de nos métriques est une distance entre les classes, basée sur la proximité sémantique des noms de ces classes.
+Ici, l'intuition est que, si deux classes sont désignées par des mots aux sens proches, alors les classes elles-mêmes doivent être proches. 
+Pour une classe $X$ quelconque, on commence par séparer les mots qui composent son URI : dans DBpédia, la convention de nommage pour les classes est le \textit{CamelCase}, donc l'entité \texttt{SportsTeamMember} est séparée en \texttt{"sports"}, \texttt{"team"} et \texttt{"member"}. On utilise alors des plongements lexicaux pour représenter chacun de ces mots par un vecteur de $\R^d$, et on moyenne ensuite ces vecteurs pour obtenir une représentation vectorielle $\mathbf{X}$ de la classe $X$ de départ. On peut alors définir la distance entre deux classes $A$ et $B$ comme la distance euclidienne entre leurs représentants :
 \begin{equation}
 d_\text{lex}(A, B) = \| \mathbf{A} - \mathbf{B} \|_2
 \end{equation}
 
-Les plongements lexicaux utilisés sont entraînés avec CBOW \cite{mikolov2018advances} sur le Common Crawl, un corpus en anglais comprenant 600 milliards de mots et deux millions de types distincts.
+Les plongements lexicaux utilisés sont entraînés avec CBOW \cite{mikolov2018advances} sur le Common Crawl, un corpus en anglais comprenant 600 milliards de mots et deux millions de types distincts. Avec ces plongements, les classes \dbo{River} et \dbo{Stream} ont une distance lexicale proche de zéro, alors que \dbo{Guitarist} et \dbo{MilitaryConflict} ont une distance lexicale élevée.
 
 %\footnote{We used word embeddings from \href{https://fasttext.cc/docs/en/english-vectors.html}{https://fasttext.cc/docs/en/english-vectors.html}, trained on Common Crawl \cite{mikolov2018advances}} 
 
@@ -56,6 +79,8 @@ On peut alors définir la distance taxonomique comme :
     d_\text{tax}(A, B) = \sum_{e \in \text{path}(A, B)} \frac{1}{\displaystyle 2^{\text{depth}(e)}}
 \end{equation}
 Cette distance taxonomique est la longueur du chemin entre $A$ et $B$, pondérée par la profondeur des arêtes qui composent ce chemin. Le poids d'une arête est $1/2^{\text{depth}(e)}$ et diminue donc avec sa profondeur : en effet, dans une taxonomie, la profondeur d'une arête est un indicateur de la spécificité de l'axiome de subsumption associé à cette arête. Les axiomes associés aux arêtes de profondeur $0$ sont des axiomes très généraux, comme par exemple $\dbo{Place} \sqsubseteq \texttt{owl:Thing}$ («un endroit est une chose») ou $\dbo{Agent} \sqsubseteq \texttt{owl:Thing}$ («un agent est une chose»). À la profondeur $1$, les axiomes sont déjà plus précis – par exemple, $\dbo{Person}\sqsubseteq \dbo{Agent}$ («une personne est un agent»). À des profondeurs plus élevées, les axiomes deviennent très spécifiques, comme par exemple $\dbo{MotorRace} \sqsubseteq \dbo{Race}$ à la profondeur $4$. Aussi, deux classes séparées par une arête de faible profondeur sont sémantiquement plus distantes que deux classes séparées par une arête de profondeur élevée.
+Par exemple, les classes \dbo{NascarDriver} et \dbo{RacingDriver} sont plus proches l'une de l'autre que les classes \texttt{owl:Thing} et \dbo{AnatomicalStructure}, bien qu'il n'y ait qu'une arête d'écart dans les deux cas.
+
 
 Quant au choix d'une décroissance spécifiquement égale à $\frac{1}{2^k}$, il confère à notre distance une propriété intéressante : une classe $A$ est plus proche de ses sous-classes que de n'importe quelle autre classe. Vérifions-le en prenant $A$ une classe de profondeur $d$, et $A'$ une sous-classe de $A$ de profondeur $d' > d$. Alors la distance entre $A$ et $A'$ s'écrit :
 \begin{align*}
@@ -69,6 +94,8 @@ Or la distance entre $A$ et sa superclasse immédiate $B$ est :
 \end{align*}
 Et $d'-d \geq 1$, donc $d_\text{tax}(A, A') < \frac{1}{2^{d-1}} = d_\text{tax}(A, B) \leq d_\text{tax}(A, B')$ pour toute classe $B'$ qui n'est pas sous-classe de $A$. On retrouve bien la propriété énoncée.
 
+Pour cette distance, les classes les plus proches sont \dbo{NascarDriver} et \dbo{RacingDriver}, 
+
 \paragraph{Influence de la fréquence}
 
 Une entité $e$ impliquée dans de nombreux triplets sera vue plus souvent pendant la phase d'entraînement, et aura donc un plongement vectoriel plus fiable. Comme ce plongement vectoriel dépend à son tour des plongements des entités et des relations qui sont connectée à $e$, il est possible que les entités appartenant à des classes rares soient impliquées dans des relations rares elles-aussi et connectées à des entités rares; cela produirait des plongements vectoriels moins fiables que la moyenne. Pour vérifier cette hypothèse, on évalue également l'influence de l'effectif des classes (\textit{i.e.} le nombre d'instances qui appartiennent à cette classe) sur les scores de séparabilité. Pour obtenir une mesure synthétique de la fréquence d'une paire de classes $(A, B)$, on utilise la moyenne harmonique des fréquences de $A$ et de $B$. L'utilisation de la moyenne harmonique plutôt que de la moyenne arithmétique usuelle permet de mieux refléter les déséquilibres entre les fréquences de $A$ et de $B$ : si $N_A$ est la fréquence de la classe $A$ et $N_B$ celle de la classe $B$, et que $N_A$ est supérieur à $N_B$ d'un ordre de grandeur, alors la moyenne arithmétique de $N_A$ et $N_B$ a le même ordre de grandeur que $N_A$, et n'indique donc pas que $B$ est rare par rapport à $A$.
@@ -78,7 +105,7 @@ Une entité $e$ impliquée dans de nombreux triplets sera vue plus souvent penda
 On évalue six modèles de plongement sur la tâche de séparabilité : TransE, TransH, TransD, DistMult, ComplEx, RDF2Vec. La séparabilité est calculée sur 10 000 paires de classes issues de DBpédia. On donne les scores de séparabilité moyens pour chaque modèle dans le tableau \ref{tab:separability-results}; on aggrège également les résultats pour différentes valeurs de distance lexicale et taxonomique dans la figure \ref{fig:separability-lexical}, et pour différentes fréquences de classes dans la figure \ref{fig:separability-freq}.
 
 
-\begin{table}[]
+\begin{table}[ht]
     \centering
     \caption[Séparabilité moyenne de différents modèles de plongement]{Précision, rappel et mesure $F1$ moyens pour différents modèles de plongement sur la tâche de séparabilité. En gras, le meilleur résultat pour chaque métrique.}
     \begin{tabular}{|lrrr|}

@@ -117,7 +117,7 @@
 \input{figures}
 
 \usetikzlibrary{external}
-\tikzexternalize[prefix=tikz/]
+\tikzexternalize[prefix=tikz/,optimize command away=\includepdf]
 
 
 \usepackage[ruled,noend, french, onelanguage]{algorithm2e}
@@ -184,7 +184,7 @@ a été dûment accepté\ifthenelse{\equal{\monDiplome}{M}}{}{e} par le jury d'e
 \monJury
 %%
 \pagestyle{pagenumber}%
-\include{1-Dedicace}          % Dédicace du document.
+% \include{1-Dedicace}          % Dédicace du document.
 \include{2-Remerciements}     % Remerciements.
 \include{3-Resume_sujet}      % Résumé du sujet en français.
 \include{3-Abstract}          % Résumé du sujet en anglais.

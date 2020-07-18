@@ -1,7 +1,7 @@
 \Chapter{PLONGEMENTS VECTORIELS DE GRAPHES DE CONNAISSANCES}
 \label{chap:kge}
 
-Ce chapitre introduit les modèles de plongement vectoriels, utilisés pour représenter les entités et les relations d'un graphe de connaissance sous forme vectorielle. Ces représentations vectorielles, dont la géométrie intègre une partie de l'information sémantique contenue dans le graphe, permettent l'application d'outils d'apprentissage automatique, comme la complétion de triplets, la détection de triplets invalides, mais aussi l'extraction automatique de taxonomie qui fait l'objet de ce mémoire. Dans ce chapitre, on présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relations qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. % Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
+Ce chapitre introduit les modèles de plongement vectoriels, utilisés pour représenter les entités et les relations d'un graphe de connaissance sous forme vectorielle. Ces représentations vectorielles, dont la géométrie intègre une partie de l'information sémantique contenue dans le graphe, permettent l'application d'outils d'apprentissage automatique, comme la complétion de triplets \cite{simple2018}, la détection de triplets invalides \cite{nguyen2020relational}, mais aussi l'extraction automatique de taxonomie qui fait l'objet de ce mémoire \cite{ristoski2017large, zhang2018taxogen}. Dans ce chapitre, on présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relations qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. % Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
 
 Enfin, on présente une nouvelle tâche sur laquelle évaluer un modèle de plongement de graphe. Cette tâche vise explicitement à mesurer la capacité d'un modèle à envoyer des entités appartenant à une même classe dans une même région de l'espace – une propriété essentielle pour pouvoir extraire des informations taxonomiques à partir des plongements vectoriels, et un préalable aux méthodes présentées dans les chapitres suivants de ce mémoire.
 
@@ -19,7 +19,7 @@ Dans toute cette section, on considérera un graphe de connaissance $\KG \subset
 
 % \todo{Reformuler, en partant des différents modes de représentation}
 
-\subsubsection{Représentation des entités d'un graphe}
+\subsubsection{Représentation des entités et des relations d'un graphe}
 \newcommand{\URI}{\operatorname{URI}}
 \newcommand{\Adja}{\operatorname{Adj}}
 
@@ -42,22 +42,10 @@ Un \textbf{modèle de plongement} est une méthode pour obtenir une représentat
 
 En toute généralité, un modèle de plongement vectoriel est un modèle qui associe à chaque entité $e \in \mathcal{E}$ un vecteur $\mathbf{e} \in \mathbb{R}^d$, et à chaque relation $r \in \mathcal{R}$ un vecteur $\mathbf{r} \in \mathbb{R}^{d'}$ (vecteur étant ici à comprendre au sens large de «point dans un espace vectoriel», ce qui inclut donc les matrices). On note $\mathbf{E} = \{\mathbf{e}\}_{e \in \mathcal{E}} $ l'ensemble des plongements d'entité, $\mathbf{R} = \{\mathbf{r}\}_{r \in \mathcal{R}} $ l'ensemble des plongements de relation et $\Theta = (\mathbf{E}, \mathbf{R})$ l'ensemble des paramètres du modèle. 
 
-Les deux applications principales d'un modèle de plongement sont d'une part la complétion de triplet, et d'autre part la classification de triplet. Dans le premier cas, l'objectif est de prédire l'entité manquante dans un triplet. Par exemple, pour un triplet incomplet \texttt{(dbr:China, dbo:capital, ?)}, le modèle devra prédire \texttt{dbr:Beijing} à partir des seuls plongements vectoriels de \texttt{dbr:China} et \texttt{dbo:capital}. La classification de triplet consiste à prédire si un triplet inconnu est valide ou non, à partir des plongements de ce triplet. Dans les deux cas, on voit qu'un modèle de plongement doit être capable d'intégrer les régularités du graphe sous forme géométrique.
+Les deux applications principales d'un modèle de plongement sont d'une part la complétion de triplet \cite{simple2018}, et d'autre part la classification de triplet \cite{nguyen2020relational}. Dans le premier cas, l'objectif est de prédire l'entité manquante dans un triplet. Par exemple, pour un triplet incomplet \texttt{(dbr:China, dbo:capital, ?)}, le modèle devra prédire \texttt{dbr:Beijing} à partir des seuls plongements vectoriels de \texttt{dbr:China} et \texttt{dbo:capital}. La classification de triplet consiste à prédire si un triplet inconnu est valide ou non, à partir des plongements de ce triplet. Dans les deux cas, on voit qu'un modèle de plongement doit être capable d'intégrer les régularités du graphe sous forme géométrique.
 
-% Un modèle de plongement est caractérisé par $\Theta$ ainsi que par une fonction de score $\sigma_{\Theta} : \mathcal{E \times R \times E} \rightarrow [0, 1]$, définie sur l'ensemble des triplets possibles et paramétrée par $\Theta$.  
 
-\iffalse {
-Pour entraîner un modèle de plongement, on a besoin d'un ensemble de triplets valides $\Delta_+$ (généralement, $\Delta_+ = \mathcal{KG}$), et un ensemble de triplets invalides $\Delta_-$. Comme un graphe ne contient, par construction, aucun triplet invalide, on construit $\Delta_-$ en fabriquant des triplets aléatoirement, et en supposant qu'ils sont invalides – c'est \textit{l'hypothèse du monde localement fermé}, empiriquement vérifiée dans n'importe quel graphe suffisamment grand. \todo{Ajouter une ref à la section qui le justifie}
-
-Une fois que l'on dispose de $\Delta_+$ et de $\Delta_-$, on peut commencer l'entraînement proprement dit. La procédure varie d'un modèle à l'autre, mais on en présente ici les grandes lignes. Tout d'abord, les paramètres (c'est-à-dire les plongements) sont initialisés aléatoirement. On définit une fonction de perte, typiquement une perte par marge maximale :
-$$ J(\Theta) = \sum_{(h_+, r_+, t_+) \in \Delta_+} \sum_{(h_-, r_-, t_-) \in \Delta_-} \lfloor \gamma + \sigma_\Theta(h_+, r_+, t_+) - \sigma_\Theta(h_-, r_-, t_-) \rfloor
-$$
-On souhaite alors minimiser la perte. Pour cela, on calcule alors $\displaystyle \frac{\partial J}{\partial \Theta}$, et on met à jour $\Theta$ par descente de gradient. Il faut garder à l'esprit que mettre à jour $\Theta$ signifie mettre à jour les plongements vectoriels des entités et des relations du graphe, de façon à avoir un score maximal sur les triplets valides et minimal sur les triplets invalides. La procédure s'arrête une fois un critère de convergence atteint – par exemple, lorsque $J$ ne diminue plus.
-
-Dans la suite de la section, on se propose de détailler plus avant les procédures communes à tous les modèles, et particulièrement la constitution des données d'entraînement, la distinction entre fonction de score et fonction d'énergie, ainsi que les fonctions de pertes communément utilisées. }
-\fi
-
-\subsection{Génération de triplets d'entraînement}
+\subsection{Procédure d'entraînement}
 \label{subsec:kge-data}
 
 Pour entraîner un modèle de plongement, on a besoin d'un ensemble de triplets valides $\Delta_+$ (généralement, $\Delta_+ = \mathcal{KG}$), et un ensemble de triplets invalides $\Delta_-$. %Le modèle devra maximiser le score ou minimiser l'énergie des triplets valides, et minimiser celui des triplets invalides. 
@@ -384,37 +372,6 @@ Dans le cas de TransE, la fonction de transformation est la fonction identité :
 On présente maintenant deux modèles basés sur cette idée, le premier utilisant comme fonction de transformation la projection sur un hyperplan, le second une application linéaire qui dépend du triplet considéré.
 
 \FloatBarrier
-\iffalse {
-On présente ici une seconde famille de modèles, les modèles \textit{translationnels}, constituée de TransE et de ses dérivés. L'idée première de ces modèles consiste à représenter une relation entre deux entités comme une translation entre leurs plongements. Une relation $r$ est représentée par une translation $T_r$ de vecteur caractéristique $\mathbf{r}$ :
-\begin{equation*}
-    T_r : \mathbf{u} \mapsto \mathbf{u + r}
-\end{equation*}
-
-Un triplet $(h, r, t)$ est considéré comme valide si le plongement de $t$ est le translaté du plongement de $h$ par la translation $T_r$, c'est-à-dire $T_r(\mathbf{h}) = \mathbf{t}$. La plupart des modèles ajoutent une étape préalable à la translation : le plongement d'une entité $e$ est d'abord envoyé dans un nouvel espace, qui dépend de $r$ et éventuellement de $e$. Ensuite seulement, la translation a lieu dans ce nouvel espace.
-
-Ainsi, on peut définir le cadre générale suivant pour décrire un modèle à translation :
-\begin{itemize}
-    \item une fonction de transformation $F_{e, r} : \mathbb{R}^d \rightarrow \mathbb{R}^{k}$
-    \item une fonction d'énergie $E_\Theta(h, r, t) = \| F_{h, r}(\mathbf{h}) + \mathbf{r} - F_{t, r}(\mathbf{t}) \|_2 $
-\end{itemize}
-
-\subsubsection{TransE \cite{bordes2013translating}}
-Le premier et le plus simple des modèles à translation, la fonction de transformation est la fonction identité ($\forall e, r, F_{e, r} = I_d$) – autrement dit, les plongements sont translatés directement, sans transformation préalable. En conséquence, les entités et les relations sont plongées dans le même espace $\mathbb{R}^d$, et la fonction d'énergie est donc
-\begin{equation}
-    E_\Theta(h, r, t) = \| \mathbf{h + r - t} \|_2
-    \label{eq:transe-main}
-\end{equation}
-
-Le nombre de paramètres est donc $d \times (N + M)$, linéaire en le nombre d'éléments du graphe. 
-
-La force de TransE réside dans sa simplicité théorique et son faible nombre de paramètres. Toutefois, cette simplicité se paye par une faible expressivité, qui limite sa capacité à modéliser des relations autres que \textit{one-to-one} :
-\begin{itemize}
-    \item relation \textit{many-to-one} : si plusieurs entités $h_1, h_2, \ldots, h_k$ sont reliées à une même entité $t$ par une relation $r$, alors les translatés $\mathbf{h_i + r}$ doivent tous être égaux, donc $\mathbf{h_1  = h_2 = \ldots = h_k}$;
-    \item relation \textit{one-to-many} : comme au-dessus, si $h$ est lié par $r$ à plusieurs entités $t_1, \ldots, t_k$, alors nécessairement $\mathbf{t_1 = t_2 = \ldots = t_k}$;
-    \item relations symétriques : si $r$ est symétrique, c'est-à-dire $h  \overset{r} \rightarrow t \implies t   \overset{r} \rightarrow h$, alors la translation de la translation par $r$ doit donner l'élément de départ, donc $\mathbf{r} = 0$
-\end{itemize}
-}
-\fi 
 
 
 \subsubsection{TransH \cite{fu2014learning}}
@@ -495,13 +452,6 @@ Soit finalement une fonction d'énergie :
     E_\Theta(h, r, t) = \| (\bf{h + r - t}) + \bf{r_p} \cdot (\bf{ h_p^\top \cdot h - t_p^\top \cdot t}) \|_2 
 \end{equation}
 
-\iffalse{
-
-\subsubsection{Autres modèles}
-
-\subsubsection{Résumé}
-}
-\fi 
 
 
 \begin{table}[ht]
@@ -594,13 +544,7 @@ On moyenne alors cette probabilité pour tous les éléments du contexte, pour c
 
 À la fin de l'entraînement, il suffit de récupérer les poids de la couche cachée pour obtenir les plongements vectoriels des entités et des relations.
 
-\iffalse{
-
-
-\subsubsection{\textit{Graph Convolutional Networks}}
-\subsubsection{Modèles hyperboliques}
-}
-\fi 
+ 
 
 
 \FloatBarrier

@@ -20,7 +20,8 @@ L'objectif est d'extraire l'information taxonomique contenue dans la géométrie
 
 \subsection{Idée générale}
 
-Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels, et de liens d'inclusion entre groupes d'instances. Ces deux plans sont liés : les entités sont liées aux types par la relation \texttt{rdf:type}, ce qui permet de représenter un type dans l'espace des entités par l'ensemble des instances de ce type, et de traduire l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ par une relation d'inclusion entre les instances de \dbo{Athlete} et celles de \dbo{Person}. En pratique, cette liaison est imparfaite : il y a des entités dont les types sont inconnus, erronés ou arbitraires.
+Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels. %, et de liens d'inclusion entre groupes d'instances. 
+Ces deux plans sont liés : les entités sont liées aux types par la relation \texttt{rdf:type}, ce qui permet de représenter un type dans l'espace des entités par l'ensemble des instances de ce type, et de traduire l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ par une relation d'inclusion entre les instances de \dbo{Athlete} et celles de \dbo{Person}. En pratique, cette liaison est imparfaite : il y a des entités dont les types sont inconnus, erronés ou arbitraires.
 
 %entités qui possèdent ce type, et donc de traduire l'axiome 
 %le pendant dans le plan des instances de l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ est l'affirmation «le groupe des athlètes est inclus dans le groupe des personnes».
@@ -64,7 +65,6 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
             \input{fig/te-clustering-tree}
         }%
     \end{adjustwidth}
-    
     \caption[Principe du regroupement hiérarchique ascendant]{Exemple d'arbre de clustering obtenu par regroupement hiérarchique ascendant. La couleur des points représente leur étiquette $y_i$ et n'est pas utilisée lors du regroupement.}
     \label{fig:clustering_tree}
 \end{figure}
@@ -293,7 +293,6 @@ On obtient donc une formule qui attribue une probabilité à chaque axiome de su
 \begin{figure}[h]
     \centering
     \input{fig/te-sm-main}
-    %\includegraphics[width=0.7\textwidth]{img/softmapping.jpg}
     \caption[Principe de la méthode Soft Mapping]{Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
     \label{fig:te-softmapping-example}
 \end{figure}
@@ -449,7 +448,7 @@ Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le 
 \subsection{Données}
 \label{sec:te-data}
 
-Comme dans le chapitre précédent, on utilise le graphe DBpédia, dans sa version de 2016-10. En plus du graphe de connaissances proprement dit, DBpédia dispose d'une ontologie\footnote{qui peut être consultée à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{mappings.dbpedia.org/server/ontology/classes/} dans une version légèrement mise à jour, ou téléchargée au format OWL à l'adresse \href{http://downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}{downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}}, qui contient 455 classes ayant au moins une instance. Toutes les classes héritent d'une classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une classe est 6. Pour évaluer notre approche, on n'utilise pas toute l'ontologie DBpédia, mais une version simplifiée restreinte aux classes fréquentes. %(à discuter)
+Comme dans le chapitre précédent, on utilise le graphe DBpédia, dans sa version de 2016-10, dont on élimine les entités impliquées dans un seul triplet. En plus du graphe de connaissances proprement dit, DBpédia dispose d'une ontologie\footnote{qui peut être consultée à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{mappings.dbpedia.org/server/ontology/classes/} dans une version légèrement mise à jour, ou téléchargée au format OWL à l'adresse \href{http://downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}{downloads.dbpedia.org/2016-10/dbpedia\_2016-10.owl}}, qui contient 455 classes ayant au moins une instance. Toutes les classes héritent d'une classe racine \texttt{owl:Thing}; on appelle \textit{profondeur} d'une classe sa distance à la racine, c'est-à-dire son nombre de superclasses : ainsi, \texttt{owl:Thing} a une profondeur de 0, et la profondeur maximale d'une classe est 6. Pour évaluer notre approche, on n'utilise pas toute l'ontologie DBpédia, mais une version simplifiée restreinte aux classes fréquentes. %(à discuter)
 %On extrait donc un sous-arbre de la taxonomie DBpédia complète, constituée de classes suffisamment fréquentes.
 Pour extraire cette sous-taxonomie, on fixe la profondeur maximale à $p_{\max}=3$, le nombre maximal de sous-classes par classe à $n_c=7$ et le nombre minimal d'éléments par classe à $n_e=500$. En partant de la classe racine \texttt{owl:Thing}, on ajoute récursivement les sous-classes $S$ d'une classe $C$, par ordre décroissant d'effectif (on commence par ajouter les sous-classes qui contiennent le plus d'éléments), à condition que : 
 \begin{itemize}
@@ -483,7 +482,9 @@ Ces deux modes d'évaluation – directe et transitive – sont nécessaires pou
 \subsection{Résultats}
 \label{subsec:te-results}
 
-Les résultats principaux sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). Pour la méthode TIEmb, on se restreint également aux distances cosinus et euclidienne. Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont présentés en annexe.
+
+Les résultats principaux sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). Pour la méthode TIEmb, on se restreint également aux distances cosinus et euclidienne. 
+Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont globalement moins bons : par souci de concision, on les omet ici; ils sont présentés à l'annexe ref.
 
 % Si l'on considère le $F_1$ moyen comme 
 Du point de vue du $F_1$ moyen, le meilleur modèle est \textit{Soft Mapping} (SM) avec TransE et distance cosinus; ce modèle obtient d'ailleurs le $F_1$ le plus élevé sur chacune des trois évaluations. Ce modèle est suivi, dans l'ordre décroissant, par \textit{Hard Mapping} (HM) avec TransE et distance cosinus, SM avec TransE et distance euclidienne, TIEmb et les distances cosinus puis euclidiennes, et HM avec TransE et distance euclidienne. Tous ces modèles obtiennent un $F_1$ moyen supérieur à $0,75$.
