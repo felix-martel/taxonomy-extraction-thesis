@@ -2,9 +2,15 @@
 \label{chap:texp}
 
 
-Dans le chapitre précédent, on a montré qu'il était possible de reconstituer une hiérarchie sur les types à partir d'un ensemble de plongements vectoriels typés mais non hiérarchisés. Toutefois, la taxonomie ainsi extraite est limitée aux types déjà connus, et suppose donc une liste de types fixée à l'avance. De plus, cette taxonomie ne permet pas de caractériser ou de décrire les instances de ces types : on ne sait pas quelles relations elles vérifient, ou à quels types d'entités elles sont reliées.
+Dans le chapitre précédent, on a montré qu'il était possible de reconstituer une hiérarchie sur les types à partir d'un ensemble de plongements vectoriels typés mais non hiérarchisés. Toutefois, la taxonomie ainsi extraite est limitée aux types déjà connus, et suppose donc une liste de types fixée à l'avance. 
+%De plus, cette taxonomie ne permet pas de caractériser ou de décrire les instances de ces types : on ne sait pas quelles relations elles vérifient, ou à quels types d'entités elles sont reliées.
+Ici, au contraire, on cherche à extraire une taxonomie expressive, c'est-à-dire une hiérarchie sur des classes qui peuvent être soit des types existants, soit des types émergeant des données et décrits par des axiomes logiques. On cherche également à décrire les types existants au moyen d'axiomes.
 
-Ici, on adopte un point de départ beaucoup moins restrictif, puisqu'on s'autorise l'accès à tout le graphe de connaissance; de là, on cherche à extraire une taxonomie expressive, c'est-à-dire une hiérarchie sur des classes qui peuvent être soit des types existants, soit des types émergeant des données et décrits par des axiomes logiques. On cherche également à décrire les types existants au moyen d'axiomes. L'objectif est donc double : identification de nouveaux types, et caractérisation des types existants. On cherchera ainsi à illustrer le potentiel des méthodes d'extraction taxonomique basées sur le regroupement non-supervisé de plongements vectoriels, par opposition aux méthodes qui manipulent directement des types et à celles qui regroupent les plongements de façon supervisée.
+
+On adopte pour cela un point de départ beaucoup moins restrictif, puisqu'on s'autorise l'accès à tout le graphe de connaissance, et on cherche à combiner les modèles de plongement, qui permettent de détecter des régularités à partir de considérations géométriques, à la richesse des données structurées contenues dans le graphe. L'objectif poursuivi est double :
+%
+%; de là, on cherche à extraire une taxonomie expressive, c'est-à-dire une hiérarchie sur des classes qui peuvent être soit des types existants, soit des types émergeant des données et décrits par des axiomes logiques. On cherche également à décrire les types existants au moyen d'axiomes. L'objectif est donc double : 
+identification de nouveaux types, et caractérisation des types existants. On cherchera ainsi à illustrer le potentiel des méthodes d'extraction taxonomique basées sur le regroupement non-supervisé de plongements vectoriels, par opposition aux méthodes qui manipulent directement des types et à celles qui regroupent les plongements de façon supervisée.
 
 
 % Dans le chapitre précédent, on a adopté un point de départ très restrictif 
@@ -122,8 +128,11 @@ Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ t
 
 \subsection{Parcours et étiquettage de l'arbre}
 \label{subsec:texp-tree-labelling}
+
+
 Dans cette section, on se donne une fonction d'extraction d'axiome $\alpha$, telle que $\alpha(C)$ est un axiome logique qui qualifie le cluster $C$, si un tel axiome existe, et qui renvoie un symbole spécial \texttt{indéfini} dans le cas contraire. 
-On suppose que cette fonction est paramétrée par un seuil $\delta$, qui indique la confiance associée
+%On suppose que cette fonction est paramétrée par un seuil $\delta$, 
+%qui indique la confiance associée
 Un exemple d'une telle fonction est donné dans la section suivante. 
 
 On effectue un parcours de l'arbre $X_a$, en excluant la racine $a$ qui est déjà étiquettée : pour un cluster $C$, on calcule $\alpha(C)$ pour trouver l'axiome associé à $C$. 
@@ -264,7 +273,8 @@ L'approche multi-niveaux permet de réduire le nombre d'étapes de plongement-re
 \label{algo:texp-trouve}
 \end{algorithm}
 
-\paragraph{Le cas des nœuds spéciaux \texttt{<?>}} Dans l'étape précédente, le cas où l'axiome de départ $a$ est l'axiome spécial \texttt{<?>} est traité un peu différemment du cas général. Les données d'entrées sont toujours tirées aléatoirement, suivant la formule \ref{eq:texp-special-node}; le regroupement hiérarchique et l'extraction de la sous-taxonomie $T_a$ suit une procédure identique. Ensuite, on rattache $T_a$ à $\Tpred$. La taxonomie $\Tpred$ en cours d'extraction contient alors toujours le nœud spécial \texttt{<?>}, qu'on ne souhaite pas garder : on modifie alors $\Tpred$ en rattachant directement les successeurs directs de \texttt{<?>} avec le prédecesseur direct de \texttt{<?>}, on ré-écrit donc les chemins $\alpha \rightarrow \texttt{<?>} \rightarrow \beta$ en $\alpha \rightarrow \beta$, et on supprime \texttt{<?>} de $\Tpred$.
+\paragraph{Le cas des nœuds spéciaux \texttt{<?>}} 
+Dans l'étape précédente, le cas où l'axiome de départ $a$ est l'axiome spécial \texttt{<?>} est traité un peu différemment du cas général. Les données d'entrées sont toujours tirées aléatoirement, suivant la formule \ref{eq:texp-special-node}; le regroupement hiérarchique et l'extraction de la sous-taxonomie $T_a$ suit une procédure identique. Ensuite, on rattache $T_a$ à $\Tpred$. La taxonomie $\Tpred$ en cours d'extraction contient alors toujours le nœud spécial \texttt{<?>}, qu'on ne souhaite pas garder : on modifie alors $\Tpred$ en rattachant directement les successeurs directs de \texttt{<?>} avec le prédecesseur direct de \texttt{<?>}, on ré-écrit donc les chemins $\alpha \rightarrow \texttt{<?>} \rightarrow \beta$ en $\alpha \rightarrow \beta$, et on supprime \texttt{<?>} de $\Tpred$.
 
 \begin{algorithm}
 \SetKwFunction{Fusionne}{Fusionne}
@@ -299,24 +309,10 @@ L'approche multi-niveaux permet de réduire le nombre d'étapes de plongement-re
 %     \label{fig:my_label}
 % \end{figure}
 
+%\paragraph{Seuil adaptatif} On expérimente également une variante de l'algorithme précédent, dans laquelle le seuil $\delta$ pour l'extraction d'axiome varie au cours du temps : au début, le seuil de validité des axiomes est fixé à une valeur initiale élevée $\delta = \delta_\text{init}$; puis, à chaque fois que la file d'axiome $\mathcal{AT}$ est vidée, on diminue $\delta$ d'une quantité $d\delta$, on ré-initialise $\mathcal{AT} = \{ \top \}$, et on recommence l'algorithme, jusqu'à atteindre un seuil minimal $\delta_\text{min}$. 
+%
+%Partir avec un seuil bas dès le début ne permet pas de discriminer efficacement les axiomes valides des axiomes invalides; à l'inverse, conserver un seuil élevé tout au long de l'algorithme conduit à écarter des axiomes valides : en effet, les graphes de connaissance étant incomplets et bruités – certaines relations manquent, des triplets peuvent être erronés etc., un axiome valide peut être imparfaitement vérifié. La technique du seuil adaptatif permet de contourner en partie cette limitation, en imposant d'abord un seuil haut qui permet de créer une ossature fiable pour la taxonomie, puis en relâchant ce seuil pour aggréger de nouveaux axiomes plus incertains.cDans nos expérimentations, les valeurs de $\delta_\text{init} = 0.9, d\delta = 0.1, \delta_\text{min} = 0.5$ semblent donner les résultats les plus équilibrés.
 
-\paragraph{Seuil adaptatif} On expérimente également une variante de l'algorithme précédent, dans laquelle le seuil $\delta$ pour l'extraction d'axiome varie au cours du temps : au début, le seuil de validité des axiomes est fixé à une valeur initiale élevée $\delta = \delta_\text{init}$; puis, à chaque fois que la file d'axiome $\mathcal{AT}$ est vidée, on diminue $\delta$ d'une quantité $d\delta$, on ré-initialise $\mathcal{AT} = \{ \top \}$, et on recommence l'algorithme, jusqu'à atteindre un seuil minimal $\delta_\text{min}$. 
-
-Partir avec un seuil bas dès le début ne permet pas de discriminer efficacement les axiomes valides des axiomes invalides; à l'inverse, conserver un seuil élevé tout au long de l'algorithme conduit à écarter des axiomes valides : en effet, les graphes de connaissance étant incomplets et bruités – certaines relations manquent, des triplets peuvent être erronés etc., un axiome valide peut être imparfaitement vérifié. La technique du seuil adaptatif permet de contourner en partie cette limitation, en imposant d'abord un seuil haut qui permet de créer une ossature fiable pour la taxonomie, puis en relâchant ce seuil pour aggréger de nouveaux axiomes plus incertains.
-
-Dans nos expérimentations, les valeurs de $\delta_\text{init} = 0.9, d\delta = 0.1, \delta_\text{min} = 0.5$ semblent donner les résultats les plus équilibrés.
-
-
-
-% Rappeler le principe général
-% 
-% Exposer le principe de récursivité avec un schéma
-% 
-% Modalités de retirage
-% 
-% Expérimentation avec/sans retirage
-% 
-% Seuil adaptatif
 
 
 \subsection{Extraction d'axiomes}
@@ -554,9 +550,9 @@ L'algorithme \ref{algo:extraction} contient le pseudo-code correspondant à cett
         $\cov, \spe, \sco \leftarrow $ \Evalue{\at, $E^+, E^-$} \;
         \lIf{$\sco > \delta$}{ajouter \at à $\mathcal{A}$}
         \tcp{spécificité insuffisante : on spécialise avec ET}
-        \lElseIf{$\spe < \delta$}{ajouter $(\at, \sco, \land)$ à \cands}
+        \lElseIf{$\spe < \delta$}{ajouter $(\at, \sco, \texttt{ET})$ à \cands}
         \tcp{couverture insuffisante : on généralise avec OU}
-        \lElseIf{$\cov < \delta$}{ajouter $(\at, \sco, \lor)$ à \cands}
+        \lElseIf{$\cov < \delta$}{ajouter $(\at, \sco, \texttt{OU})$ à \cands}
     }
     \tcp{amélioration des candidats}
     $t \leftarrow 0$ \;
@@ -596,123 +592,18 @@ L'algorithme \ref{algo:extraction} contient le pseudo-code correspondant à cett
  \label{algo:extraction}
 \end{algorithm}
 
-\iffalse {
-
-\begin{algorithm}[h]
-\SetKwFunction{Fusionne}{ExtraitAxiome}
-\SetKwFunction{Evalue}{Evalue}
-\SetKwProg{Fn}{Fonction}{:}{}
-
-\SetKwData{mingain}{gain\_min}
-\SetKwData{maxstep}{max\_étapes}
-\SetKwData{atoms}{atomes}
-\SetKwData{cands}{candidats}
-\SetKwData{ax}{axiome}
-\SetKwData{at}{atome}\SetKwData{OP}{OP}
-\SetKwData{cov}{couverture}
-\SetKwData{spe}{spécificité}
-\SetKwData{sco}{score}
-\SetKwData{indef}{indéfini}
-\SetKwData{nsco}{nouveauScore}
-\SetKwData{improv}{améliorés}
-\SetKwData{none}{None}
-\SetKwData{nc}{nouveauCandidat}
-\SetKw{Continue}{continuer}
-\SetKw{Break}{interrompre}
-
-\KwInput{un ensemble d'exemples positifs $E^+$ et négatifs $E^-$ (typiquement, un cluster cible et son voisin), et une liste d'atomes}
-\KwOutput{liste d'axiomes $\mathcal{A}$ vérifiés par les entités de $E^+$ mais pas par celles de $E^-$}
-\Parameter{nombre maximal d'étapes \maxstep, gain minimal \mingain, seuil de score $\delta$, longueur maximale des axiomes $N_{\text{ax}}$}
-
-\Fn{\Fusionne{$E^+, E^-$, \atoms}}{
-    $\mathcal{A} \leftarrow \varnothing$ \;
-    $\cands \leftarrow \{ \none \}$ \;
-    $t \leftarrow 0$ \;
-    \While{$t \leq \maxstep$}{
-        $\improv \leftarrow \varnothing$ \; 
-        \For{\ax dans \cands}{
-            \tcp{1 : évaluation de l'axiome candidat courant}
-            \eIf{\ax est \none}{
-                    $\OP \leftarrow \none$ \;
-           }{
-                $\cov, \spe, \sco \leftarrow $ \Evalue{\ax, $E^+, E^-$} \;
-               \uIf{$\cov < \delta$ et $\spe < \delta$}{
-                    \Continue
-              }
-              \uElseIf{$\spe < \delta$}{
-                    \tcp{spécificité insuffisante: on spécialise avec ET}
-                    $\OP \leftarrow \land$ \;
-              }
-              \uElseIf{$\cov < \delta$}{
-                    \tcp{couverture insuffisante: on généralise avec OU}
-                    $\OP \leftarrow \lor$ \;
-              }
-          }
-          \tcp{2 : amélioration du candidat}
-          \For{\at dans \atoms}{
-            \eIf{\OP = \none}{
-                $\nc \leftarrow \at$ \;
-            }{
-                $\nc \leftarrow$ \at \OP \ax \;
-            }
-            $\cov, \spe, \nsco \leftarrow $ \Evalue(\nc, $E^+, E^-$) \;
-            \uIf{$\nsco > \delta$}{
-                \tcp{\nc a un score suffisant : on le garde}
-                ajouter \nc à $\mathcal{A}$ \;
-            }
-            \uElseIf{$\nsco - \sco > \mingain$}{
-                \tcp{\nc est meilleur que \ax, mais pas encore suffisant : on poursuit l'amélioration}
-                ajouter $(\nc, \nsco)$ à \improv\;
-            }
-          }
-          \If{\improv est vide}{
-            \tcp{aucun nouvel axiome n'a été trouvé : la recherche s'arrête}
-            \Break
-        }
-            $\cands \leftarrow$ les $N_{\textrm{ax}}$ meilleurs axiomes de \improv \;
-            $t \leftarrow t + 1$ \;
-        }
-    }
-    \Return le meilleur axiome de $\mathcal{A}$ (ou \indef si $\mathcal{A}$ est vide) \;
-}
-
- \caption{Pseudo-code pour extraire un axiome à partir d'une liste d'axiomes atomiques, et d'exemples positifs et négatifs.}
- \label{algo:extraction}
-\end{algorithm}
-
-} 
-\fi
-
-\iffalse {
-\subsubsection{Détails pratiques}
-
-Axiomes vus comme des vecteurs bo   oléens. Le tout est vu comme une matrice booléenne, opérations rapides sur les lignes et les columns
-
-Expliquer la traduction matricielle de $\cov, \spe, \xscore \ldots$
-
-
-\subsection{Algorithme général}
-% Raffinements
-\subsubsection{Vue d'ensemble}
-
-Extraction de taxonomie à partir des axiomes
-
-Choix des seuils
-
-Discussion sur les paramètres
-
-\subsubsection{Diminution du seuil}
- % Déplacer en section 5.2.1 ?
-% À faire : mentionner quelque part 
-
-
-\subsubsection{Phase finale}
-
-Phase finale : ajout des classes manquantes (si disponible), restriction des patterns}
-\fi 
-
 \FloatBarrier
 
+\subsubsection{Seuil adaptatif}
+
+
+Dans l'algorithme présenté aux sections précédentes, le seuil d'extraction $\delta$ est fixé tout au long de la construction de la taxonomie.
+On expérimente également une variante de cet algorithme,
+dans laquelle le seuil $\delta$ varie au cours du temps : au départ, le seuil de validité des axiomes est fixé à une valeur initiale élevée $\delta = \delta_\text{init}$; puis, à chaque fois que la file d'axiome $\mathcal{AT}$ est vidée, on diminue $\delta$ d'une quantité $d\delta$, on ré-initialise $\mathcal{AT} = \{ \top \}$, et on recommence l'algorithme, jusqu'à atteindre un seuil minimal $\delta_\text{min}$. 
+
+Partir avec un seuil bas dès le début ne permet pas de discriminer efficacement les axiomes valides des axiomes invalides; à l'inverse, conserver un seuil élevé tout au long de l'algorithme conduit à écarter des axiomes valides : en effet, les graphes de connaissance étant incomplets et bruités – certaines relations manquent, des triplets peuvent être erronés etc., un axiome valide peut être imparfaitement vérifié. La technique du seuil adaptatif permet de contourner en partie cette limitation, en imposant d'abord un seuil haut qui permet de créer une ossature fiable pour la taxonomie, puis en relâchant ce seuil pour aggréger de nouveaux axiomes plus incertains.
+
+Dans nos expérimentations, les valeurs de $\delta_\text{init} = 0.9, d\delta = 0.1, \delta_\text{min} = 0.5$ semblent donner les résultats les plus équilibrés.
 \section{Évaluation et discussion}
 \label{sec:texp-results}
 
@@ -735,7 +626,7 @@ L'évaluation quantitative sur la tâche non-expressive permet de vérifier que 
 
 On utilise donc la méthode décrite plus haut, mais on restreint les axiomes atomiques aux seules classe nommées $C$, et on fixe \texttt{max\_étapes} à $0$, ce qui revient à interdire les clauses ET et OU. On effectue 300 étapes de prélèvement-regroupement, on utilise un seuil adaptatif $\delta$ allant de $0,9$ à $0,5$ par pas de $0,05$, et on considère une profondeur maximale $D=4$. Le résultat est accessible en ligne, à l'adresse \href{http://labowest.ca/sdb2020/non_expressive.html}{labowest.ca/sdb2020/non\_expressive.html}.
 
-On compare la taxonomie obtenue $\Tpred$ à la taxonomie de référence de DBpédia $T^*$, qui contient 455 classes. Cette comparaison se fait selon les modalités décrites à la section \ref{subsec:te-results} : on calcule la précision, le rappel et le $F_1$ entre l'ensemble des axiomes de subsumption contenus dans $\Tpred$ et l'ensemble des axiomes de subsumption contenus dans $T^*$ – c'est l'évaluation \textit{directe}. On recalcule ensuite ces trois métriques pour les clôtures transitives de $\Tpred$ et $T^*$ – c'est l'évaluation \textit{transitive}. On moyenne alors chacune des trois métriques sur les deux modes d'évaluation, ce qui donne l'évaluation \textit{moyenne}. Les résultats sont présentés dans le tableau \ref{tab:extraction-results}.
+On compare la taxonomie obtenue $\Tpred$ à la taxonomie de référence de DBpédia $T^*$. Lorsqu'on élimine les entités impliquées dans un seul triplet, et que l'on ne garde que les classes ayant au moins une entité, on obtient une taxonomie de référence contenant 455 classes. Cette comparaison se fait selon les modalités décrites à la section \ref{subsec:te-results} : on calcule la précision, le rappel et le $F_1$ entre l'ensemble des axiomes de subsumption contenus dans $\Tpred$ et l'ensemble des axiomes de subsumption contenus dans $T^*$ – c'est l'évaluation \textit{directe}. On recalcule ensuite ces trois métriques pour les clôtures transitives de $\Tpred$ et $T^*$ – c'est l'évaluation \textit{transitive}. On moyenne alors chacune des trois métriques sur les deux modes d'évaluation, ce qui donne l'évaluation \textit{moyenne}. Les résultats sont présentés dans le tableau \ref{tab:extraction-results}.
 
 \begin{table}[h]
     \centering
@@ -769,14 +660,14 @@ Ces candidats peuvent être utilisés à des fins d'analyse, pour mieux comprend
 Dans l'exemple présenté, notre approche extrait 106 classes expressives qui s'ajoutent aux 455 classes nommées de l'ontologie DBpédia.
 Ce nombre varie beaucoup selon les paramètres choisis (en particulier, le seuil $\delta$, le gain minimal \texttt{gain\_min}, et la longueur maximale des axiomes \texttt{max\_étapes}), et on peut obtenir des taxonomies avec très peu de classes expressives, ou au contraire avec davantage de classes expressives que de classes nommées.
 
-Certaines de ces classes expressives subsument un ensemble de classes existantes. Par exemple, il se forme une classe $\dbo{Film} \lor \dbo{TelevisionShow}$, également étiquettée par l'axiome expressif $\exists \dbo{runtime}.\texttt{xsd:integer} \lor \exists \dbo{starring}.\dbo{Person}$, qui regroupe les films et les séries télévisées. Parmi les regroupements qui paraissent cohérents mais qui n'existent pas dans l'ontologie DBpédia, on retrouve également les fusées et les navettes spatiales, associées notamment à la relation \texttt{totalLaunches}; les romans et les bandes dessinées; les épisodes de série et ceux de dessins animés; les programmes télévisuels et radiophoniques; les journaux quotidiens et les magazines; les montagnes et les volcans, etc. Les regroupements de plus de deux classes sont plus rares : on trouve notamment la réunion des mammifères, reptiles, oiseaux, poissons dans une grande classe d'animaux excluant les insectes, ou différents types de plantes réunis avec les champignons. Certains regroupements sont plus étonnants, par exemple la réunion des œuvres écrites (\dbo{WrittenWork}) et des logiciels (\dbo{Software}), ou celle des bateaux avec les avions; d'autres enfin sont incompréhensibles et s'apparentent à des erreurs pures et simples, comme le regroupement au sein d'une même classe de \dbo{Document}, \dbo{Sound} et \dbo{TimePeriod}. % sont des erreurs, comme \hl{exemple}
+Certaines de ces classes expressives subsument un ensemble de classes existantes. Par exemple, il se forme une classe $\dbo{Film} \lor \dbo{TelevisionShow}$, également étiquettée par l'axiome expressif $\exists \dbo{runtime}.\texttt{xsd:integer} \lor \exists \dbo{starring}.\dbo{Person}$, qui regroupe les films et les séries télévisées. Parmi les regroupements qui paraissent cohérents mais qui n'existent pas dans l'ontologie DBpédia, on retrouve également les fusées et les navettes spatiales, associées notamment à la relation \texttt{totalLaunches}; les romans et les bandes dessinées; les épisodes de série et ceux de dessins animés; les programmes télévisuels et radiophoniques; les journaux quotidiens et les magazines; les montagnes et les volcans, etc. Les regroupements de plus de deux classes sont plus rares : on trouve notamment la réunion des mammifères, reptiles, oiseaux, poissons dans une grande classe d'animaux excluant les insectes, ou différents types de plantes réunis avec les champignons. Certains regroupements sont plus étonnants, par exemple la réunion des œuvres écrites (\dbo{WrittenWork}) et des logiciels (\dbo{Software}), ou celle des bateaux avec les avions; d'autres enfin sont incompréhensibles et s'apparentent à des erreurs pures et simples, comme le regroupement au sein d'une même classe de \dbo{Document}, \dbo{Sound} et \dbo{TimePeriod}. De telles erreurs semblent toutefois rares. % sont des erreurs, comme \hl{exemple}
 
 À l'inverse, certaines classes expressives précisent des classes existantes, et permettent donc d'augmenter la spécificité de la taxonomie. Un exemple est fourni par la classe \dbo{Language} : dans DBpédia, cette classe possède une unique sous-classe \dbo{ProgrammingLanguage}. Dans notre taxonomie expressive, une nouvelle sous-classe a été identifiée : $\exists \dbo{spokenIn}.\dbo{Place}$, qui contient les langues naturelles.
 %
 Toutefois, la plupart de ces classes spécifiques sont difficiles à interpréter : ainsi, la classe $\exists \dbo{latestReleaseDate}.\texttt{xsd:date} \land$ $\exists \dbo{operatingSystem} \allowbreak .\dbo{Software}$ (sous-classe de \dbo{Software}) semble être construite par opposition aux jeux vidéos, mais les axiomes qui la décrivent sont peu explicites.
 %
 
-On trouve également des classes d'une très grande spécificité, comme $\dbo{Album}  \allowbreak \land  \allowbreak (\exists \allowbreak  \dbo{language} . \allowbreak \{ \dbo{Tamil\_Language}  \allowbreak\lor \allowbreak \exists \dbo{language}. \allowbreak \{ \dbo{Telugu\_Language} \}) $, qui contient des albums musicaux en langue tamoule ou télougou, deux langues parlées dans le sud de l'Inde. On voit ici apparaître un risque, celui d'une spécificité variable de la taxonomie extraite : dans cet exemple, il n'est pas nécessairement justifié d'avoir une classe pour qualifier tel genre musical et pas tel autre. 
+On trouve également des classes d'une très grande spécificité, comme par exemple $\dbo{Album}  \allowbreak \land$ $(\exists \allowbreak  \dbo{language} . \allowbreak \{ \dbo{Tamil\_Language}  \allowbreak\lor \allowbreak \exists \dbo{language}. \allowbreak \{ \dbo{Telugu\_Language} \}) $, qui contient des albums musicaux en langue tamoule ou télougou, deux langues parlées dans le sud de l'Inde. On voit ici apparaître un risque, celui d'une spécificité variable de la taxonomie extraite : dans cet exemple, il n'est pas nécessairement justifié d'avoir une classe pour qualifier tel genre musical et pas tel autre. 
 Ce risque est d'autant plus marqué que Wikipédia (et, par suite, DBpédia) est biaisée\footnote{En 2015, \cite{nickel2015review} notait que la version anglaise de Wikipédia contenait des articles sur 18 000 acteurs états-uniens, 2 600 acteurs indiens et moins de 100 acteurs nigérians, alors que l'Inde et le Nigéria sont les deux plus gros producteurs de films au monde.}; une méthode d'extraction inductive risque de refléter ces biais, voire de les renforcer en les fixant dans une taxonomie.
 
 Enfin, au-delà de la détection de nouvelles classes, la taxonomie extraite permet d'enrichir les classes existantes, notamment grâce aux candidats alternatifs mentionnés plus haut. L'examen de ces candidats alternatifs permet d'associer classes nommées et relations : en effet, ces candidats alternatifs indiquent qu'un même groupe d'entité pouvait être décrit à la fois par des classes nommées et des axiomes expressifs, ce qui indique une relation d'inclusion ou d'équivalence entre les deux. Ainsi, \dbo{Person} est lié à \dbo{birthDate} et \texttt{foaf:gender}, \dbo{SportsTeamMember} à $\exists \dbo{squadNumber}.\allowbreak \texttt{xsd:nonNegativeInteger}$ et $\exists \dbo{team}. \allowbreak \dbo{SportsTeam}$, les instances de \dbo{WrittenWork} font partie de $\exists \dbo{author}. \allowbreak \dbo{Person}$ ou de \dbo{PeriodicalLitterature}, etc.

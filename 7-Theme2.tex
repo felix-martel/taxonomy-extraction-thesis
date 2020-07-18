@@ -3,6 +3,11 @@
 
 Introduction et présentation générale \ldots \hl{Note : j'attends d'avoir rédigé la revue de littérature pour écrire l'introduction, puisqe j'aurais probablement à présenter les enjeux de l'extraction de taxonomie dans ce chapitre là}
 
+% TODO
+% - écrire l'intro
+% - trouver des noms français
+% - figure sur hyperparamètres / Méthodes de liaison
+
 
 \section{Présentation générale}
 \subsection{Énoncé du problème}
@@ -484,7 +489,7 @@ Ces deux modes d'évaluation – directe et transitive – sont nécessaires pou
 
 
 Les résultats principaux sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). Pour la méthode TIEmb, on se restreint également aux distances cosinus et euclidienne. 
-Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont globalement moins bons : par souci de concision, on les omet ici; ils sont présentés à l'annexe ref.
+Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont globalement moins bons : par souci de concision, on les omet ici; ils sont présentés à l'annexe \ref{ann:results}.
 
 % Si l'on considère le $F_1$ moyen comme 
 Du point de vue du $F_1$ moyen, le meilleur modèle est \textit{Soft Mapping} (SM) avec TransE et distance cosinus; ce modèle obtient d'ailleurs le $F_1$ le plus élevé sur chacune des trois évaluations. Ce modèle est suivi, dans l'ordre décroissant, par \textit{Hard Mapping} (HM) avec TransE et distance cosinus, SM avec TransE et distance euclidienne, TIEmb et les distances cosinus puis euclidiennes, et HM avec TransE et distance euclidienne. Tous ces modèles obtiennent un $F_1$ moyen supérieur à $0,75$.
@@ -530,6 +535,8 @@ Dans le chapitre précédent, on concluait que RDF2Vec et TransE étaient les me
 
 % \hl{Note : j'espère avoir le temps d'ajouter une section sur l'«aptitude au regroupement» dans le chapitre sur la séparabilité}
 
+\FloatBarrier
+
 \section{Hyperparamètres}
 \label{sec:te-hp}
 
@@ -564,9 +571,9 @@ Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'on
 
 Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$. Dans toute la suite, le modèle de plongement utilisé est TransE et le regroupement se fait avec la distance cosinus et le critère du saut moyen, puisque ce sont les paramètres qui donnent le meilleur $F_1$ sur toutes les évaluations. 
 
-Un jeu d'évaluation $X$ est constitué d'un jeu de données d'entrée $\cal{D}$, contenant des plongements vectoriels et les types correspondants, et d'une taxonomie de référence $T^*$. Pour des paramètres fixés, on peut extraire une taxonomie $\hat{T}$ à partir de $\cal{D}$, comparer cette taxonomie à la référencec $T^*$, et calculer les métriques précédentes : précision $p$, rappel $r$ et $F_1$, de façon directe, transitive ou moyenne. 
+Un jeu d'évaluation $X$ est constitué d'un jeu de données d'entrée $\cal{D}$, contenant des plongements vectoriels et les types correspondants, et d'une taxonomie de référence $T^*$. Pour des paramètres fixés, on peut extraire une taxonomie $\hat{T}$ à partir de $\cal{D}$, comparer cette taxonomie à la référence $T^*$, et calculer les métriques précédentes : précision $p$, rappel $r$ et $F_1$, de façon directe et transitive. 
 
-Pour un jeu d'évaluation $X$, on choisit comme métrique d'évaluation la mesure $F_1$ moyenne : c'est la mesure la plus synthétique, puisque le $F_1$ est une moyenne de la précision et du rappel, et que le $F_1$ moyen est lui-même la moyenne du $F_1$ direct et du $F_1$ transitif; on le note $F_1^M(X, \beta, t)$ pour mettre en évidence la dépendance en les paramètres $t$ et $\beta$, ainsi qu'en les données d'évaluation $X$.
+Pour un jeu d'évaluation $X$, on choisit comme métrique d'évaluation la moyenne des deux mesures $F_1$ : c'est la mesure la plus synthétique, puisque le $F_1$ est une moyenne de la précision et du rappel, et que le $F_1$ moyen est lui-même la moyenne du $F_1$ direct et du $F_1$ transitif; on le note $F_1^M(X, \beta, t)$ pour mettre en évidence la dépendance en les paramètres $t$ et $\beta$, ainsi qu'en les données d'évaluation $X$.
 On peut alors chercher les valeurs optimales des paramètres :
 \begin{equation}
   \beta^*(X), t^*(X) = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}} F_1^M(X, \beta, t)
@@ -577,7 +584,7 @@ En pratique, on veut pouvoir appliquer notre approche sur des données d'entrée
 De plus, les valeurs de $\beta^*$ et $t^*$ optimales calculées pour un certain jeu de données ne sont \textit{a priori} pas optimales pour un autre jeu de données. 
 Plutôt que calculer $\beta^*$ et $t^*$, on souhaite plutôt trouver des valeurs «raisonnables» de $\beta$ et de $t$, autrement dit des valeurs permettant, en moyenne, de ne pas trop s'éloigner de l'optimum.
 
-Pour cela, on définit un ensemble de jeux d'évaluation de référence $\cal{X} = (X_1, X_2, \ldots, X_r)$, et on cherche une valeur de $t$ et de $\beta$ qui permettent d'approcher le score $F_1$ optimal sur chacun des $X_k$ :
+Pour cela, on choisit plusieurs jeux d'évaluation $X_1, X_2, \ldots, X_r$ (par exemple tirés de plusieurs graphes de connaissance pour lesquels on dispose d'une taxonomie de référence connue), et on définit un ensemble d'évaluation $\cal{X} = (X_1, X_2, \ldots, X_r)$ qui regroupe ces jeux de référence. On cherche alors des valeurs de $t$ et de $\beta$ qui permettent d'approcher le score $F_1$ optimal sur chacun des $X \in \mathcal{X}$ :
 \begin{equation}
     \hat{\beta}, \hat{t} = \argmax_{\substack{t \in [0, 1] \\ \beta \in \R_+}} \frac{1}{| \cal{X} |} \sum_{X \in \cal{X}} \frac{\displaystyle F_1^M(X, \beta, t)}{\displaystyle F_1^M(X, \beta^*(X), t^*(X))}
 \end{equation}
@@ -603,14 +610,16 @@ En comparaison du score moyen, maximiser le score minimal permet de se prémunir
     S_{\min}(\beta, t)
 \end{equation}
 
+Pour construire l'ensemble $\mathcal{X}$, on construit aléatoirement cinq sous-taxonomies de DBpédia de différentes tailles et de différentes profondeurs; chacune de ces sous-taxonomies permet de former un jeu d'évaluation. On obtient donc cinq jeux d'évaluation $X_1, \ldots, X_5$, qui constituent l'ensemble d'évaluation $\mathcal{X}$.
+
 
 L'enjeu des paragraphes suivants est double : d'une part, trouver des valeurs satisfaisantes pour $\hat{\beta}$ et $\hat{t}$, et d'autre part, comprendre l'effet de $\beta$ et de $t$ sur la taxonomie extraite.
 
 \subsubsection{Choix de \texorpdfstring{$\beta$}{beta} et \texorpdfstring{$t$}{t}}
 \label{subsec:te-hp-values}
 
-Pour trouver $\hat{\beta}$ et $\hat{t}$, on construit aléatoirement cinq sous-taxonomies de DBpédia de différentes tailles et de différentes profondeurs, afin de constituer l'ensemble $\cal{X}$.
-On applique alors notre méthode d'extraction de taxonomie à ces cinq sous-taxonomies pour vingt valeurs de $\beta$ réparties linéairement dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$ (à nouveau en séparant l'intervalle en vingt valeurs espacées linéairement), ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$  et chaque sous-taxonomie $X_k$ au score associé $S(\beta, t; X_k)$.
+%Pour trouver $\hat{\beta}$ et $\hat{t}$, on construit aléatoirement cinq sous-taxonomies de DBpédia de différentes tailles et de différentes profondeurs, afin de constituer l'ensemble $\cal{X}$.
+On applique ici notre méthode d'extraction de taxonomie aux cinq sous-taxonomies de $\mathcal{X}$, pour vingt valeurs de $\beta$ réparties linéairement dans l'intervalle $[1, 200]$. Pour chacune des valeurs de $\beta$, on fait varier $t$ dans l'intervalle $[0, 1]$ (à nouveau en séparant l'intervalle en vingt valeurs espacées linéairement), ce qui nous permet d'obtenir empiriquement le seuil optimal $t^*(\beta)$. On obtient ainsi un tableau reliant chaque couple de paramètres $(\beta, t) \in [0, 200] \times [0, 1]$  et chaque sous-taxonomie $X_k$ au score associé $S(\beta, t; X_k)$.
 
 
 \begin{figure}[h]
@@ -632,7 +641,7 @@ On trace alors les résultats obtenus, pour trois valeurs de $t$ : deux valeurs 
     \label{fig:beta-search-3}
 \end{figure}
 
-Pour mieux comprendre les variabilités de $S$ d'un jeu de données à l'autre, on affiche la courbe des scores en fonction de $\beta$ pour chacune des cinq sous-taxonomies. Le résultat est présenté dans la figure \ref{fig:beta-search-3}. On observe des disparités importantes d'une taxonomie à l'autre, pour les trois valeurs de $t$. 
+Pour mieux comprendre les variabilités de $S(\beta, t; X)$ d'un jeu de données à l'autre, on affiche la courbe des scores en fonction de $\beta$ pour chacune des cinq sous-taxonomies. Le résultat est présenté dans la figure \ref{fig:beta-search-3}. On observe des disparités importantes d'une taxonomie à l'autre, pour les trois valeurs de $t$. 
 
 Dans le cas $t=t^*$, le score maximal est obtenu dès $\beta = 50$ pour l'une des taxonomies, et pour $\beta = 150$ pour une autre. Dans certains cas, les résultats diminuent sitôt le maximum atteint; dans d'autres, on observe au contraire un long plateau. Toutefois, pour toutes les taxonomies, le score atteignable en $\beta=100$ est proche du score maximal, c'est-à-dire que $S(\beta=100, t=t^*(\beta);X_i)$ est proche de $S(\beta^*, t^*; X_i)$ pour tous les $X_i \in \cal{X}$. Cela donne un score moyen $\bar{S}(\beta=100, t=t^*(\beta))$ égal à $97,7\%$, et un score minimal $S_{\min}(\beta, t)$ égal à $94,4\%$.
 
@@ -753,7 +762,7 @@ Ces tendances sont plus ou moins marquées selon $\beta$ : la précision augment
     \label{fig:threshold-search-1}
 \end{figure}
 
-Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail des résultats pour chacune des cinq taxonomies $X_i$ dans la figure \ref{fig:threshold-search-1}. On observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autre, le rappel est assez stable dans l'intervale $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$.
+Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail des résultats pour chacune des cinq taxonomies $X_i$ dans la figure \ref{fig:threshold-search-1}. On observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autre, le rappel est assez stable dans l'intervale $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$. La diversité des comportements d'une taxonomie à l'autre peut s'expliquer par la diversité des taxonomies elles-mêmes. Celles-ci ont en effet été construites avec un nombre de classes et une profondeur variable, dans l'espoir de mieux refléter la diversité des taxonomies du monde réel.
 
 % Cette hétérogénéité des comportements rend difficile le choix définitif d'une valeur pour $t$; toutefois, choisir une valeur basse telle que $t = 0.1$ paraît donner les meilleurs résultats en moyenne.
 
