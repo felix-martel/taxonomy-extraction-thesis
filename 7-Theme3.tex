@@ -150,7 +150,7 @@ On construit alors la sous-taxonomie extraite $T_a$ à partir de $X_a$ : $T_a$ c
     & \forall D \textrm{ cluster de } X_a, (C \subset D \subset C' \implies \alpha(D) = \texttt{indéfini})\})
 \end{align}
 
-Il s'agit du même principe que l'extraction de taxonomie de la méthode Hard Mapping présentée à l'équation \ref{eq:te-extract-tax-from-mapping} de la section \ref{ssubsec:te-hardmapping} : le parent d'un cluster étiquetté $C$ est le premier cluster étiquetté $C'$ qui contient $C$.
+Il s'agit du même principe que l'extraction de taxonomie de la méthode de liaison injective présentée à l'équation \ref{eq:te-extract-tax-from-mapping} de la section \ref{ssubsec:te-hardmapping} : le parent d'un cluster étiquetté $C$ est le premier cluster étiquetté $C'$ qui contient $C$.
 
 
 Enfin, si au moins l'une des feuilles de $X_a$ n'est pas couverte par un axiome $\alpha(C)$, c'est-à-dire s'il existe au moins une branche allant des feuilles à la racine qui ne contient pas d'étiquette, c'est qu'une partie de l'arbre n'a pas été décrite par un axiome, et qu'il reste potentiellement de nouveaux axiomes à extraire. Dans ce cas, un nœud spécial \texttt{<?>} est ajouté à $T_a$ et relié directement à $a$. La signification logique de ce nœud s'écrit :

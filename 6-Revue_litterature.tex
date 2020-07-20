@@ -79,28 +79,29 @@ Pour déterminer à quelle catégorie appartient une relation, il suffit de comp
 \end{equation}
 Et, réciproquement, on note $hpt_r$ (de l'anglais \textit{heads per tail}) le nombre moyen de sujets qui sont relié à un objet par la relation $r$. 
 
-Dès lors, une relation $r$ est \textit{one-to-many} si $hpt_r = 1$ et $tph_r > 1$, \textit{many-to-one} si $hpt_r > 1$ et $tph_r = 1$, \textit{one-to-one} si $hpt_r = tph_r = 1$, et \textit{many-to-many} si $hpt_r > 1$ et $tph_r > 1$. En pratique, pour les graphes de connaissance extraits automatiquement, cette classification est très stricte; certains auteurs comme \cite{bordes2013translating, transh} proposent de tenir compte du bruit des données en caractérisant les relations \textit{one-to-many} par $hpt_r \leq 1,5$ et $tph_r > 1,5$, \textit{many-to-one} par $hpt_r > 1,5$ et $tph_r \leq 1,5$, \textit{one-to-one} par $hpt_r \leq 1,5$ et $tph_r \leq  1,5$ et \textit{many-to-many} par $hpt_r > 1,5$ et $tph_r > 1,5$.
+Dès lors, une relation $r$ est \textit{one-to-many} si $hpt_r = 1$ et $tph_r > 1$, \textit{many-to-one} si $hpt_r > 1$ et $tph_r = 1$, \textit{one-to-one} si $hpt_r = tph_r = 1$, et \textit{many-to-many} si $hpt_r > 1$ et $tph_r > 1$. En pratique, pour les graphes de connaissance extraits automatiquement, cette classification est très stricte; certains auteurs comme \cite{bordes2013translating, transh} proposent de tenir compte du bruit des données en caractérisant les relations \textit{one-to-many} par $hpt_r \leq 1,5$ et $tph_r > 1,5$, \textit{many-to-one} par $hpt_r > 1,5$ et $tph_r \leq 1,5$, \textit{one-to-one} par $hpt_r \leq 1,5$ et $tph_r \leq  1,5$ et \textit{many-to-many} par $hpt_r > 1,5$ et $tph_r > 1,5$. On désignera cette catégorisation par le qualificatif d'\textit{assouplie}, par opposition à la catégorisation \textit{stricte} présentée plus haut.
 
-La répartition des relations entre les différentes catégorisations est présentée au tableau \ref{tab:litt-rel-cardinalities}, avec les colonnes «strict» et «non-strict» indiquant les deux modes de comptage décrits. 
+La répartition des relations entre les différentes catégorisations est présentée au tableau \ref{tab:litt-rel-cardinalities}. On peut voir que, au sens strict du terme, les relations \textit{one-to-one}, \textit{one-to-many} et \textit{many-to-one} sont rares; les relations \textit{many-to-many} constituent plus des trois quarts des relations du graphe. En revanche, si l'on assouplit les conditions pour tenir compte du bruit des données, on trouve une majorité de relations \textit{many-to-one} et \textit{one-to-one}. 
 
 %Comparer $hpt_r$ et $tph_r$ permet de
 
 \begin{table}[ht]
     \centering
     \caption{Répartition des différents types de relation dans DBpedia.}
-    \begin{tabular}{|l|r|r|}
+    \begin{tabular}{|l|rr|}
     \hline
-         & strict & non-strict \\ \hline
-\textit{one-to-one} & 1,57\% & 10,20\% \\
-\textit{one-to-many} & 1,57\% & 4,71\% \\
-\textit{many-to-one} & 54,63\% & 75,90\% \\
-\textit{many-to-many} & 42,23\% & 9,18\% \\
+& \multicolumn{2}{c|}{Catégorisation} \\
+& stricte & assouplie \\ \hline
+one-to-one & 7,54\% & 35,39\% \\
+one-to-many & 2,54\% & 7,69\% \\
+many-to-one & 12,26\% & 46,27\% \\
+many-to-many & 77,66\% & 10,66\% \\
 \hline
     \end{tabular}
     \label{tab:litt-rel-cardinalities}
 \end{table}
 
-Comparer $hpt_r$ et $tph_r$ permet également d'aller au-delà des quatre catégories ci-dessus, et de mieux appréhender les différents types de relations. 
+Comparer $hpt_r$ et $tph_r$ permet également d'aller au-delà des quatre catégories ci-dessus, et de mieux appréhender la diversité des relations. 
 Examinons par exemples les deux relations \textit{many-to-many}  suivantes : \dbo{influencedBy} et \texttt{rdf:type}\footnote{\texttt{rdf:type} est une relation \textit{many-to-many}, car une entité a généralement plusieurs types, et un type a plusieurs instances.}.
 Pour la relation \dbo{infl-uencedBy}, on obtient $hpt_r = 2,7$ et $tph_r=2,9$. Autrement dit, une personne est influencée par 2,9 personnes en moyenne, et en influence 2,7\footnote{Plus rigoureusement : une personne qui exerce de l'influence l'exerce en moyenne sur 2,7 personnes; une personne influencée par d'autres est en moyenne influencée par 2,9 personnes.}. On a donc un équilibre entre sujets et objets.
 À l'inverse, pour \texttt{rdf:type}, on trouve $tph_r = 3,57$ et $hpt_r = 26 228$ : une entité a en moyenne 3,57 types, et un type a en moyenne 26 228 instances.  

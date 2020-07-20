@@ -1,12 +1,23 @@
 \Chapter{EXTRACTION DE TAXONOMIE}
 \label{chap:te}
 
-Introduction et présentation générale \ldots \hl{Note : j'attends d'avoir rédigé la revue de littérature pour écrire l'introduction, puisqe j'aurais probablement à présenter les enjeux de l'extraction de taxonomie dans ce chapitre là}
+% Introduction et présentation générale \ldots \hl{Note : j'attends d'avoir rédigé la revue de littérature pour écrire l'introduction, puisqe j'aurais probablement à présenter les enjeux de l'extraction de taxonomie dans ce chapitre là}
+
+Au chapitre précédent, on s'est intéressé à la capacité des modèles de plongement à représenter des entités de même type dans des régions de l'espace bien délimitées. Ici, l'objectif est d'utiliser cette propriété pour reconstituer une taxonomie sur les types à partir de plongements vectoriels de graphe. 
+% Le point de départ est un ensemble de données sans hiérarchie, constitué de plongements vectoriels typés
+% regroupement non-supervisé
+
+L'extraction de taxonomie se fait en deux étapes.
+Tout d'abord, on utilise la proximité géométrique entre plongements vectoriels pour effectuer un regroupement hiérarchique ascendant sur ces plongements,
+ce qui permet d'extraire une structure d'arbre sur des groupes d'entités. Ensuite, des types connus sont injectés dans cet arbre, afin de transformer la hiérarchie sur les groupes d'entités en une taxonomie sur les types. Pour réaliser cette injection des types dans l'arbre, nous proposons deux méthodes capables d'associer des types à des groupes d'entités en tenant compte de la structure d'arbre existante.
+
+
+
+La section \ref{sec:te-problem} est consacrée à l'énoncé du problème. Dans la section \ref{sec:te-method}, nous proposons deux variantes d'une même méthode pour résoudre ce problème, et nous les évaluons à la section \ref{sec:te-evaluation}. Enfin, dans la section \ref{sec:te-hp}, nous étudions l'influence des différents hyperparamètres.
 
 % TODO
 % - écrire l'intro
-% - trouver des noms français
-% - figure sur hyperparamètres / Méthodes de liaison
+% - trouver des noms français (Liaison multiple / Liaison injective)
 
 
 \section{Présentation générale}
@@ -206,7 +217,7 @@ Au terme du regroupement hiérarchique, on dispose d'un côté d'une hiérarchie
 %- définir, pour chaque type, une probabilité d'injection, ou un score d'association avec tous les clusters
 
 
-\subsubsection{Méthode 1: Association injective (\textit{Hard Mapping)}}
+\subsubsection{Méthode 1: Liaison injective (ou \textit{Hard Mapping} en anglais)}
 \label{ssubsec:te-hardmapping}
 
 Pour pouvoir associer les types aux clusters pertinents, il faut mesurer à quel point un cluster $C$ donné représente un type $t$. Pour ce faire, on peut utiliser la précision et le rappel de ce cluster pour $t$. Posons $N_{C,t} = | e \in C, type(e) = t|$ le nombre d'entités de type $t$ contenues dans le cluster $C$,
@@ -244,7 +255,7 @@ L'équation~\ref{eq:optim-mapping} définit un problème d'affectation linéaire
 Cette solution optimale peut être trouvée par l'algorithme de Jonker-Volgenant, avec une complexité de $O(|\Clusters|^3)$ dans le pire des cas \cite{jonker1987shortest}. Toutefois, l'utilisation de l'heuristique \textit{Asymmetric Greedy Search} \cite{brown2017heuristic} permet de réduire cette complexité, tout en trouvant des solutions dont le score est supérieur à 99.9\% du score optimal, en moyenne.
 %, which can be useful when the size of $\mathcal{D}$ increases.
 
-\subsubsection{Méthode 2: Association multiple (\textit{Soft Mapping)}}
+\subsubsection{Méthode 2: Liaison multiple (ou \textit{Soft Mapping} en anglais)}
 \label{ssubsec:te-softmapping}
 
 L'approche précédente aboutit à une fonction de décision binaire : un axiome $(t_i \sqsubset t_j)$ est prédit ou non, sans intermédiaire possible. Ceci parce que la fonction $\argmax$ de l'équation~\ref{eq:optim-mapping} n'est pas continue. En conséquence, la taxonomie prédite est sensible à des légers changements dans les données d'entrée.
@@ -299,7 +310,7 @@ On obtient donc une formule qui attribue une probabilité à chaque axiome de su
 \begin{figure}[h]
     \centering
     \input{fig/te-sm-main}
-    \caption[Principe de la méthode Soft Mapping]{Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
+    \caption[Principe de la méthode de liaison multiple]{Exemple de calcul de la probabilité de l'axiome $(B \sqsubset A)$ à partir de la loi de $Z_A$ (\textit{en haut à gauche}) et de la loi de $Z_B$ (\textit{en haut à droite}).}
     \label{fig:te-softmapping-example}
 \end{figure}
 
@@ -321,18 +332,9 @@ Or appartenir au sous-arbre $X[C]$ est équivalent à être un successeur de $C$
 \end{align}
 
 
-% To compute these probabilities for all $t, t'$ without summing over all pairs of % clusters, we devise a divide-and-conquer algorithm. For this, we need a recursive % formulation of $P(t' \sqsubset t)$, so we introduce $P_C(t' \sqsubset t)$, the % probability of axiom $(t' \sqsubset t)$ computed on the subtree $X[C]$, for any given % cluster $C$. Similarly to equation~\ref{eq:softmapping_2}, it represents the % probability that the cluster $m(t)$ representing $t$ is a predecessor of  the cluster % $m(t')$ representing $t'$, with the additional condition that both $m(t)$ and $m(t')$ % must belong to the subtree $X[C]$ (that is, be successors of $C$):
-% \begin{align}
-%     P_C(t' \sqsubset t) &= P(C \preceq m(t) \prec m(t') % \text{ and } m(t),m(t') % \succeq C %, C \preceq m(t')
-%     ) \nonumber \\
-%     &= \sum_{\substack{C_A, C_B \in \succs(C) \\ C_A \prec C_B}} P(m(t) = C_A)\cdot % P(m(t') = C_B) 
-%     \label{eq:proba_subsumption}
-% \end{align}
-
 Comme le sous-arbre $X[\texttt{racine}]$ est égal à l'arbre complet, on a $P_\texttt{racine}(t' \sqsubset t) = P(t' \sqsubset t)$, et $P(t' \sqsubset t)$ est la quantité que l'on cherche à calculer. De plus, si $C$ est une feuille, alors le sous-arbre $X[C]$ contient un unique élément, il est donc impossible d'avoir $Z_{t'} \subset Z_{t} \subseteq C$, et donc $P_C(t' \sqsubset t) = 0$ quels que soit $t$ et $t'$. 
 Ainsi, on connait la valeur de $P_C$ sur les feuilles de l'arbre, et on souhaite calculer $P_\texttt{racine}$ : il suffit pour cela d'exprimer $P_C$ en fonction de $P_{\gauche(C)}$ et $P_{\droite(C)}$. On pourra alors calculer $P_\texttt{racine}(t \sqsubset t')$ récursivement, et on aura donc les probabilités $P(t \sqsubset t')$ recherchées.
-% \ldots 
-% \todo{Finir la réécriture de la section Soft Mapping dans le vocabulaire des v.a.}
+
 
 Soit $L = \gauche(C)$ et $R = \droite(C)$ les sous-clusters gauche et droit de $C$. On peut remarquer qu'un successeur de $C$ est soit un successeur de $L$, soit un successeur de $R$, soit $C$ lui-même. Autrement dit, en notant $\sqcup$ l'union disjointe :
 \begin{equation}
@@ -411,7 +413,7 @@ Pour un arbre binaire équilibré, cet algorithme garantit un cache de taille ma
 \subsection{Construction de la taxonomie}
 \label{subsec:te-taxconstruction}
 
-Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode \textit{Hard Mapping}, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t') \subset m(t)$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
+Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode de liaison injective, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t') \subset m(t)$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
 \begin{equation}
     \Tpred = (\cal{T}, \{t' \sqsubset t : m(t') \subset m(t) \text{ et } \forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T}) \})
     \label{eq:te-extract-tax-from-mapping}
@@ -420,7 +422,7 @@ Une fois les types associés aux clusters, la taxonomie est construite en transf
 \begin{figure}[h]
     \centering
     \input{fig/te-hm-extraction}
-    \caption[Extraction de taxonomie selon la méthode Hard Mapping]{Extraction de taxonomie à partir d'un arbre de clustering étiquetté (méthode Hard Mapping).}
+    \caption[Extraction de taxonomie selon la méthode de liaison injective]{Extraction de taxonomie à partir d'un arbre de clustering étiquetté (méthode de liaison injective).}
     \label{fig:te-hm-extraction}
 \end{figure}
 
@@ -433,13 +435,13 @@ Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$,
 
 
 
-Dans le cas du \textit{Soft Mapping}, on récupère une liste d'axiomes de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de \textit{Hard Mapping} n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset t$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
+Dans le cas de la liaison multiple, on récupère une liste d'axiomes de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de liaison injective n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset t$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
 
 \begin{figure}
     \centering
     % \includegraphics[width=\textwidth]{img/softmapping_extraction.png}
     \input{fig/te-sm-graphreduction}
-    \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes (méthode Soft Mapping) : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis le graphe est transformé en arbre en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
+    \caption[Extraction de taxonomie à partir d'un graphe acyclique]{Extraction de taxonomie à partir d'une liste pondérée d'axiomes (méthode de liaison multiple) : un graphe acyclique est construit avec les axiomes les plus probables (gauche), sa réduction transitive est calculée (milieu), puis le graphe est transformé en arbre en retirant les arêtes de probabilités minimales (droite). L'épaisseur des arêtes représente la probabilité.}
     \label{fig:softmapping-extraction}
 \end{figure}
 
@@ -478,7 +480,7 @@ Une fois que l'on dispose de cette taxonomie de référence \textsc{DBpédia-Fr�
 \label{subsec:te-evaluation}
 
 On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, TransD, TransH, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait avec un des quatre critères de liaison cités (saut minimum, moyen, maximum, critère de Ward) et l'une des trois distances suivantes : euclidienne, cosinus, $L_1$. % soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus – le choix de ces deux combinaisons de paramètres est discuté dans la section \ref{sec:te-hp}. 
-La méthode d'association est soit \textit{Hard Mapping}, soit \textit{Soft Mapping}. On compare ces résultats avec ceux obtenus par la méthode TIEmb \cite{ristoski2017large} (présentée à la section \ref{subsec:litt-tiemb}, page \pageref{subsec:litt-tiemb}); pour cette méthode également, on expérimente avec les distances euclidienne, cosinus et $L_1$. 
+La méthode d'association est soit la méthode de liaison injective (MLI), soit la méthode de liaison multiple (MLM). On compare ces résultats avec ceux obtenus par la méthode TIEmb \cite{ristoski2017large} (présentée à la section \ref{subsec:litt-tiemb}, page \pageref{subsec:litt-tiemb}); pour cette méthode également, on expérimente avec les distances euclidienne, cosinus et $L_1$. 
 
 Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpédia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F_1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédécesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F_1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
 
@@ -489,15 +491,13 @@ Ces deux modes d'évaluation – directe et transitive – sont nécessaires pou
 \label{subsec:te-results}
 
 
-Les résultats principaux sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes Hard Mapping et Soft Mapping avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles Soft Mapping, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). Pour la méthode TIEmb, on se restreint également aux distances cosinus et euclidienne. 
+Les résultats principaux sont présentés dans le tableau \ref{tab:te-results} pour les modèles ComplEx, DistMult, RDF2Vec et TransE. On y présente les résultats pour les méthodes MLI et MLM avec, pour chacune, deux variantes de regroupement hiérarchique : l'une avec distance cosinus et critère du saut moyen, l'autre avec distance euclidienne et critère de Ward. Pour les modèles MLM, les paramètres sont fixés à $\beta = 100$ et $t=0.1$ (ces choix sont discutés dans la section \ref{subsec:te-hp-softmapping}). Pour la méthode TIEmb, on se restreint également aux distances cosinus et euclidienne. 
 Les résultats pour les autres modèles de plongement, métriques et critères de liaison sont globalement moins bons : par souci de concision, on les omet ici; ils sont présentés à l'annexe \ref{ann:results}.
 
 % Si l'on considère le $F_1$ moyen comme 
-Du point de vue du $F_1$ moyen, le meilleur modèle est \textit{Soft Mapping} (SM) avec TransE et distance cosinus; ce modèle obtient d'ailleurs le $F_1$ le plus élevé sur chacune des trois évaluations. Ce modèle est suivi, dans l'ordre décroissant, par \textit{Hard Mapping} (HM) avec TransE et distance cosinus, SM avec TransE et distance euclidienne, TIEmb et les distances cosinus puis euclidiennes, et HM avec TransE et distance euclidienne. Tous ces modèles obtiennent un $F_1$ moyen supérieur à $0,75$.
+Du point de vue du $F_1$ moyen, le meilleur modèle est MLM avec TransE et distance cosinus; ce modèle obtient d'ailleurs le $F_1$ le plus élevé sur chacune des trois évaluations. Ce modèle est suivi, dans l'ordre décroissant, par MLI avec TransE et distance cosinus, MLM avec TransE et distance euclidienne, TIEmb et les distances cosinus puis euclidiennes, et MLI avec TransE et distance euclidienne. Tous ces modèles obtiennent un $F_1$ moyen supérieur à $0,75$.
 
-En moyenne, la méthode SM obtient des résultats supérieurs à HM et à TIEmb. TIEmb est inférieur aux méthodes SM et HM sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. 
-
-% Les modèles qui obtiennent un $F_1$ moyen supérieur à 0.75 sont, par ordre décroissant, SM et HM avec TransE et la distance cosinus, SM avec TransE et la distance euclidienne, TIEmb avec TransE et les distances cosinus puis euclidienne, et HM avec TransE et la distance euclidienne. 
+En moyenne, la méthode MLM obtient des résultats supérieurs à MLI et à TIEmb. TIEmb est inférieur aux méthodes MLM et MLI sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. 
 
 
 Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérachie entre modèles est nette : TransE obtient les meilleurs résultats, quelle que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
@@ -541,7 +541,7 @@ Dans le chapitre précédent, on concluait que RDF2Vec et TransE étaient les me
 \section{Hyperparamètres}
 \label{sec:te-hp}
 
-Cette section discute le choix des principaux hyperparamètres du modèle, c'est-à-dire des paramètres qui ne sont pas appris à partir des données mais fixés avant l'entraînement. Les deux paramètres du regroupement hiérarchique, distance et critère de liaison, sont communs aux méthodes Hard Mapping et Soft Mapping; ils sont traités dans la section suivante. Les deux autres sections sont consacrées à des paramètres spécifiques à Soft Mapping : la base du softmax $\beta$ et le seuil de probabilité $t$.
+Cette section discute le choix des principaux hyperparamètres du modèle, c'est-à-dire des paramètres qui ne sont pas appris à partir des données mais fixés avant l'entraînement. Les deux paramètres du regroupement hiérarchique, distance et critère de liaison, sont communs aux méthodes MLI et MLM; ils sont traités dans la section suivante. Les deux autres sections sont consacrées à des paramètres spécifiques à MLM : la base du softmax $\beta$ et le seuil de probabilité $t$.
 
 \subsection{Regroupement hiérarchique}
 
@@ -552,25 +552,25 @@ L'étape de regroupement hiérarchique consiste à regrouper des entités géom�
 
 Le deuxième paramètre du regroupement est le critère de liaison à utiliser. Les critères considérés ici sont détaillés dans la section \ref{sec:te-clustering-linkage} et sont au nombre de quatre : saut minimum, moyen et maximum, et distance de Ward, ce dernier critère étant propre à la distance euclidienne. Cela donne donc 10 combinaisons possibles pour l'étape de regroupement hiérarchique.
 
-Pour évaluer les performances moyennes de chaque combinaison de paramètres, on calcule la mesure $F_1$ de chaque combinaison, moyennée sur l'ensemble des modèles de plongements, et ce, pour les deux modes d'extraction Hard Mapping et Soft Mapping, et pour les deux modes d'évaluation direct et transitve. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
+Pour évaluer les performances moyennes de chaque combinaison de paramètres, on calcule la mesure $F_1$ de chaque combinaison, moyennée sur l'ensemble des modèles de plongements, et ce, pour les deux modes d'extraction MLI et MLM, et pour les deux modes d'évaluation direct et transitve. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
 
-On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode Hard Mapping, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode Soft Mapping, les résultats des deux combinaisons sont très proches. 
+On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode MLI, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode MLM, les résultats des deux combinaisons sont très proches. 
 
-Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'ont pas abouti. Le saut minimum tend à renforcer les plus gros clusters à chaque étape \cite{everitt2011cluster}, ce qui produit des arbres-peignes, ou \textit{arbres dégénérés}. Un arbre-peigne est un arbre tel que chaque cluster est soit un cluster singleton, soit la fusion d'un cluster singleton avec un autre cluster (c'est donc l'opposé d'un arbre équilibré). Confronté à cette structure particulière, nos deux modèles HM et SM obtiennent des résultats nuls dans la plupart des cas.
+Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'ont pas abouti. Le saut minimum tend à renforcer les plus gros clusters à chaque étape \cite{everitt2011cluster}, ce qui produit des arbres-peignes, ou \textit{arbres dégénérés}. Un arbre-peigne est un arbre tel que chaque cluster est soit un cluster singleton, soit la fusion d'un cluster singleton avec un autre cluster (c'est donc l'opposé d'un arbre équilibré). Confronté à cette structure particulière, nos deux modèles MLI et MLM obtiennent des résultats nuls dans la plupart des cas.
 
 %Le critère du saut minimum conduit à des arbres dégénérés 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{fig/plot/taxex_cluparams-all.eps}
-    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesures $F_1$ obtenues pour différentes combinaisons de distances (euclidienne, cosinus, $L_1$) et de critères de liaison (\textit{min} pour saut minimal, \textit{max} pour saut maximal, \textit{moy} pour saut moyen, \textit{ward} pour distance de Ward). Les scores sont moyennés sur tous les modèles de plongement, et calculés selon l'évaluation directe (\textit{en haut}) et transitive (\textit{en bas}), pour les deux variantes Hard Mapping (HM, \textit{à gauche}) et Soft Mapping (SM, \textit{à droite}).}
+    \caption[Influence des paramètres de regroupement sur l'extraction de taxonomie]{Mesures $F_1$ obtenues pour différentes combinaisons de distances (euclidienne, cosinus, $L_1$) et de critères de liaison (\textit{min} pour saut minimal, \textit{max} pour saut maximal, \textit{moy} pour saut moyen, \textit{ward} pour distance de Ward). Les scores sont moyennés sur tous les modèles de plongement, et calculés selon l'évaluation directe (\textit{en haut}) et transitive (\textit{en bas}), pour les deux méthode de liaison injective (MLI, \textit{à gauche}) et de liaison multiple (MLM, \textit{à droite}).}
     \label{fig:taxex-cluparams-all}
 \end{figure}
 
 \subsection{Base du softmax et seuil de probabilité}
 \label{subsec:te-hp-softmapping}
 
-Les deux autres hyperparamètres sont propres à la méthode Soft Mapping : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$. Dans toute la suite, le modèle de plongement utilisé est TransE et le regroupement se fait avec la distance cosinus et le critère du saut moyen, puisque ce sont les paramètres qui donnent le meilleur $F_1$ sur toutes les évaluations. 
+Les deux autres hyperparamètres sont propres à la méthode de liaison multiple : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$. Dans toute la suite, le modèle de plongement utilisé est TransE et le regroupement se fait avec la distance cosinus et le critère du saut moyen, puisque ce sont les paramètres qui donnent le meilleur $F_1$ sur toutes les évaluations. 
 
 Un jeu d'évaluation $X$ est constitué d'un jeu de données d'entrée $\cal{D}$, contenant des plongements vectoriels et les types correspondants, et d'une taxonomie de référence $T^*$. Pour des paramètres fixés, on peut extraire une taxonomie $\hat{T}$ à partir de $\cal{D}$, comparer cette taxonomie à la référence $T^*$, et calculer les métriques précédentes : précision $p$, rappel $r$ et $F_1$, de façon directe et transitive. 
 
