@@ -1,5 +1,4 @@
-\begin{tikzpicture}
-[   cnode/.style={draw=black,fill=#1,minimum width=3mm,circle},
+\begin{tikzpicture}[cnode/.style={draw=black,fill=#1,minimum width=3mm,circle},
     rnode/.style={draw=gray!40,fill=gray!20,minimum width=6mm, minimum height=6mm, rectangle}
 ]
     \node[rnode] (l11) at (0, 0) {Chose};
@@ -14,16 +13,16 @@
     \node[rnode] (l42) at (-4.2, -3) {Sportif};
     \node[rnode] (l43) at (-2, -3) {Politicien};
     \node[rnode] (l44) at (0.5, -3) {Scientifique};
-    \draw[->, gray!40, thick] (l11) -- (l23) {};
-    \draw[->, gray!40, thick] (l11) -- (l21) {};
-    \draw[->, gray!40, thick] (l11) -- (l22) {};
-    \draw[->, gray!40, thick] (l21) -- (l31) {};
-    \draw[->, gray!40, thick] (l21) -- (l32) {};
-    \draw[->, gray!40, thick] (l22) -- (l33) {};
-    \draw[->, gray!40, thick] (l22) -- (l34) {};
-    \draw[->, gray!40, thick] (l32) -- (l41) {};
-    \draw[->, gray!40, thick] (l32) -- (l42) {};
-    \draw[->, gray!40, thick] (l32) -- (l43) {};
-    \draw[->, gray!40, thick] (l32) -- (l44) {};
+    \draw[->, gray!40, thick] (l11) -- (l23);
+    \draw[->, gray!40, thick] (l11) -- (l21);
+    \draw[->, gray!40, thick] (l11) -- (l22);
+    \draw[->, gray!40, thick] (l21) -- (l31);
+    \draw[->, gray!40, thick] (l21) -- (l32);
+    \draw[->, gray!40, thick] (l22) -- (l33);
+    \draw[->, gray!40, thick] (l22) -- (l34);
+    \draw[->, gray!40, thick] (l32) -- (l41);
+    \draw[->, gray!40, thick] (l32) -- (l42);
+    \draw[->, gray!40, thick] (l32) -- (l43);
+    \draw[->, gray!40, thick] (l32) -- (l44);
 \end{tikzpicture}
 

@@ -58,7 +58,7 @@
 %%
 %% Autres packages.
 \usepackage{amsmath,color,soulutf8,longtable,colortbl,setspace,xspace,url,pdflscape,cite}
-\usepackage{pdfpages}
+
 \input{preamble}
 %%
 %% Support des acronymes.
@@ -113,12 +113,14 @@
   hidelinks,
   linktoc=all
 }
+\usepackage{pdfpages}
+
 
 \input{commands}
 \input{figures}
 
-\usetikzlibrary{external}
-\tikzexternalize[prefix=tikz/,optimize command away=\includepdf]
+%\usetikzlibrary{external}
+%\tikzexternalize[prefix=tikz/]% ,optimize command away=\includepdf]
 
 
 \usepackage[ruled,noend, french, onelanguage]{algorithm2e}

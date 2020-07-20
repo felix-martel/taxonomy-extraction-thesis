@@ -65,11 +65,12 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
 
 \begin{figure}[h]
     \centering
-    \begin{adjustwidth}{0in}{-0.5in}
-        \resizebox{1.1\textwidth}{!}{%
-            \input{fig/te-clustering-tree}
-        }%
-    \end{adjustwidth}
+    % \begin{adjustwidth}{0in}{-0.5in}
+    %     \resizebox{1.1\textwidth}{!}{%
+    %         \input{fig/te-clustering-tree}
+    %     }%
+    % \end{adjustwidth}
+    \input{fig/te-clustering-tree}
     \caption[Principe du regroupement hiérarchique ascendant]{Exemple d'arbre de clustering obtenu par regroupement hiérarchique ascendant. La couleur des points représente leur étiquette $y_i$ et n'est pas utilisée lors du regroupement.}
     \label{fig:clustering_tree}
 \end{figure}
@@ -551,7 +552,7 @@ L'étape de regroupement hiérarchique consiste à regrouper des entités géom�
 
 Le deuxième paramètre du regroupement est le critère de liaison à utiliser. Les critères considérés ici sont détaillés dans la section \ref{sec:te-clustering-linkage} et sont au nombre de quatre : saut minimum, moyen et maximum, et distance de Ward, ce dernier critère étant propre à la distance euclidienne. Cela donne donc 10 combinaisons possibles pour l'étape de regroupement hiérarchique.
 
-On calcule la mesure $F_1$ de chacune de ces combinaisons, moyennée sur l'ensemble des modèles de plongement étudiés, pour les deux méthodes Hard Mapping et Soft Mapping, et pour les deux modes d'évaluation direct et transitive. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
+Pour évaluer les performances moyennes de chaque combinaison de paramètres, on calcule la mesure $F_1$ de chaque combinaison, moyennée sur l'ensemble des modèles de plongements, et ce, pour les deux modes d'extraction Hard Mapping et Soft Mapping, et pour les deux modes d'évaluation direct et transitve. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
 
 On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode Hard Mapping, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode Soft Mapping, les résultats des deux combinaisons sont très proches. 
 

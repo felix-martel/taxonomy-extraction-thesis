@@ -1,0 +1,48 @@
+\begin{tikzpicture}[
+  arrow/.style={->, shorten >=3pt, gray!80},
+  point/.style={circle,inner sep=0, minimum height=0.2cm, draw=#1, fill=#1, node distance=0.1cm},
+]
+
+\def\X{5}
+\def\Y{5}
+\begin{scope}
+    \node (o) at (0, 0) {};
+    \node (ax) at (\X, 0) {};
+    \node (ay) at (0, \Y) {};
+    \draw[axis] (o.center) to (ax);
+    \draw[axis] (o.center) to (ay);
+    
+    \node[point=accent1, label={[accent1]$h_1$}] (h1) at (0.5*\X, 0.8*\Y) {};
+    \node[point=accent1, label={[accent1]$t_1$}] (t1) at (0.2*\X, 0.7*\Y) {}; 
+    \node[point=accent2, label={[accent2]$h_2$}] (h2) at (0.15*\X, 0.55*\Y) {};
+    \node[point=accent2, label={[accent2]$t_2$}] (t2) at (0.45*\X, 0.45*\Y) {}; 
+    \node[point=purple, label={[purple]$h_3$}] (h3) at (0.25*\X, 0.3*\Y) {};
+    \node[point=purple, label={[purple]$t_3$}] (t3) at (0.65*\X, 0.65*\Y) {}; 
+    \node at (0.5*\X, -0.5) {Espace générique};
+    
+    \draw[->, accent1, thick] (\X, 0.5*\Y) to node[above, red] {transformation}  (\X+3, 0.5*\Y);
+\end{scope}
+
+\begin{scope}[xshift=8.5cm]
+    \node (o) at (0, 0) {};
+    \node (ax) at (\X, 0) {};
+    \node (ay) at (0, \Y) {};
+    \draw[axis] (o.center) to (ax);
+    \draw[axis] (o.center) to (ay);
+    
+    \def\dx{3}
+    \def\dy{0.7}
+    
+    \node[point=accent1, label={[accent1]$h_1$}] (h1) at (0.5*\X, 0.8*\Y) {};
+    \node[point=accent1, label={[accent1]$t_1$}, above right=\dy and \dx of h1] (t1) {}; 
+    \node[point=accent2, label={[accent2]$h_2$}] (h2) at (0.15*\X, 0.55*\Y) {};
+    \node[point=accent2, label={[accent2]$t_2$}, above right=\dy and \dx of h2] (t2) {}; 
+    \node[point=purple, label={[purple]$h_3$}] (h3) at (0.25*\X, 0.3*\Y) {};
+    \node[point=purple, label={[purple]$t_3$}, above right=\dy and \dx of h3] (t3)  {}; 
+    
+    \draw[vec] (h1) to node[sloped, above] {$\vec{r}$} (t1);
+    \draw[vec] (h2) to node[sloped, above] {$\vec{r}$} (t2);
+    \draw[vec] (h3) to node[sloped, above] {$\vec{r}$} (t3);
+    \node at (0.5*\X, -0.5) {Espace spécifique à $r$};
+\end{scope}
+\end{tikzpicture}

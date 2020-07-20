@@ -28,6 +28,9 @@ Une URI est purement symbolique et ne contient pas nécessairement d'information
 Cette représentation discrète ne permet pas, par exemple, de comparer deux entités entre elles : pour deux entités $e$ et $e'$, la seule donnée de leurs URI respectives ne permet pas de déduire si ces entités sont proches l'une de l'autre. %Cela n'est pas un problème pour un système logique basé sur des axiomes et des règles d'inférences; pour un algorithme d'apprentissage automatique 
 % si deux entités $e$ et $e'$ sont représentées par leurs URI $\URI(e)$ et $\URI(e')$, on peut savoir que $e = e'$ si $r=r'$; dans le cas $r \neq r'$, on ne peut rien conclure. 
 
+Certains auteurs combinent URI et plongements lexicaux pour obtenir des représentations vectorielles des entités d'un graphe \cite{socher2013reasoning}. Pour cela, on découpe l'URI (ou éventuellement le nom de l'entité, tel qu'indiqué par la relation \texttt{rdfs:label}) en mots, on récupère les plongements lexicaux de ces mots (c'est-à-dire des représentations vectorielles de mots en faible dimension, comme par exemple Word2Vec \cite{mikolov2013distributed}), et on combine ces plongements, par exemple en les moyennant.
+Une telle représentation permet alors de mesurer une distance entre entités, et permet l'application d'algorithmes d'apprentissage automatique. Elle présente toutefois un inconvénient sévère : les plongements lexicaux sont appris sur des corpus textuels génériques et extérieurs au graphe. En ce sens, ces plongements échouent à représenter le contenu et les propriétés intrinsèques du graphe. 
+
 
 Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence $\Adja(e)$ \cite{hoser2006semantic}: une matrice booléenne de dimension $m \times n$, dont la coordonnée $(i, j)$ vaut $1$ si le triplet $(e, r_i, e_j)$ est valide et $0$ sinon. Cette représentation est déjà plus informative que la précédente : on peut comparer les représentations de deux entités $e$ et $e'$, par exemple en calculant le coefficient de Jaccard :
 \begin{equation}
@@ -36,7 +39,7 @@ Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence 
 Cette représentation possède toutefois ses limites. Elle est discrète, donc des triplets proches mais différents seront encodés différemment. Ainsi, la proximité des triplets \texttt{(dbr:Montréal, dbo:region, dbr:Québec)} et \texttt{(dbr:Island\_of\_Montréal, dbo:country, dbr:Canada)} échappe complètement à l'indice de Jaccard. Elle est également creuse et de grande dimension : les entités sont représentés par des points épars dans un espace quasiment vide, une situation qui complique l'usage de la plupart des algorithmes d'apprentissage automatique.
 
 
-Certains auteurs combinent URI et plongements lexicaux pour obtenir des représentations vectorielles des entités d'un graphe \cite{socher2013reasoning}. Pour cela, on découpe l'URI (ou éventuellement le nom de l'entité, tel qu'indiqué par la relation \texttt{rdfs:label}) en mots, on récupère les plongements lexicaux de ces mots (c'est-à-dire des représentations vectorielles de mots en faible dimension, comme par exemple Word2Vec (ref)), et on combine ces plongements, par exemple en les moyennant. Cette représentation permet d'éviter le problème de dimensionnalité décrit précédemment et d'obtenir un représentant discret. Elle présente toutefois un inconvénient sévère : les plongements lexicaux sont appris sur des corpus textuels génériques et extérieurs au graphe. En ce sens, ces plongements échouent à représenter le contenu et les propriétés intrinsèques du graphe. 
+
 
 % Cela signifie que des problèmes d'homonymie, de synonymie ou d'ambiguïté peuvent surgir; que
 
@@ -423,7 +426,7 @@ Si l'on remplace les projetés orthogonaux par leurs formules, on retrouve l'éq
     \label{fig:transh-dual}
 \end{figure}
 
-\subsubsection{TransD}
+\subsubsection{TransD \cite{transd}}
 
 TransD est une seconde extension de TransE, dans laquelle les entités à translater sont transformées via une fonction de transformation linéaire qui dépend à la fois de la relation considérée et de l'entité à transformer. Outre les plongements usuels $\bf{e}, \bf{r}$ définis pour chaque entité $e \in \Ent $ et chaque relation $r \in \Rel$, le modèle TransD entraîne aussi des vecteurs de projection $\bf{e_p}$ et $\bf{r_p}$. Ces vecteurs servent à construire dynamiquement une matrice de tranformation $M_{e, r}$:
 \begin{equation}
@@ -442,8 +445,9 @@ On peut donc voir le modèle comme ayant un espace générique $\R^d$ dans leque
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{img/transd_schema.png}
-    \caption[Principe du modèle TransD]{(brouillon) Représentation du modèle TransD, avec à gauche l'espace des plongements $\bf{e}$, et à droite l'espace des plongements transformés $M_{e, r} \cdot \bf{e}$ (tiré de \cite{transd}).}
+    %\includegraphics[width=\textwidth]{img/transd_schema.png}
+    \input{fig/transd}
+    \caption[Principe du modèle TransD]{Représentation du modèle TransD, avec à gauche l'espace des plongements $\bf{e}$, et à droite l'espace des plongements transformés $M_{e, r} \cdot \bf{e}$ (tiré de \cite{transd}).}
     \label{fig:transd-schema}
 \end{figure}
 
@@ -471,12 +475,14 @@ TransD & $\mathbf{e, e_p} \in \mathbb{R}^d$ & $\mathbf{r, r_p} \in \mathbb{R}^d$
 \label{tab:transx}
 \end{table}
 
+\FloatBarrier
+
 \subsection{Autres modèles}
 \label{subsec:kge-models-misc}
 
 \subsubsection{RDF2Vec}
 
-Le modèle RDF2Vec s'inspire du modèle de plongement Word2Vec (ref), très utilisé pour produire des plongements lexicaux.
+Le modèle RDF2Vec s'inspire du modèle de plongement Word2Vec \cite{mikolov2013distributed}, très utilisé pour produire des plongements lexicaux.
 
 Il fonctionne en deux étapes : d'abord, des chemins sont prélevés dans le graphe de connaissance au moyen de marches aléatoires – ces chemins sont simplement des suites d'entités et de relations connectées entre elles. % Pour les prélever, on commence par tirer aléatoirement une entité 
 Un \textit{chemin} sur le graphe est une suite d'entités et de relations $(x_1, x_2, \ldots, x_T)$ tels que, pour tout $k \in \{1, 2, \ldots, \frac{T}{2}\}$, $x_{2k-1}$ est une entité, $x_{2k}$ est une relation, et $(x_{2k-1}, x_{2k}, x_{2k+1})$ est un triplet valide de $\KG$. Par exemple, la séquence \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga, dbo:country, dbr:Spain)} est un chemin de longueur 5, constitué des triplets \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga)} et \texttt{(dbr:Málaga, \allowbreak dbo:country, dbr:Spain)}. 
@@ -516,7 +522,7 @@ Enfin, on fait glisser la fenêtre de contexte sur toute longueur de la séquenc
     \frac{1}{T} \sum_{t = 1}^{T} \log P(x_t | x_{t \pm c})
 \end{equation}
 
-Cette architecture est représentée à la figure \ref{fig:rdf2vec-cbow}.
+Cette architecture est représentée à la figure \ref{fig:rdf2vec-cbow}. En entrée, les éléments sont représentés par des vecteurs \textit{one-hot} : si on note $(w_1, w_2, \ldots, w_V)$ les éléments de $\Ent \cup \Rel$, avec $V = | \Ent \cup \Rel |$, alors le vecteur \textit{one-hot} de l'élément $w_i$ est un vecteur de dimension $V$ contenant des zéros et un unique $1$ à la $i$-ème coordonnée.
 
 \begin{figure}[h]
     \centering
@@ -538,6 +544,8 @@ On moyenne alors cette probabilité pour tous les éléments du contexte, pour c
 \begin{equation}
     \frac{1}{T} \sum_{t = 1}^{T} \sum_{-c \leq i \leq c, i \neq t} \log P(x_{t+i} \mid x_t)
 \end{equation}
+
+Cette architecture est présentée à la figure \ref{fig:rdf2vec-skipgram}; comme précédemment, l'élément d'entrée est représenté par son vecteur \textit{one-hot}.
 
 \begin{figure}[h]
     \centering
