@@ -64,7 +64,7 @@ On effectue alors un regroupement hiérarchique sur les plongements des entités
 
 
 
-\begin{algorithm}
+\begin{algorithm}[ht]
 \KwInput{un graphe de connaissance $\KG$}
 \KwOutput{une taxonomie expressive $\Tpred$}
 \Parameter{nombre d'entités à prélever à chaque étape $N_e$
@@ -109,6 +109,43 @@ $\mathcal{AT} \leftarrow \{ \top \}$\;
 
 % Ensuite, pour chacun des axiomes $a_1, \ldots, a_k$ obtenus, on tire aléatoirement des entités qui vérifient cet axiome, ce qui donne de nouveaux ensembles d'entrées $\cal{D}_{t+1}, \ldots, \cal{D}_{t+k}$.
 
+L'idée est d'extraire des axiomes itérativement, et de les organiser au fur et à mesure au sein d'une taxonomie $\Tpred$. On dispose donc de la taxonomie $\Tpred$ en cours de construction, et d'une file d'axiomes à traiter $\mathcal{AT}$. 
+%
+La file d'axiomes à traiter contient des axiomes que l'on a extraits précédemment. On sait donc qu'ils représentent des classes du graphe, on connaît leur superclasse, mais on ne connaît pas encore leurs sous-classes : l'objectif est d'identifier leurs sous-classes et de les ajouter à $\Tpred$. 
+%
+
+Pour la première étape, $\mathcal{AT}$ est initialisée à $\{\top\}$ : le concept universel $\top$ est en effet le seul axiome dont on sache \textit{a priori} qu'il représente une classe du graphe, 
+puisqu'il est par définition vérifié par toutes les entités du graphe. Il sert donc de racine à la taxonomie.
+De plus, comme on ne connaît qu'une seule classe et aucun axiome de subsumption, la taxonomie $\Tpred$ est réduite à un seul sommet $\top$ et ne contient aucune arête. 
+
+On va alors retirer le premier et seul élément $a$ de la file $\mathcal{AT}$.  % ,qui sert d'axiome d'entrée pour cette étape. 
+On prélève aléatoirement, dans le graphe $\KG$, $N_e$ entités parmi celles qui vérifient $a$; cette étape correspond à la fonction \texttt{Preleve} de l'algorithme \ref{algo:texp-main}. Dans notre implémentation, le graphe est représenté grâce à une librairie Python spécifique, mais dans d'autres contextes, le langage de requête SPARQL pourrait être utilisé à cette fin.
+%
+Lors de la première étape, comme $a = \top$, il suffit de prélever aléatoirement des entités du graphe. Les plongements de ces entités donnent un nuage de points $\cal{D}_a$ de dimension $d \times N_e$, avec $d$ la dimension des plongements.
+
+Sur ce nuage de point $\cal{D}_a$, on effectue un regroupement hiérarchique, similaire à celui décrit dans la section \ref{subsec:te-clustering}, qui correspond à la fonction \texttt{Regroupe} de l'algorithme \ref{algo:texp-main}.
+Ici, on a choisi les paramètres de regroupement qui donnaient les meilleurs résultats pour l'extraction de taxonomie non-expressive (voir la section \ref{subsec:te-results} au chapitre précédent), c'est-à-dire la distance cosinus comme mesure de similarité, et le saut moyen comme critère de liaison. Autrement dit, on fusionne les clusters qui ont la plus faible distance cosinus moyenne entre leurs éléments. À l'étape $t$, notons $\cal{C}_t$ les clusters existants; les clusters $C_1$ et $C_2$ à fusionner sont choisis selon l'équation :
+\begin{equation}
+    C_1, C_2 = \argmin_{C_1, C_2 \in \cal{C}_t} \frac{1}{|C_1| \times |C_2|} \sum_{\bf{e_1}\in C_1} \sum_{\bf{e_2} \in C_2} d_\text{cos}(\bf{e_1, e_2})
+\end{equation}
+
+Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N_e$ éléments de $\cal{D}_a$. 
+
+Cet arbre de clustering $X_a$ est alors parcouru, étiquetté et transformé en une taxonomie partielle $T_a$, éventuellement vide : cette étape de parcours et de transformation correspond à la fonction \texttt{EtiquetteArbre} de l'algorithme \ref{algo:texp-main}, et est décrite en détail dans la section suivante.
+
+Lors de la première étape, l'axiome de départ $\top$ possède des sous-classes et la taxonomie extraite $T_a$ n'est donc pas vide. On ajoute alors $T_a$ à $\Tpred$, à l'emplacement de $a$, ce qui correspond à la fonction \texttt{Fusionne} de l'algorithme \ref{algo:texp-main}. Tous les nouveaux axiomes contenus dans $T_a$ sont alors ajoutés à la file d'axiomes à traiter $\mathcal{AT}$.
+
+On peut alors répéter ce procédé, jusqu'à épuisement de $\mathcal{AT}$ : tant que $\mathcal{AT}$ n'est pas vide, on retire son premier élément $a$, on prélève des entités parmi celles qui vérifient l'axiome $a$ pour former le nuage de points $\mathcal{D}_a$, on regroupe ces points en un arbre de clustering $X_a$, et on en extrait une taxonomie partielle $T_a$. Si $T_a$ est vide, on poursuit la recherche avec d'autres axiomes de $\mathcal{AT}$. Sinon, on ajoute les nouveaux axiomes contenus dans $T_a$ à la file d'axiomes à traiter, et on ajoute $T_a$ à $\Tpred$.
+
+Donnons un exemple d'exécution de l'algorithme sur DBpedia.
+On commence par prélever des entités aléatoirement dans tout le graphe. Après regroupement et étiquettage, on identifie les classes \dbo{Agent}, \dbo{Work}, \dbo{Event}, \dbo{Species}, \dbo{Place} : ces classes sont ajoutées à $\Tpred$ en tant que sous-classes de $\top$, et elles sont également ajoutées à $\mathcal{AT}$. À l'étape suivante, l'axiome de départ est le premier axiome de $\mathcal{AT}$, c'est-à-dire $a = \dbo{Agent}$. On prélève alors des instances de \dbo{Agent}, on regroupe leurs plongements, et on étiquette l'arbre de clustering, ce qui permet d'identifier deux nouveaux axiomes \dbo{Person} et \dbo{Organisation}. Ces deux axiomes sont ajoutés à $\mathcal{AT}$, ainsi qu'à $\Tpred$ comme sous-classes de \dbo{Agent}. %, et sont ajoutées à $\mathcal{AT}$. 
+La recherche continue ensuite avec les autres axiomes de $\mathcal{AT}$ : d'abord \dbo{Work}, puis \dbo{Event}, etc. Au bout d'un certain nombre d'étapes, les classes feuilles ont été atteintes, et il n'est plus possible d'extraire de nouveaux axiomes : la file $\mathcal{AT}$ se vide progressivement. Une fois qu'elle ne contient plus aucun axiome, l'algorithme s'arrête, et $\Tpred$ est renvoyée.
+
+\iffalse {
+
+: cette taxonomie $T_a$ est ajoutée à $\Tpred$, à l'emplacement de $a$, et les nœuds feuilles 
+
+
 
 % Principe général
 On dispose d'une file d'axiomes à traiter $\mathcal{AT}$, et de la taxonomie en cours de construction $\Tpred$. La file d'axiomes à traiter n'est autre que la liste des feuilles de $\Tpred$ qui n'ont pas encore été visitées. Lorsqu'on traite un axiome $a$ de $\mathcal{AT}$, soit on parvient à extraire un sous-arbre $T_a$ qui contienne des axiomes, et alors $T_a$ est ajouté à $\Tpred$ à l'emplacement de $a$, et les nœuds feuilles de $T_a$ sont ajoutés à la file des axiomes à traiter; soit on ne trouve aucun sous-axiome pertinent pour $a$, auquel cas $a$ reste une feuille de $\Tpred$ et la recherche continue dans les autres axiomes de la file $\mathcal{AT}$, jusqu'à épuisement de $\mathcal{AT}$.
@@ -125,6 +162,9 @@ Ici, on a choisi les paramètres de regroupement qui donnaient les meilleurs ré
 \end{equation}
 
 Le résultat est un arbre binaire, noté $X_a$, dont la racine est $\cal{D}_a$ tout entier, et dont les feuilles sont les $N_e$ éléments de $\cal{D}_a$. 
+
+}
+\fi
 
 \subsection{Parcours et étiquettage de l'arbre}
 \label{subsec:texp-tree-labelling}
