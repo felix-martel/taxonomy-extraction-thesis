@@ -8,6 +8,17 @@
 %
 \begin{otherlanguage}{english}
 
-%Written in English, the abstract is a brief summary similar to the previoussection {\selectlanguage{french}(Résumé)}. However, this section is not aword for word translation of the abstract in French.
+Knowledge graphs are the backbone of the Semantic Web, and have been succesfully applied to a wide range of areas. Many of these graphs are built automatically or collaboratively, and aggregate data from various sources. In these conditions, automatically creating and updating a taxonomy that accurately reflects the content of a graph is a important issue.
+
+However, among scalable taxonomy extraction approaches, most of them can only extract a hierarchy on existing classes, and are unable to identify new classes from the data. In this thesis, we propose a novel taxonomy extraction method based on knowledge graph embeddings that is both scalable and expressive. A knowledge graph embedding model provides a dense, low-dimensional vector representation of the entities of a graph, such that similar entities in the graph are embedded close to each other in the embedding space.
+
+Our goal is to show how these graph embeddings can be combined with unsupervised hierarchical clustering to extract a taxonomy from a graph. We first show that unsupervised clustering is able to extract a taxonomy on existing classes. Then, we show that it can also be used to identify new classes and organize them hierarchically, thus creating an expressive taxonomy.
+
+For the non-expressive taxonomy extraction task, we introduce two methods for mapping existing classes to clusters of entities. The first of these method solves a linear optimization problem in order to find an optimal injective function from classes to clusters. The second one can be seen as a smoothed version of the first one, designed to better handle noise and uncertainty in the data. In both cases, the resulting mapping is used to turn the clustering tree into a taxonomy. We run experiments with these two methods on DBpedia, and show that they both outperform a method based on supervised clustering.
+
+For the expressive extraction task, we propose an axiom extraction method that leverages the clustering tree to define positive and negative samples, and induces new axioms from these samples. Since samples are chosen based on the similarity of their embeddings, this method effectively narrows down the search space to relevant subsets of the full graph. We also add
+a resampling mechanism, which allows us to extract increasingly specific axioms.
+We try our method on DBpedia, and show that the predicted taxonomy is able to rebuild the reference taxonomy with good precision, and that it can also identify new relevant classes and describe them with logical axioms.
+
 
 \end{otherlanguage}

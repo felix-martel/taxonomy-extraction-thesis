@@ -6,3 +6,39 @@
 % Le résumé est un bref exposé du sujet traité, des objectifs visés, des hypothèses émises, des méthodes expérimentales utilisées et de l'analyse des résultats obtenus. On y présente également les principales conclusions de la recherche ainsi que ses applications éventuelles. En général, un résumé ne dépasse pas quatre pages.
 
 % Le résumé doit donner une idée exacte du contenu du mémoire ou de la thèse. Ce ne peut pas être une simple énumération des parties du document, car il doit faire ressortir l'originalité de la recherche, son aspect créatif et sa contribution au développement de la technologie ou à l'avancement des connaissances en génie et en sciences appliquées. Un résumé ne doit jamais comporter de références ou de figures.
+
+
+
+%L'importance qu'ont pris les graphes de connaissance dans de nombreux domaines Le problème de l'extraction automatique de taxonomies 
+
+
+% Les graphes de connaissance constituent le cœur du Web sémantique, et trouvent aujourd'hui des applications dans des domaines très variés;
+% Les graphes de connaissances jouent aujoun rôle important dans le Web sémantique, et se sont
+Les graphes de connaissance jouent aujourd'hui un rôle important pour représenter et stocker des données, bien au-delà du Web sémantique;
+beaucoup d'entre eux sont obtenus de manière automatique ou collaborative, et agrègent des données issues de sources diverses. Dans ces conditions, la création et la mise à jour automatique d'une taxonomie qui reflète le contenu d'un graphe est un enjeu crucial.
+
+
+Or, la plupart des méthodes d'extraction taxonomique adaptées aux graphes de grande taille se contentent de hiérarchiser des classes pré-existantes, et sont incapables d'identifier de nouvelles classes à partir des données. Dans ce mémoire, nous proposons une méthode d'extraction de taxonomie expressive applicable à grande échelle, grâce à l'utilisation de plongements vectoriels. Les modèles de plongement vectoriel de graphe fournissent une représentation vectorielle dense des éléments d'un graphe, qui intègre sous forme géométrique les régularités des données : ainsi, deux éléments sémantiquement proches dans le graphe auront des plongements vectoriels géométriquement proches.
+
+
+Notre but est de démontrer le potentiel du regroupement hiérarchique non-supervisé appliqué aux plongements vectoriels sur la tâche d'extraction de taxonomie.
+Pour cela, nous procédons en deux étapes : nous montrons d'abord qu'un tel regroupement est capable d'extraire une taxonomie sur les classes existantes, puis qu'il permet de surcroît d'identifier de nouvelles classes et de les organiser hiérarchiquement, c'est-à-dire d'extraire une taxonomie expressive.
+
+
+Pour l'extraction de taxonomie sur les classes existantes, nous proposons deux méthodes capables d'associer des classes existantes à des groupes d'entités en tenant compte de la structure d'arbre qui existe entre ces groupes; cela permet de transformer l'arbre de clustering issu du regroupement hiérarchique en une taxonomie. La première de ces méthodes consiste à trouver une injection optimale des classes vers les clusters en résolvant un problème d'optimisation linéaire. La seconde est un lissage de la méthode précédente, conçue pour mieux tenir compte du bruit dans les données. Nous appliquons ces deux méthodes à DBpedia, et montrons qu'elles sont toutes deux capables de surpasser une méthode basée sur un regroupement supervisé.
+
+Pour l'extraction de taxonomie expressive, nous présentons une méthode d'extraction d'axiomes capable de tirer profit d'un arbre de clustering pour obtenir des exemples positifs et négatifs pertinents, et induire des axiomes à partir de ces exemples. Nous y ajoutons un mécanisme de tirage aléatoire capable d'augmenter récursivement la spécificité des entités traitées, et donc de construire progressivement une taxonomie complète. Sur DBpedia, notre approche est capable de reconstituer la taxonomie de référence sur les classes existantes, mais aussi de décrire ces classes au moyen d'axiomes logiques et d'identifier de nouvelles classes pertinentes.
+
+% Grâce aux plongements vectoriels, la recherche d'axiomes s'opère sur des groupes d'entités homogènes, ce qui permet de restreindre l'espace de recherche à un sous-ensemble d'entités réduit mais pertinent.
+
+
+
+
+
+% En parallèle, les modèles de plongement vectoriel de graphe ont connu un essor, notamment pour compléter automatiquement un graphe avec des faits nouveaux. 
+%L'utilisation de ces plongements pour l'extraction de taxonomies
+
+
+% La plupart de ces méthodes se contentent cependant de hiérarchiser des classes existantes, mais sont incapables d'identifier de nouvelles classes à partir des données. Dans ce mémoire, nous cherchons à exploiter les modèles de plongement pour extraire 
+
+

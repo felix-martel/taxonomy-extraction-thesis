@@ -35,7 +35,7 @@ Au chapitre \ref{chap:texp}, on associe au contraire les groupes à des axiomes 
 
 
 \section{Limites et pistes d'améliorations}
-
+\label{sec:ccl-limits}
 Nous identifions ici quelques limites des travaux présentés ici, et proposons des pistes pour les surmonter. Nous esquissons aussi des directions de recherche pour poursuivre ou prolonger le travail entamé dans ce mémoire.
 
 
@@ -53,9 +53,9 @@ Pour l'évaluation des modèles, qui fait l'objet du chapitre \ref{chap:kge}, no
 Pour remédier à ce problème, on pourrait adjoindre une tâche de \textit{regroupement} à la tâche de séparabilité, pour vérifier le comportement des modèles de plongement vis-à-vis des algorithmes de regroupement. 
 On peut par exemple tirer des entités appartenant à $k$ classes différentes, puis appliquer un algorithme des $k$-moyennes sur les plongements de ces entités, et finalement mesurer si le partitionnement obtenu recoupe bien les $k$ classes initiales.
 
-\paragraph{Extraction de taxonomie non-expressive}
+\paragraph{Extraction de taxonomie sur les classes existantes}
 
-Notre approche pour l'extraction automatique de taxonomie non-expressive est limitée par l'étape de regroupement. Pour des questions de performance, la taille des données à regrouper est limitée, ce qui, d'une part, empêche d'utiliser l'intégralité des entités du graphe, et d'autre part, entraîne la décroissance exponentielle du nombre d'entités par classe. Ces deux facteurs compliquent le traitement des classes rares ou très spécifiques. En l'état, notre méthode n'est donc pas applicable à tout le graphe DBpedia.
+Notre approche pour l'extraction automatique de taxonomie sur les classes existantes est limitée par l'étape de regroupement. Pour des questions de performance, la taille des données à regrouper est limitée, ce qui, d'une part, empêche d'utiliser l'intégralité des entités du graphe, et d'autre part, entraîne la décroissance exponentielle du nombre d'entités par classe. Ces deux facteurs compliquent le traitement des classes rares ou très spécifiques. En l'état, notre méthode n'est donc pas applicable à tout le graphe DBpedia.
 
 Une solution possible consisterait à itérer la méthode MLM avec des données d'entrée tirées aléatoirement dans le graphe : à chaque étape, on tire des entités aléatoirement, on les regroupe, et on calcule la probabilité des axiomes de subsumption. On peut alors maintenir une matrice contenant ces probabilités, et la mettre à jour à chaque étape. De plus, on peut utiliser la géométrie des plongements pour tirer les entités dans une région donnée de l'espace, ce qui permettrait d'augmenter la spécificité des données et donc de la taxonomie extraite – il s'agirait en fait d'adapter la méthode expressive présentée à la section \ref{subsec:texp-clustering} au cas où l'on n'ait pas accès au graphe complet.
 
@@ -63,7 +63,7 @@ Une solution possible consisterait à itérer la méthode MLM avec des données 
 \paragraph{Extraction de taxonomie expressive}
 
 
-Notre méthode d'extraction d'axiomes présente plusieurs limites : d'une part, les axiomes atomiques sont limités et laissent de côté les relations inverses, la composition de relations, les restrictions universelles, etc. D'autre part, on combine à chaque étape un axiome (complexe ou non) avec un atome : on ne peut donc pas combiner un axiome complexe avec un autre axiome complexe, ce qui interdit par exemple des axiomes de la forme $(A \land B) \lor (C \land D)$. Il serait également intéressant d'expérimenter d'autres approches pour l'extraction d'axiomes : comme l'espace de recherche est un sous-ensemble d'entités de petite taille et sémantiquement cohérent, il devrait être possible d'employer des méthodes plus complexes et capables d'extraire des axiomes plus expressifs, comme \cite{vlog2019carral}.
+Notre méthode d'extraction d'axiomes présente plusieurs limites : d'une part, les axiomes atomiques sont limités et laissent de côté les relations inverses, la composition de relations, les restrictions universelles, etc. D'autre part, on combine à chaque étape un axiome (complexe ou non) avec un atome : on ne peut donc pas combiner un axiome complexe avec un autre axiome complexe, ce qui interdit par exemple des axiomes de la forme $(A \land B) \lor (C \land D)$. Il serait également intéressant d'expérimenter d'autres approches pour l'extraction d'axiomes : comme l'espace de recherche est un sous-ensemble d'entités de petite taille et sémantiquement cohérent, il devrait être possible d'employer des méthodes plus complexes et capables d'extraire des axiomes plus expressifs, comme \cite{vlog2019carral} ou \cite{lajus2020amie}.
 
 Quant aux faiblesses des taxonomies expressives extraites par notre approche, elles ont été discutées à la section \ref{subsec:texp-reslts-limits} : les axiomes extraits sont inégalement informatifs, parfois redondants ou trop spécifiques. La piste d'amélioration la plus évidente consiste à expérimenter des valeurs différentes pour les paramètres. Ceux-ci sont en effet nombreux, à chaque étape : on peut modifier les modalités du tirage aléatoire, la méthode de regroupement, l'ordre de parcours de l'arbre de clustering et sa profondeur maximale, le mode d'extraction (mono-niveau ou multi-niveaux), le nombre d'étapes et l'évolution du seuil $\delta$. Toutefois, pour systématiser une telle recherche, il est nécessaire de concevoir une méthode d'évaluation qualitative fiable des taxonomies produites. Pour ce faire, on peut envisager la démarche suivante : identifier des tâches externes susceptibles de tirer profit d'axiomes logiques (par exemple, typage automatique d'entités, réponse automatique à des questions, ou autre), et comparer, sur ces tâches, les performances d'un modèle utilisant seulement le graphe aux performances d'un modèle utilisant à la fois le graphe et la taxonomie extraite. On obtient ainsi une évaluation indirecte de cette taxonomie, qui permet de mesurer son utilité pratique.
 
