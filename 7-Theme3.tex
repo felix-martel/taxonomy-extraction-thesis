@@ -45,6 +45,8 @@ Dans la section \ref{sec:texp-results}, on applique notre méthode sur DBpédia,
 
 \paragraph{Remarque}
 
+DBpédia, comme la plupart des graphes de connaissances, fonctionne sous l’hypothèse
+du monde ouvert : si un triplet qui n'est pas présent dans le graphe est soit faux, soit simplement manquant. Aussi, dans la suite, lorsqu'on écrit qu'une entité $x$ ne vérifie pas un prédicat logique $P$, ou plus rapidement $\neg P(x)$, il s'agit simplement d'un raccourci pour signifier que l'information «$x$ vérifie le prédicat $P$» est soit fausse, soit manquante dans le graphe.
 
 \paragraph{Notations}
 
@@ -118,10 +120,10 @@ Pour la première étape, $\mathcal{AT}$ est initialisée à $\{\top\}$ : le con
 puisqu'il est par définition vérifié par toutes les entités du graphe. Il sert donc de racine à la taxonomie.
 De plus, comme on ne connaît qu'une seule classe et aucun axiome de subsumption, la taxonomie $\Tpred$ est réduite à un seul sommet $\top$ et ne contient aucune arête. 
 
-On va alors retirer le premier et seul élément $a$ de la file $\mathcal{AT}$.  % ,qui sert d'axiome d'entrée pour cette étape. 
+On va alors retirer le premier élément $a$ de la file $\mathcal{AT}$.  % ,qui sert d'axiome d'entrée pour cette étape. 
 On prélève aléatoirement, dans le graphe $\KG$, $N_e$ entités parmi celles qui vérifient $a$; cette étape correspond à la fonction \texttt{Preleve} de l'algorithme \ref{algo:texp-main}. Dans notre implémentation, le graphe est représenté grâce à une librairie Python spécifique, mais dans d'autres contextes, le langage de requête SPARQL pourrait être utilisé à cette fin.
 %
-Lors de la première étape, comme $a = \top$, il suffit de prélever aléatoirement des entités du graphe. Les plongements de ces entités donnent un nuage de points $\cal{D}_a$ de dimension $d \times N_e$, avec $d$ la dimension des plongements.
+Lors de la première étape, $\mathcal{AT}$ ne contient que l'élément $\top$, donc $a = \top$ et il suffit alors de prélever aléatoirement des entités du graphe. Les plongements de ces entités donnent un nuage de points $\cal{D}_a$ de dimension $N_e \times d$, avec $d$ la dimension des plongements.
 
 Sur ce nuage de point $\cal{D}_a$, on effectue un regroupement hiérarchique, similaire à celui décrit dans la section \ref{subsec:te-clustering}, qui correspond à la fonction \texttt{Regroupe} de l'algorithme \ref{algo:texp-main}.
 Ici, on a choisi les paramètres de regroupement qui donnaient les meilleurs résultats pour l'extraction de taxonomie non-expressive (voir la section \ref{subsec:te-results} au chapitre précédent), c'est-à-dire la distance cosinus comme mesure de similarité, et le saut moyen comme critère de liaison. Autrement dit, on fusionne les clusters qui ont la plus faible distance cosinus moyenne entre leurs éléments. À l'étape $t$, notons $\cal{C}_t$ les clusters existants; les clusters $C_1$ et $C_2$ à fusionner sont choisis selon l'équation :

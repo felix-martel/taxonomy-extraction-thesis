@@ -87,9 +87,9 @@ Or la distance entre $A$ et sa superclasse immédiate $B$ est :
 \end{align*}
 Et $d'-d \geq 1$, donc $d_\text{tax}(A, A') < \frac{1}{2^{d-1}} = d_\text{tax}(A, B) \leq d_\text{tax}(A, B')$ pour toute classe $B'$ qui n'est pas sous-classe de $A$. On retrouve bien la propriété énoncée.
 
-Pour cette distance, les classes les plus proches sont \dbo{NascarDriver} et \dbo{RacingDriver}, 
 
-\paragraph{Influence de la fréquence}
+
+\paragraph{Mesure de fréquence}
 
 Une entité $e$ impliquée dans de nombreux triplets sera vue plus souvent pendant la phase d'entraînement, et aura donc un plongement vectoriel plus fiable. Comme ce plongement vectoriel dépend à son tour des plongements des entités et des relations qui sont connectée à $e$, il est possible que les entités appartenant à des classes rares soient impliquées dans des relations rares elles-aussi et connectées à des entités rares; cela produirait des plongements vectoriels moins fiables que la moyenne. Pour vérifier cette hypothèse, on évalue également l'influence de l'effectif des classes (\textit{i.e.} le nombre d'instances qui appartiennent à cette classe) sur les scores de séparabilité. Pour obtenir une mesure synthétique de la fréquence d'une paire de classes $(A, B)$, on utilise la moyenne harmonique des fréquences de $A$ et de $B$. L'utilisation de la moyenne harmonique plutôt que de la moyenne arithmétique usuelle permet de mieux refléter les déséquilibres entre les fréquences de $A$ et de $B$ : si $N_A$ est la fréquence de la classe $A$ et $N_B$ celle de la classe $B$, et que $N_A$ est supérieur à $N_B$ d'un ordre de grandeur, alors la moyenne arithmétique de $N_A$ et $N_B$ a le même ordre de grandeur que $N_A$, et n'indique donc pas que $B$ est rare par rapport à $A$.
 

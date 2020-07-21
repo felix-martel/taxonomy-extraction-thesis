@@ -23,7 +23,7 @@ La section \ref{sec:te-problem} est consacrée à l'énoncé du problème. Dans 
 \section{Présentation générale}
 \subsection{Énoncé du problème}
 \label{sec:te-problem}
-Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
+Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissance. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} ou des \textit{concepts} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
 
 On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubset t_i')\}_{i=1, \ldots}$. Un axiome $t \sqsubset t'$ signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Dans ce cas, on dit que $t$ est un \textit{sous-type} de $t'$, et que $t'$ est un \textit{supertype} de $t$.
 Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubset t_1 \sqsubset \ldots \sqsubset t_k \sqsubset t_0$.
@@ -76,12 +76,12 @@ L'algorithme s'arrête lorsqu'il ne reste plus qu'un seul cluster qui contient t
 
 \begin{figure}[h]
     \centering
-    % \begin{adjustwidth}{0in}{-0.5in}
-    %     \resizebox{1.1\textwidth}{!}{%
-    %         \input{fig/te-clustering-tree}
-    %     }%
-    % \end{adjustwidth}
-    \input{fig/te-clustering-tree}
+    \begin{adjustwidth}{0in}{-0.5in}
+     \resizebox{1.1\textwidth}{!}{%
+         \input{fig/te-clustering-tree}
+     }%
+    \end{adjustwidth}
+    %\input{fig/te-clustering-tree}
     \caption[Principe du regroupement hiérarchique ascendant]{Exemple d'arbre de clustering obtenu par regroupement hiérarchique ascendant. La couleur des points représente leur étiquette $y_i$ et n'est pas utilisée lors du regroupement.}
     \label{fig:clustering_tree}
 \end{figure}
@@ -96,7 +96,7 @@ Puisque $X$ est une hiérarchie sur les clusters, il vérifie la propriété sui
 \begin{equation}
     \forall C_1, C_2 \in X, C_1 \cap C_2 \neq \emptyset \implies (C_1 \subseteq C_2 \lor C_2 \subseteq C_1)
 \end{equation}
-Dit autrement, deux clusters sont soit disjoints, soit inclus l'un dans l'autre.
+Dit autrement, deux clusters sont soit disjoints, soit inclus l'un dans l'autre; l'inclusion partielle de l'un dans l'autre n'est pas possible.
 
 Pour un cluster $C$ donné, on définit $X[C]$ le \textit{sous-arbre de racine $C$} comme l'arbre contenant $C$ et tous ses successeurs:
 \begin{equation}

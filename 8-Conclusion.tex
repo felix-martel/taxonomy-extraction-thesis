@@ -55,6 +55,8 @@ On peut par exemple tirer des entités appartenant à $k$ classes différentes, 
 
 \paragraph{Extraction de taxonomie sur les classes existantes}
 
+Une première extension du travail effectué ici consisterait à essayer d'autres graphes de connaissance : on pourrait expérimenter avec DBpedia dans d'autres langues que l'anglais, avec d'autres graphes généralistes comme YAGO \cite{suchanek2008yago} ou Wikidata \cite{vrandevcic2014wikidata}, ou avec des graphes spécialisés.
+
 Notre approche pour l'extraction automatique de taxonomie sur les classes existantes est limitée par l'étape de regroupement. Pour des questions de performance, la taille des données à regrouper est limitée, ce qui, d'une part, empêche d'utiliser l'intégralité des entités du graphe, et d'autre part, entraîne la décroissance exponentielle du nombre d'entités par classe. Ces deux facteurs compliquent le traitement des classes rares ou très spécifiques. En l'état, notre méthode n'est donc pas applicable à tout le graphe DBpedia.
 
 Une solution possible consisterait à itérer la méthode MLM avec des données d'entrée tirées aléatoirement dans le graphe : à chaque étape, on tire des entités aléatoirement, on les regroupe, et on calcule la probabilité des axiomes de subsumption. On peut alors maintenir une matrice contenant ces probabilités, et la mettre à jour à chaque étape. De plus, on peut utiliser la géométrie des plongements pour tirer les entités dans une région donnée de l'espace, ce qui permettrait d'augmenter la spécificité des données et donc de la taxonomie extraite – il s'agirait en fait d'adapter la méthode expressive présentée à la section \ref{subsec:texp-clustering} au cas où l'on n'ait pas accès au graphe complet.
