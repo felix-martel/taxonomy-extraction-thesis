@@ -1,7 +1,7 @@
 \Chapter{PLONGEMENTS VECTORIELS DE GRAPHES DE CONNAISSANCES}
 \label{chap:kge}
 
-Ce chapitre introduit les modèles de plongement vectoriels, utilisés pour représenter les entités et les relations d'un graphe de connaissance sous forme vectorielle. Ces représentations vectorielles, dont la géométrie intègre une partie de l'information sémantique contenue dans le graphe, permettent l'application d'outils d'apprentissage automatique, comme la complétion de triplets \cite{simple2018}, la détection de triplets invalides \cite{nguyen2020relational}, mais aussi l'extraction automatique de taxonomie qui fait l'objet de ce mémoire \cite{ristoski2017large, zhang2018taxogen}. Dans ce chapitre, on présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relations qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. % Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
+Ce chapitre introduit les modèles de plongement vectoriels, utilisés pour représenter les entités et les relations d'un graphe de connaissances sous forme vectorielle. Ces représentations vectorielles, dont la géométrie intègre une partie de l'information sémantique contenue dans le graphe, permettent l'application d'outils d'apprentissage automatique, comme la complétion de triplets \cite{simple2018}, la détection de triplets invalides \cite{nguyen2020relational}, mais aussi l'extraction automatique de taxonomie qui fait l'objet de ce mémoire \cite{ristoski2017large, zhang2018taxogen}. Dans ce chapitre, on présente dans le détail les modèles utilisés dans la suite de notre travail, en distinguant deux façons d'envisager les modèles de plongement – l'une géométrique, l'autre algébrique. On s'attache notamment à mettre en évidence les hypothèses de chaque modèle, les types de relations qu'il s'attache à modéliser, et les implications des choix effectués pour la modélisation. % Au-delà des deux familles de modèles présentées, on propose également un survol des autres approches existantes dans la littérature.
 
 Enfin, on présente une nouvelle tâche sur laquelle évaluer un modèle de plongement de graphe. Cette tâche vise explicitement à mesurer la capacité d'un modèle à envoyer des entités appartenant à une même classe dans une même région de l'espace – une propriété essentielle pour pouvoir extraire des informations taxonomiques à partir des plongements vectoriels, et un préalable aux méthodes présentées dans les chapitres suivants de ce mémoire.
 
@@ -15,7 +15,7 @@ Enfin, on présente une nouvelle tâche sur laquelle évaluer un modèle de plon
 
 
 
-Dans toute cette section, on considérera un graphe de connaissance $\KG \subseteq \Ent \times \Rel \times \Ent$ dont on notera $n = | \Ent |$ le nombre d'entités, et $m = |\Rel |$ le nombre de relations.
+Dans toute cette section, on considérera un graphe de connaissances $\KG \subseteq \Ent \times \Rel \times \Ent$ dont on notera $n = | \Ent |$ le nombre d'entités, et $m = |\Rel |$ le nombre de relations.
 
 % \todo{Reformuler, en partant des différents modes de représentation}
 
@@ -23,7 +23,7 @@ Dans toute cette section, on considérera un graphe de connaissance $\KG \subset
 \newcommand{\IRI}{\operatorname{IRI}}
 \newcommand{\Adja}{\operatorname{Adj}}
 
-La représentation des données est une question cruciale en apprentissage automatique; or la représentation standard des entités dans un graphe de connaissance est très inadaptée à la plupart des algorithmes. En effet, dans un graphe de connaissance RDF, une ressource est représentée par un identifiant unique, l'IRI (\textit{International Resource Identifier}). 
+La représentation des données est une question cruciale en apprentissage automatique; or la représentation standard des entités dans un graphe de connaissances est très inadaptée à la plupart des algorithmes. En effet, dans un graphe de connaissances RDF, une ressource est représentée par un identifiant unique, l'IRI (\textit{International Resource Identifier}). 
 Une IRI est purement symbolique et ne contient pas nécessairement d'information sur la ressource qu'elle représente. %  ou peu d'information sur la ressource qu'elle représente.
 Cette représentation discrète ne permet pas, par exemple, de comparer deux entités entre elles : pour deux entités $e$ et $e'$, la seule donnée de leurs IRI respectives ne permet pas de déduire si ces entités sont proches l'une de l'autre. %Cela n'est pas un problème pour un système logique basé sur des axiomes et des règles d'inférences; pour un algorithme d'apprentissage automatique 
 % si deux entités $e$ et $e'$ sont représentées par leurs IRI $\IRI(e)$ et $\IRI(e')$, on peut savoir que $e = e'$ si $r=r'$; dans le cas $r \neq r'$, on ne peut rien conclure. 
@@ -36,7 +36,7 @@ Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence 
 \begin{equation}
     \operatorname{Jaccard}(e, e') = \frac{\sum_{i, j} \Adja(e)_{i, j} \land \Adja(e')_{i, j}}{\sum_{i, j} \Adja(e)_{i, j} \lor \Adja(e')_{i, j}}    
 \end{equation}
-Cette représentation possède toutefois ses limites. Elle est discrète, donc des triplets proches mais différents seront encodés différemment. Ainsi, la proximité des triplets \texttt{(dbr:Montréal, dbo:region, dbr:Québec)} et \texttt{(dbr:Island\_of\_Montréal, dbo:country, dbr:Canada)} échappe complètement à l'indice de Jaccard. Elle est également creuse et de grande dimension : les entités sont représentés par des points épars dans un espace quasiment vide, une situation qui complique l'usage de la plupart des algorithmes d'apprentissage automatique.
+Cette représentation possède toutefois ses limites. Elle est discrète, donc des triplets proches mais différents seront encodés différemment. Ainsi, la proximité des triplets \texttt{(dbr:Montréal, dbo:region,  dbr:Québec)} \ et \ \texttt{(dbr:Island\_of\_Montréal,  dbo:country, dbr:Canada)} échappe complètement à l'indice de Jaccard. Elle est également creuse et de grande dimension : les entités sont représentés par des points épars dans un espace quasiment vide, une situation qui complique l'usage de la plupart des algorithmes d'apprentissage automatique.
 
 
 
@@ -45,7 +45,7 @@ Cette représentation possède toutefois ses limites. Elle est discrète, donc d
 
 %elle présente elle aussi des inconvénients. D'autre part, les plongements lexicaux sont appris sur des corpus textuels génériques et étrangers au graphe. Le contexte effectif de l'entité dans le graphe n'est donc pas pris en compte. (à détailler)
 
-Un \textbf{modèle de plongement} est une méthode pour obtenir une représentation vectorielle dense et sémantiquement cohérente des entités d'un graphe, à partir des triplets contenus dans le graphe. Dense, c'est-à-dire de faible dimension et avec peu de zéros, par opposition à la représentation sous forme de matrice d'adjacence. Sémantiquement cohérente, car on souhaite que la géométrie des plongements reflète le graphe de connaissance original : deux entités sémantiquement proches dans le graphe doivent avoir des plongements géométriquement proches. Enfin, contrairement à la méthode basée sur des plongements lexicaux, cette représentation vectorielle est basée sur le graphe de connaissance et non sur des ressources externes, et doit donc tenir compte des spécificités de ce graphe.
+Un \textbf{modèle de plongement} est une méthode pour obtenir une représentation vectorielle dense et sémantiquement cohérente des entités d'un graphe, à partir des triplets contenus dans le graphe. Dense, c'est-à-dire de faible dimension et avec peu de zéros, par opposition à la représentation sous forme de matrice d'adjacence. Sémantiquement cohérente, car on souhaite que la géométrie des plongements reflète le graphe de connaissances original : deux entités sémantiquement proches dans le graphe doivent avoir des plongements géométriquement proches. Enfin, contrairement à la méthode basée sur des plongements lexicaux, cette représentation vectorielle est basée sur le graphe de connaissances et non sur des ressources externes, et doit donc tenir compte des spécificités de ce graphe.
 
 En toute généralité, un modèle de plongement vectoriel est un modèle qui associe à chaque entité $e \in \mathcal{E}$ un vecteur $\mathbf{e} \in \mathbb{R}^d$, et à chaque relation $r \in \mathcal{R}$ un vecteur $\mathbf{r} \in \mathbb{R}^{d'}$ (vecteur étant ici à comprendre au sens large de «point dans un espace vectoriel», ce qui inclut donc les matrices). On note $\mathbf{E} = \{\mathbf{e}\}_{e \in \mathcal{E}} $ l'ensemble des plongements d'entité, $\mathbf{R} = \{\mathbf{r}\}_{r \in \mathcal{R}} $ l'ensemble des plongements de relation et $\Theta = (\mathbf{E}, \mathbf{R})$ l'ensemble des paramètres du modèle. 
 
@@ -89,7 +89,7 @@ Toutefois, si elle est vérifiée en moyenne, cette hypothèse devient fragile p
 \section{Modèles de plongement}
 \label{sec:kge-models}
 
-Cette section présente les modèles de plongement utilisés dans la suite de ce mémoire. On y distingue deux grandes façons de concevoir ces modèles : la première est une approche algébrique, qui considère un graphe de connaissance comme un tenseur d'adjacence, et applique sur ce tenseur des techniques de réduction de la dimension. %et consiste à appliquer des techniques de réduction de la dimension à une représentation tensorielle du graphe de connaissance. 
+Cette section présente les modèles de plongement utilisés dans la suite de ce mémoire. On y distingue deux grandes façons de concevoir ces modèles : la première est une approche algébrique, qui considère un graphe de connaissances comme un tenseur d'adjacence, et applique sur ce tenseur des techniques de réduction de la dimension. %et consiste à appliquer des techniques de réduction de la dimension à une représentation tensorielle du graphe de connaissance. 
 Cette approche algébrique est illustrée par trois modèles : RESCAL \cite{rescal}, DistMult \cite{distmult} et ComplEx \cite{complex}. Une seconde approche est davantage géométrique : elle consiste à définir des contraintes géométriques pour les triplets valides du graphe, et à entraîner les plongements afin qu'ils respectent ces contraintes. %traduire géométriquement des propriétés 
 Cette approche géométrique est ici représentée par trois modèles, qui sont TransE \cite{bordes2013translating}, TransH \cite{transh}, TransD \cite{transd}. 
 %Enfin, on présente un tour d'horizon d'autres approches existantes.
@@ -103,7 +103,7 @@ Enfin, on présente RDF2Vec \cite{ristoski2016rdf2vec}, une troisième approche 
 
 % mots introductifs
 
-Soit $\KG$ un graphe de connaissance ayant $n$ entités et $m$ relations, on note $e_1, e_2, \ldots, e_n$ ses entités et $r_1, r_2, \ldots, r_k$ ses relations. Ce graphe de connaissance peut être représenté sous la forme d'un tenseur\footnote{Dans le cas qui nous occupe, un tenseur peut être vu comme la généralisation d'une matrice à trois dimensions} d'adjacence $\mathcal{T} \in \{0, 1\}^{n \times m \times n}$. Pour une relation $r_k \in \Rel$, et deux entités $e_i, e_j \in \Ent$, on a :
+Soit $\KG$ un graphe de connaissances ayant $n$ entités et $m$ relations, on note $e_1, e_2, \ldots, e_n$ ses entités et $r_1, r_2, \ldots, r_k$ ses relations. Ce graphe de connaissances peut être représenté sous la forme d'un tenseur\footnote{Dans le cas qui nous occupe, un tenseur peut être vu comme la généralisation d'une matrice à trois dimensions} d'adjacence $\mathcal{T} \in \{0, 1\}^{n \times m \times n}$. Pour une relation $r_k \in \Rel$, et deux entités $e_i, e_j \in \Ent$, on a :
 \begin{equation}
     \cal{T}_{i, j, k} = \begin{cases}
     &1 \text{ si } (e_i, r_k, e_j) \in \KG \\
@@ -115,7 +115,7 @@ Soit $\KG$ un graphe de connaissance ayant $n$ entités et $m$ relations, on not
     \centering
     % \includegraphics[width=\textwidth]{img/tenseur_adjacence.png}
     \input{fig/kge-tensor}
-    \caption[Représentation de graphe sous forme de tenseur d'adjacence]{Représentation d'un graphe de connaissance $\KG$ sous forme de tenseur d'adjacence $\cal{T}$.}
+    \caption[Représentation de graphe sous forme de tenseur d'adjacence]{Représentation d'un graphe de connaissances $\KG$ sous forme de tenseur d'adjacence $\cal{T}$.}
     \label{fig:kge-algebric-overview}
 \end{figure}
 
@@ -321,7 +321,7 @@ Dans TransE, chaque relation est associée à un vecteur $\bf{r}$ à $d$ dimensi
     (h, r, t) \text{ est valide } \iff T_r(\bf{h}) \approx \bf{t} 
 \end{equation}
 
-Les auteurs défendent l'idée que les relations hiérarchiques sont le type de relation fondamentale d'un graphe de connaissance, et que la translation est une approximation naturelle pour modéliser une hiérarchie. % Ainsi, la représentation naturelle d'un arbre en dimension 2 
+Les auteurs défendent l'idée que les relations hiérarchiques sont le type de relation fondamentale d'un graphe de connaissances, et que la translation est une approximation naturelle pour modéliser une hiérarchie. % Ainsi, la représentation naturelle d'un arbre en dimension 2 
 De plus, ils remarquent que les plongements lexicaux Word2Vec \cite{mikolov2013distributed} traduisent naturellement certaines relations \textit{one-to-one} comme des translations. Dans l'article original de Word2Vec \cite{mikolov2013distributed}, les auteurs remarquent la fameuse propriété de leur modèle :
 \begin{equation}
     \texttt{vec(Berlin) - vec(Germany)} \approx 
@@ -484,7 +484,7 @@ TransD & $\mathbf{e, e_p} \in \mathbb{R}^d$ & $\mathbf{r, r_p} \in \mathbb{R}^d$
 
 Le modèle RDF2Vec s'inspire du modèle de plongement Word2Vec \cite{mikolov2013distributed}, très utilisé pour produire des plongements lexicaux.
 
-Il fonctionne en deux étapes. % : d'abord, des chemins sont prélevés dans le graphe de connaissance au moyen de marches aléatoires – ces chemins sont simplement des suites d'entités et de relations connectées entre elles. % Pour les prélever, on commence par tirer aléatoirement une entité 
+Il fonctionne en deux étapes. % : d'abord, des chemins sont prélevés dans le graphe de connaissances au moyen de marches aléatoires – ces chemins sont simplement des suites d'entités et de relations connectées entre elles. % Pour les prélever, on commence par tirer aléatoirement une entité 
 Dans un premier temps, des chemins sont prélevés dans le graphe au moyen de marches aléatoires.
 Un \textit{chemin} sur le graphe est une suite d'entités et de relations $(x_1, x_2, \ldots, x_T)$ tels que, pour tout $k \in \{1, 2, \ldots, \frac{T}{2}\}$, $x_{2k-1}$ est une entité, $x_{2k}$ est une relation, et $(x_{2k-1}, x_{2k}, x_{2k+1})$ est un triplet valide de $\KG$. Par exemple, la séquence \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga, dbo:country, dbr:Spain)} est un chemin de longueur 5, constitué des triplets \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga)} et \texttt{(dbr:Málaga, \allowbreak dbo:country, dbr:Spain)}. 
 Dans un tel chemin, le \textit{contexte} d'un élément $x_i$ est l'ensemble des $c$ éléments précédant $x_i$ et des $c$ éléments le suivant, avec $c$ un paramètre appelé la \textit{longueur}

@@ -12,14 +12,14 @@
 
 
 Dans ce travail, nous nous sommes intéressés au %on s'est intéressé au 
-problème de l'extraction de taxonomie à partir d'un graphe de connaissance. Plus particulièrement, notre idée était d'utiliser les plongements vectoriels issus d'un graphe de connaissance pour identifier des groupes d'entités cohérents, et établir des liens taxonomiques entre ces groupes. L'objectif est donc d'établir une hiérarchie entre les classes existantes, mais aussi de pouvoir découvrir et caractériser de nouvelles classes. 
+problème de l'extraction de taxonomie à partir d'un graphe de connaissances. Plus particulièrement, notre idée était d'utiliser les plongements vectoriels issus d'un graphe de connaissances pour identifier des groupes d'entités cohérents, et établir des liens taxonomiques entre ces groupes. L'objectif est donc d'établir une hiérarchie entre les classes existantes, mais aussi de pouvoir découvrir et caractériser de nouvelles classes. 
 
 Pour cela, nous commençons par une étude des modèles de plongement vectoriel, sous l'angle de la \textit{séparabilité} : nous mesurons la capacité des modèles de plongement à plonger des entités de types différents dans des régions différentes de l'espace. % Sur cette tâche, la hiérarchie entre les modèles n'est pas celle que l'on obtient sur les tâches d'évaluation usuelles.
 %
 Cette tâche permet de nuancer l'état de l'art en matière de plongements vectoriels : en effet, sur les tâches d'évaluation usuelles que sont la prédiction de liens ou la complétion de triplets, TransE obtient des performances inférieures à des modèles plus expressifs comme ComplEx; ici, la situation est inversée.
 
 
-Nous abordons ensuite le problème de l'extraction de taxonomie à partir d'un graphe de connaissance, en se basant sur DBpedia. Puisque l'on veut pouvoir identifier de nouvelles classes, on se base sur un regroupement non-supervisé des plongements vectoriels : cela nous permet d'extraire une structure d'arbre sur les groupes d'entités sans aucune supervision. À partir de cette structure, on peut décliner l'approche pour obtenir une taxonomie expressive ou non-expressive.
+Nous abordons ensuite le problème de l'extraction de taxonomie à partir d'un graphe de connaissances, en se basant sur DBpedia. Puisque l'on veut pouvoir identifier de nouvelles classes, on se base sur un regroupement non-supervisé des plongements vectoriels : cela nous permet d'extraire une structure d'arbre sur les groupes d'entités sans aucune supervision. À partir de cette structure, on peut décliner l'approche pour obtenir une taxonomie expressive ou non-expressive.
 
 %si l'on injecte une liste de types connus
 Si l'on fait correspondre ces groupes à des types connus, on obtient une taxonomie sur ces types. Au chapitre \ref{chap:te}, nous proposons deux méthodes pour établir cette correspondance, l'une qui détermine une injection optimale des types vers les groupes, l'autre qui propose une association multiple entre les uns et les autres. Nous montrons que ces deux méthodes sont capables d'égaler et même de dépasser une méthode basée sur un regroupement supervisé.
@@ -47,7 +47,7 @@ Sur la question des hyperparamètres, \cite{kadlec2017knowledge} a montré que l
 % Cela permettrait de mieux comprendre . 
 % pour expliquer quelle part de la variabilité des résultats d'un modèle à l'autre s'explique par les choix d'hyperparamètres ou les propriétés intrinsèques des modèles.
 
-Quant aux modèles de plongement, de nombreuses approches ont été proposées qui obtiennent de bons résultats sur les jeux d'évaluation usuelles. Dans la lignée des modèles présentés ici, on peut citer des modèles algébriques comme HolE \cite{hole2016} et SimplE \cite{simple2018}, des modèles géométriques, comme PTransE \cite{ptranse} qui étend TransE à des chemins dans le graphe, plutôt qu'à des triplets isolés, ou RotatE \cite{rotate2019}, qui choisit de représenter les relations par des rotations dans l'espace. D'autres approches incluent des modèles neuronaux, comme R-GCN \cite{rgcn2018}, ProjE \cite{proje2017} ou ConvE \cite{conve2018}, ou l'utilisation de géométries non-euclidiennes \cite{nickel2017poincare, nickel2018learning}.
+Quant aux modèles de plongement, de nombreuses approches ont été proposées qui obtiennent de bons résultats sur les jeux d'évaluation usuels. Dans la lignée des modèles présentés ici, on peut citer des modèles algébriques comme HolE \cite{hole2016} et SimplE \cite{simple2018}, des modèles géométriques, comme PTransE \cite{ptranse} qui étend TransE à des chemins dans le graphe, plutôt qu'à des triplets isolés, ou RotatE \cite{rotate2019}, qui choisit de représenter les relations par des rotations dans l'espace. D'autres approches incluent des modèles neuronaux, comme R-GCN \cite{rgcn2018}, ProjE \cite{proje2017} ou ConvE \cite{conve2018}, ou l'utilisation de géométries non-euclidiennes \cite{nickel2017poincare, nickel2018learning}.
 
 Pour l'évaluation des modèles, qui fait l'objet du chapitre \ref{chap:kge}, notre tâche de séparabilité se révèle incomplète : idéalement, on souhaiterait trouver un mode d'évaluation qui reflète les performances des modèles sur l'extraction taxonomique. Or, RDF2Vec obtient de meilleurs résultats que TransE pour la séparabilité, alors que TransE est supérieur à RDF2Vec sur la tâche d'extraction.  
 Pour remédier à ce problème, on pourrait adjoindre une tâche de \textit{regroupement} à la tâche de séparabilité, pour vérifier le comportement des modèles de plongement vis-à-vis des algorithmes de regroupement. 
@@ -55,7 +55,7 @@ On peut par exemple tirer des entités appartenant à $k$ classes différentes, 
 
 \paragraph{Extraction de taxonomie sur les classes existantes}
 
-Une première extension du travail effectué ici consisterait à essayer d'autres graphes de connaissance : on pourrait expérimenter avec DBpedia dans d'autres langues que l'anglais, avec d'autres graphes généralistes comme YAGO \cite{suchanek2008yago} ou Wikidata \cite{vrandevcic2014wikidata}, ou avec des graphes spécialisés.
+Une première extension du travail effectué ici consisterait à essayer d'autres graphes de connaissances : on pourrait expérimenter avec DBpedia dans d'autres langues que l'anglais, avec d'autres graphes généralistes comme YAGO \cite{suchanek2008yago} ou Wikidata \cite{vrandevcic2014wikidata}, ou avec des graphes spécialisés.
 
 Notre approche pour l'extraction automatique de taxonomie sur les classes existantes est limitée par l'étape de regroupement. Pour des questions de performance, la taille des données à regrouper est limitée, ce qui, d'une part, empêche d'utiliser l'intégralité des entités du graphe, et d'autre part, entraîne la décroissance exponentielle du nombre d'entités par classe. Ces deux facteurs compliquent le traitement des classes rares ou très spécifiques. En l'état, notre méthode n'est donc pas applicable à tout le graphe DBpedia.
 
