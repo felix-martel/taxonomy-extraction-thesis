@@ -56,8 +56,8 @@
 \def\shift{1.5cm}
 \def\shifty{-5cm}
 \begin{scope}[yshift=\shifty, xshift=-3*\shift]
-\node[spoint, pointA] (root) at (0, 0) {};
-\node[spoint, pointB, below left=of root] (a1) {};
+\node[spoint, pointA, label={[accent1]180:{$Z_A$}}] (root) at (0, 0) {};
+\node[spoint, pointB, below left=of root, label={[accent2]180:{$Z_B$}}] (a1) {};
 \node[spoint, below right=of root] (a2) {};
 \node[spoint, below left=of a1] (b1) {};
 \node[spoint, below left=of a2] (b3) {};
@@ -72,12 +72,12 @@
 
 
 \begin{scope}[yshift=\shifty, xshift=-\shift]
-\node[spoint, pointA] (root) at (0, 0) {};
+\node[spoint, pointA, label={[accent1]180:{$Z_A$}}] (root) at (0, 0) {};
 \node[spoint, below left=of root] (a1) {};
 \node[spoint, below right=of root] (a2) {};
 \node[spoint, below left=of a1] (b1) {};
 \node[spoint, below left=of a2] (b3) {};
-\node[spoint, pointB, below right=of a1] (b2) {};
+\node[spoint, pointB, below right=of a1, label={[accent2]0:{$Z_B$}}] (b2) {};
 \draw[arrow] (root) to (a1);
 \draw[arrow] (root) to (a2);
 \draw[arrow] (a1) to (b1);
@@ -88,9 +88,9 @@
 
 
 \begin{scope}[yshift=\shifty, xshift=\shift]
-\node[spoint, pointA] (root) at (0, 0) {};
+\node[spoint, pointA, label={[accent1]180:{$Z_A$}}] (root) at (0, 0) {};
 \node[spoint, below left=of root] (a1) {};
-\node[spoint, pointB, below right=of root] (a2) {};
+\node[spoint, pointB, below right=of root, label={[accent2]270:{$Z_B$}}] (a2) {};
 \node[spoint, below left=of a1] (b1) {};
 \node[spoint, below left=of a2] (b3) {};
 \node[spoint, below right=of a1] (b2) {};
@@ -105,11 +105,11 @@
 
 \begin{scope}[yshift=\shifty, xshift=3*\shift]
 \node[spoint] (root) at (0, 0) {};
-\node[spoint, pointA, below left=of root] (a1) {};
+\node[spoint, pointA, below left=of root, label={[accent1]180:{$Z_A$}}] (a1) {};
 \node[spoint, below right=of root] (a2) {};
 \node[spoint, below left=of a1] (b1) {};
 \node[spoint, below left=of a2] (b3) {};
-\node[spoint, pointB, below right=of a1] (b2) {};
+\node[spoint, pointB, below right=of a1, label={[accent2]0:{$Z_B$}}] (b2) {};
 \draw[arrow] (root) to (a1);
 \draw[arrow] (root) to (a2);
 \draw[arrow] (a1) to (b1);

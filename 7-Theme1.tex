@@ -36,7 +36,7 @@ Une autre représentation possible d'une entité $e$ est sa matrice d'adjacence 
 \begin{equation}
     \operatorname{Jaccard}(e, e') = \frac{\sum_{i, j} \Adja(e)_{i, j} \land \Adja(e')_{i, j}}{\sum_{i, j} \Adja(e)_{i, j} \lor \Adja(e')_{i, j}}    
 \end{equation}
-Cette représentation possède toutefois ses limites. Elle est discrète, donc des triplets proches mais différents seront encodés différemment. Ainsi, la proximité des triplets \texttt{(dbr:Montréal, dbo:region,  dbr:Québec)} \ et \ \texttt{(dbr:Island\_of\_Montréal,  dbo:country, dbr:Canada)} échappe complètement à l'indice de Jaccard. Elle est également creuse et de grande dimension : les entités sont représentés par des points épars dans un espace quasiment vide, une situation qui complique l'usage de la plupart des algorithmes d'apprentissage automatique.
+Cette représentation possède toutefois ses limites. Elle est discrète, donc des triplets proches mais différents seront encodés différemment. Ainsi, la proximité des triplets \texttt{(dbr:Montréal, dbo:region,  dbr:Québec)} \ et \ \texttt{(dbr:Island\_of\_Montréal,  dbo:country, dbr:Canada)} échappe complètement à l'indice de Jaccard. Elle est également creuse et de grande dimension : les entités sont représentées par des points épars dans un espace quasiment vide, une situation qui complique l'usage de la plupart des algorithmes d'apprentissage automatique.
 
 
 
@@ -72,18 +72,8 @@ La phase d'entraînement diffère d'un modèle à l'autre, mais l'enjeu est esse
 
 Par définition, tous les triplets présents dans le graphe sont valides, or un ensemble d'exemples négatifs $\Delta_-$ est nécessaire pour l'entraînement. Il faut donc une procédure pour construire des triplets invalides. La méthode la plus simple pour construire un triplet invalide consiste à choisir aléatoirement une triplet valide $(h, r, t) \in \KG$, et à le \textit{corrompre}, c'est-à-dire à choisir $h$ ou $t$, et à le remplacer par une autre entité $h' \in \Ent \setminus \{ h \}$ ou $t' \in \Ent \setminus \{ t \}$ pour donner un triplet corrompu $(h', r, t)$ ou $(h, r, t')$. Plus rarement, on choisit de corrompre la relation en tirant aléatoirement $r' \in \Rel \setminus \{ r \}$ et en créant le triplet invalide $(h, r', t)$. On suppose que les triplets corrompus sont effectivement invalides : c'est l'hypothèse du monde localement fermé. Cette hypothèse est empiriquement vérifiée en moyenne, dans tout graphe suffisamment grand. En effet, pour $h$ et $r$ fixés, l'ensemble des entités $t$ telles que $(h, r, t)$ est valide est, en moyenne, de petite taille comparé à l'ensemble des entités $t$ telles que $(h, r, t)$ est invalide.
 
-Toutefois, si elle est vérifiée en moyenne, cette hypothèse devient fragile pour certaines relations, notamment \textit{many-to-one} ou \textit{one-to-many}. Considérons par exemple la relation \texttt{rdf:type} qui lie une entité à son type. Dans la version de DBpedia utilisée dans ce mémoire, il y a plus de trois millions d'entités, chacune étant sujet d'une relation \texttt{rdf:type}, contre environ 500 types; parmi ces trois millions, un million environ sont de type \dbo{Person}. Donc, en corrompant un triplet $(h, \texttt{rdf:type}, \dbo{Person})$ en un nouveau triplet $(h', \texttt{rdf:type}, \dbo{Person})$, on a une probabilité d'environ 1/3 d'obtenir un triplet valide, qui constituera alors un faux négatif. À l'inverse, si on remplace l'objet du triplet, c'est-à-dire qu'on produit un triplet corrompu  $(h, \texttt{rdf:type}, t)$ avec $t$ une entité aléatoire, la probabilité d'obtenir un faux négatif est d'environ $10^{-6}$ (une entité a généralement entre un et cinq types, d'où l'ordre de grandeur de un sur un million).
-\cite{transh} propose donc d'amender cette procédure de corruption des triplets, en tenant compte du type de la relation $r$ : \textit{one-to-one}, \textit{one-to-many}, \textit{many-to-one}. Pour mesurer ce type, on définit deux quantités pour toute relation $r$ : le nombre moyen de sujets par objet pour une relation, noté $hpt$, et le nombre moyen d'objets par sujet, noté $tph$. Dans une relation \textit{one-to-many}, une même entité est reliée à de nombreuses autres entités, soit un nombre $tph$ élevé par rapport à $hpt$; inversement, dans une relation \textit{many-to-one}, c'est $hpt$ qui est élevé par rapport à $tph$. Enfin, les relations \textit{one-to-one} et \textit{many-to-many}, $tph$ et $hpt$ auront le même ordre de grandeur. Pour corrompre un triplet $(h, r, t)$, on choisit alors de corrompre le sujet $h$ avec probabilité $\frac{tph}{tph + hpt}$, et de corrompore l'objet $t$ avec probabilité $\frac{hpt}{tph + hpt}$. Ce mode de corruption est appellé \textit{bern} (car le choix de l'objet ou du sujet suit une loi de Bernoulli, de paramètre $\frac{tph}{tph + hpt}$), par opposition à \textit{unif} qui désigne le choix équiprobable de l'objet ou du sujet.
-
-
-
-
-
-
-
-% on construit $\Delta_-$ en fabriquant des triplets aléatoirement, et en supposant qu'ils sont invalides – c'est \textit{l'hypothèse du monde localement fermé}, empiriquement vérifiée dans n'importe quel graphe suffisamment grand.
-% \todo{Ajouter une ref à la section qui le justifie}
-
+Toutefois, si elle est vérifiée en moyenne, cette hypothèse devient fragile pour certaines relations, notamment \textit{many-to-one} ou \textit{one-to-many}. Considérons par exemple la relation \texttt{rdf:type} qui lie une entité à son type. Dans la version de DBpedia utilisée dans ce mémoire, il y a plus de trois millions d'entités, chacune étant sujet d'une relation \texttt{rdf:type}, contre environ 500 types; parmi ces trois millions, un million environ sont de type \dbo{Person}. Donc, en corrompant un triplet $(h, \texttt{rdf:type}, \dbo{Person})$ en un nouveau triplet $(h', \texttt{rdf:type}, \dbo{Person})$, on a une probabilité d'environ 1/3 d'obtenir un triplet valide, qui constituera alors un faux négatif. À l'inverse, si on remplace l'objet du triplet, c'est-à-dire qu'on produit un triplet corrompu  $(h, \texttt{rdf:type}, t)$ avec $t$ une entité aléatoire, la probabilité d'obtenir un faux négatif est d'environ $10^{-6}$ (une entité a généralement entre un et cinq types, d'où l'ordre de grandeur d'un sur un million).
+\cite{transh} propose donc d'amender cette procédure de corruption des triplets, en tenant compte du type de la relation $r$ : \textit{one-to-one}, \textit{one-to-many}, \textit{many-to-one}. Pour mesurer ce type, on définit deux quantités pour toute relation $r$ : le nombre moyen de sujets par objet pour une relation, noté $hpt$, et le nombre moyen d'objets par sujet, noté $tph$. Dans une relation \textit{one-to-many}, une même entité est reliée à de nombreuses autres entités, soit un nombre $tph$ élevé par rapport à $hpt$; inversement, dans une relation \textit{many-to-one}, c'est $hpt$ qui est élevé par rapport à $tph$. Enfin, les relations \textit{one-to-one} et \textit{many-to-many}, $tph$ et $hpt$ auront le même ordre de grandeur. Pour corrompre un triplet $(h, r, t)$, on choisit alors de corrompre le sujet $h$ avec probabilité $\frac{tph}{tph + hpt}$, et de corrompre l'objet $t$ avec probabilité $\frac{hpt}{tph + hpt}$. Ce mode de corruption est appelé \textit{bern} (car le choix de l'objet ou du sujet suit une loi de Bernoulli, de paramètre $\frac{tph}{tph + hpt}$), par opposition à \textit{unif} qui désigne le choix équiprobable de l'objet ou du sujet.
 
 
 \section{Modèles de plongement}
@@ -121,11 +111,11 @@ Soit $\KG$ un graphe de connaissances ayant $n$ entités et $m$ relations, on no
 
 Pour une relation $r \in \Rel$, on note $\bf{X}^{(r)}$ la matrice d'adjacence associée à cette relation : $\bf{X}^{(r)}$ est une matrice booléenne carrée, de dimension $n$ et dont la coordonnée $(i, j)$ contient $1$ si le triplet $(e_i, r, e_j)$ est valide, et $0$ sinon. On peut donc voir $\cal{T}$ comme une collection des matrices $\bf{X}^{(r)}$ : $\cal{T} = [\bf{X}^{(r_1)}, \bf{X}^{(r_2)}, \ldots, \bf{X}^{(r_m)}]$, comme l'illustre la figure  \ref{fig:kge-algebric-overview}. Notons ici que le cas où $\cal{T}_{i, j, k} = 0$ ne signifie pas que le triplet $(e_i, r_k, e_j)$ est invalide : dans l'hypothèse du monde ouvert, un triplet absent du graphe peut être soit invalide, soit inconnu.
 
-Les modèles algébriques présentés dans cette section approximent les matrices $\bf{X}^{(r)}$ par des matrices de rang faible, et extraient de ces approximations des représentations en faible dimension des entités et des relations du graphe. Ils peuvent être rapprochés de techniques de réduction de la dimension comme l'analyse sémantique latente (ou LSA, pour \textit{Latent Semantic Analysis} (ref)), fréquente en traitement des langues naturelles.
+Les modèles algébriques présentés dans cette section approximent les matrices $\bf{X}^{(r)}$ par des matrices de rang faible, et extraient de ces approximations des représentations en faible dimension des entités et des relations du graphe. Ils peuvent être rapprochés de techniques de réduction de la dimension comme l'analyse sémantique latente (ou LSA, pour \textit{Latent Semantic Analysis}), fréquente en traitement des langues naturelles.
 
 Dans toute la suite, $d \in \mathbb{N}$ désigne la dimension des plongements. On choisit généralement $d$ entre 50 et 500.
 
-\subsubsection{RESCAL}
+\subsubsection{RESCAL \cite{rescal}}
 
 Le modèle RESCAL \cite{rescal} s'appuie sur une factorisation approximative de $\bf{X}^{(r)}$, de rang $d$, qui s'écrit comme suit  :
 \begin{equation}
@@ -133,11 +123,11 @@ Le modèle RESCAL \cite{rescal} s'appuie sur une factorisation approximative de 
     \label{eq:kge-rescal-factorization}
 \end{equation}
 
-Où $\bf{E} \in \R^{n \times d}$ contient la représentation vectorielles des entités, et $\bf{W}_r \in \R^{d \times d}$ modélise l'interaction entre les composants du sujet et de l'objet pour la relation $r$.
+Où $\bf{E} \in \R^{n \times d}$ contient la représentation vectorielle des entités, et $\bf{W}_r \in \R^{d \times d}$ modélise l'interaction entre les composants du sujet et de l'objet pour la relation $r$.
 
 Notons $\bf{E} = (\bf{e}_1, \bf{e}_2, \ldots, \bf{e}_n)^\top$ : $\bf{e}_i$ désigne la $i$-ème ligne de $\bf{E}$ et constitue la représentation vectorielle en $d$ dimension de l'entité $e_i$, soit le plongement vectoriel recherché. L'équation \ref{eq:kge-rescal-factorization} présente deux caractéristiques importantes : d'une part, la représentation des entités ne dépend pas de la relation $r$; d'autre part, les entités sont représentées de la même manière selon qu'elles soient sujet ou objet dans la relation. On peut résumer RESCAL avec les deux caractéristiques suivantes :
 \begin{itemize}
-    \item les entités sont représentés par un vecteur de dimension $d$, qui est le même pour chaque relation et quelle que soit la position de l'entité dans le triplet. 
+    \item les entités sont représentées par un vecteur de dimension $d$, qui est le même pour chaque relation et quelle que soit la position de l'entité dans le triplet. 
     \item une relation consiste en une interaction entre les représentations vectorielles de son sujet et de son objet. Cette interaction se traduit mathématiquement par une matrice carrée, a priori non symétrique. La matrice étant asymétrique, le rôle des deux entités impliquées (sujet ou objet) est pris en compte.
 \end{itemize}
 
@@ -199,9 +189,9 @@ Ainsi, toutes les combinaisons $h_i t_j$ de $\mathbf{h}$ et de $\mathbf{t}$ appa
 
 Une matrice symétrique induit donc une fonction de score symétrique elle aussi; cela permet de modéliser des relations symétriques. Inversement, si $\mathbf{W_r}$ est antisymétrique (c'est-à-dire, $\mathbf{W}_r = -\mathbf{W}_r^\top$), on aura une fonction de score antisymétrique, ce qui permet de modéliser une relation antisymétrique.
 
-Cette expressivité se paie toutefois par un nombre élevé de paramètres ($d^2$ par relation) : cela demande plus de mémoire que les modèles décrits dans les sections suivantes, et surtout cela complique l'entraînement du modèle, en compliquant la régularisation et favorisant le sur-apprentissage (ref). Pour ces raisons, on n'utilise pas RESCAL dans ce travail, mais deux modèles apparentés : DistMult et ComplEx, présentés dans les deux sections suivantes.
+Cette expressivité se paie toutefois par un nombre élevé de paramètres ($d^2$ par relation) : cela demande plus de mémoire que les modèles décrits dans les sections suivantes, et surtout cela complique l'entraînement du modèle, en compliquant la régularisation et favorisant le sur-apprentissage. Pour ces raisons, on n'utilise pas RESCAL dans ce travail, mais deux modèles apparentés : DistMult et ComplEx, présentés dans les deux sections suivantes.
 
-\subsubsection{DistMult}
+\subsubsection{DistMult \cite{distmult}}
 
 DistMult \cite{distmult}, bien qu'il ne soit pas présenté comme tel par ses auteurs, peut être vu comme une simplification de RESCAL pour le rendre plus facile à entraîner et moins sujet au sur-apprentissage. Pour cela, on conserve comme fonction de score un produit trilinéaire entre les plongements des éléments du triplets  (équation~\ref{eq:rescal}), mais on impose que la matrice $\mathbf{W_r}$ soit diagonale – soit $d$ paramètres par relation au lieu de $d^2$. Cela revient à représenter une relation $r$ par un vecteur $\mathbf{r}$ de dimension $d$, et à poser $\mathbf{W_r = I_{d\times d} \cdot r}$. La fonction de score s'écrit donc :
 \begin{equation}
@@ -215,7 +205,7 @@ Ce qui se réécrit sous forme non-matricielle :
     \label{eq:kge-distmult-scorenv}
 \end{equation}
 
-Ainsi, la fonction de score peut être vue comme un produit scalaire à trois vecteurs. Comparé à RESCAL, l'expressivité est très réduite : seule les combinaisons de la forme $\mathbf{h_i t_i}$ sont utilisées pour le calcul du score. De plus, $s$ est toujours symétrique, donc le sujet et l'objet d'un triplet ne sont pas différenciés.
+Ainsi, la fonction de score peut être vue comme un produit scalaire à trois vecteurs. Comparé à RESCAL, l'expressivité est très réduite : seules les combinaisons de la forme $\mathbf{h_i t_i}$ sont utilisées pour le calcul du score. De plus, $s$ est toujours symétrique, donc le sujet et l'objet d'un triplet ne sont pas différenciés.
 
 % L'équation \ref{eq:kge-distmult-scorenv} permet d'interpréter la fonction de score de DistMult comme une mesure de similarité entre le sujet $h$ et l'objet $t$, pondérée en fonction de la relation $r$ considérée. En effet, le terme $\bf{h^\top \cdot t}$ s'interprète comme une similarité cosinus sans normalisation, et chaque coefficient $r_i$ indique le poids à accorder à chaque dimension.
 
@@ -229,12 +219,12 @@ Pour rappel, $\lfloor \cdot \rfloor_+$ désigne la partie positive, c'est-à-dir
 \begin{equation}
     j(u, u') = \lfloor \gamma - \Delta s \rfloor_+
 \end{equation}
-Ainsi, la perte associée à $u$ et $u'$ est nulle si $\Delta s \geq \gamma$, et vaut $\gamma - \Delta s$ sinon. L'objectif du modèle est donc de séparer les scores des triplets valides des scores des triplets invalides, et ce d'une marge au moins égale à $\gamma$. Ce choix de fonction de score est cohérent avec l'usage premier d'un modèle de plongement, qui est de prédire la validité d'un triplet inconnu : pour cet usage, l'enjeu est précisément de pouvoir distinguer les scores des triplest valides de ceux des triplets invalides.
+Ainsi, la perte associée à $u$ et $u'$ est nulle si $\Delta s \geq \gamma$, et vaut $\gamma - \Delta s$ sinon. L'objectif du modèle est donc de séparer les scores des triplets valides des scores des triplets invalides, et ce d'une marge au moins égale à $\gamma$. Ce choix de fonction de score est cohérent avec l'usage premier d'un modèle de plongement, qui est de prédire la validité d'un triplet inconnu : pour cet usage, l'enjeu est précisément de pouvoir distinguer les scores des triplets valides de ceux des triplets invalides.
 
-\subsubsection{ComplEx}
+\subsubsection{ComplEx \cite{complex}}
 \label{subsec:complex}
 
-ComplEx (ref) est une extension de DistMult dans l'espace complexe. Comme RESCAL, il s'appuie sur une décomposition de la matrice d'adjacence $\bf{X}^{(r)}$ associée à la relation $r$ pour en réduire la dimension.
+ComplEx est une extension de DistMult dans l'espace complexe. Comme RESCAL, il s'appuie sur une décomposition de la matrice d'adjacence $\bf{X}^{(r)}$ associée à la relation $r$ pour en réduire la dimension.
 
 Pour motiver la conception de ComplEx, les auteurs s'interrogent sur les fondements mathématiques de la factorisation de $\bf{X}^{(r)}$. Avant réduction de la dimension, la décomposition qui sert de base à DistMult peut s'écrire :
 \begin{equation}
@@ -311,7 +301,7 @@ Dans cette section, on examine une unique famille de modèles géométriques, le
 
 \subsubsection{TransE \cite{bordes2013translating}}
 
-L'idée fondamentale de TransE est de représenter une relation entre deux entités comme une translation entre leurs plongements. Une translation dans $\R^d$ est une opération linéaire qui consiste intuitivement à «déplacer» un point vers un autre. La distance et le sens de ce déplacement sont caractérisées par un vecteur $\bf{u} \in \R^d$; pour un tel vecteur $\bf{u}$, la translation associée s'écrit:
+L'idée fondamentale de TransE est de représenter une relation entre deux entités comme une translation entre leurs plongements. Une translation dans $\R^d$ est une opération linéaire qui consiste intuitivement à «déplacer» un point vers un autre. La distance et le sens de ce déplacement sont caractérisés par un vecteur $\bf{u} \in \R^d$; pour un tel vecteur $\bf{u}$, la translation associée s'écrit:
 \begin{equation}
     T_\bf{u} : \bf{x} \mapsto \bf{u + x}
 \end{equation}
@@ -332,7 +322,7 @@ Ce qui revient à dire que la relation «être capital de» se traduit géométr
 \begin{figure}
     \centering
     \input{fig/transe-intuition}
-    \caption[Principe du modèle TransE]{Modèle de plongement TransE. La relation \texttt{dbo:capital} est représentée par une translation, en rouge, qui relie les plongements des sujets aux plongement des objets.}
+    \caption[Principe du modèle TransE]{Modèle de plongement TransE. La relation \texttt{dbo:capital} est représentée par une translation, en rouge, qui relie les plongements des sujets aux plongements des objets.}
     \label{fig:transe-intuition}
 \end{figure}
 
@@ -428,7 +418,7 @@ Si l'on remplace les projetés orthogonaux par leurs formules, on retrouve l'éq
 
 \subsubsection{TransD \cite{transd}}
 
-TransD est une seconde extension de TransE, dans laquelle les entités à translater sont transformées via une fonction de transformation linéaire qui dépend à la fois de la relation considérée et de l'entité à transformer. Outre les plongements usuels $\bf{e}, \bf{r}$ définis pour chaque entité $e \in \Ent $ et chaque relation $r \in \Rel$, le modèle TransD entraîne aussi des vecteurs de projection $\bf{e_p}$ et $\bf{r_p}$. Ces vecteurs servent à construire dynamiquement une matrice de tranformation $M_{e, r}$:
+TransD est une seconde extension de TransE, dans laquelle les entités à translater sont transformées via une fonction de transformation linéaire qui dépend à la fois de la relation considérée et de l'entité à transformer. Outre les plongements usuels $\bf{e}, \bf{r}$ définis pour chaque entité $e \in \Ent $ et chaque relation $r \in \Rel$, le modèle TransD entraîne aussi des vecteurs de projection $\bf{e_p}$ et $\bf{r_p}$. Ces vecteurs servent à construire dynamiquement une matrice de transformation $M_{e, r}$:
 \begin{equation}
     \label{eq:kge-transd-matrix}
     \bf{M}_{e, r} = \bf{r_p \cdot e_p^\top + I_{d \times d}}
@@ -480,23 +470,23 @@ TransD & $\mathbf{e, e_p} \in \mathbb{R}^d$ & $\mathbf{r, r_p} \in \mathbb{R}^d$
 \subsection{Autres modèles}
 \label{subsec:kge-models-misc}
 
-\subsubsection{RDF2Vec}
+\subsubsection{RDF2Vec \cite{ristoski2016rdf2vec}}
 
 Le modèle RDF2Vec s'inspire du modèle de plongement Word2Vec \cite{mikolov2013distributed}, très utilisé pour produire des plongements lexicaux.
 
-Il fonctionne en deux étapes. % : d'abord, des chemins sont prélevés dans le graphe de connaissances au moyen de marches aléatoires – ces chemins sont simplement des suites d'entités et de relations connectées entre elles. % Pour les prélever, on commence par tirer aléatoirement une entité 
+Il fonctionne en deux étapes. 
 Dans un premier temps, des chemins sont prélevés dans le graphe au moyen de marches aléatoires.
-Un \textit{chemin} sur le graphe est une suite d'entités et de relations $(x_1, x_2, \ldots, x_T)$ tels que, pour tout $k \in \{1, 2, \ldots, \frac{T}{2}\}$, $x_{2k-1}$ est une entité, $x_{2k}$ est une relation, et $(x_{2k-1}, x_{2k}, x_{2k+1})$ est un triplet valide de $\KG$. Par exemple, la séquence \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga, dbo:country, dbr:Spain)} est un chemin de longueur 5, constitué des triplets \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga)} et \texttt{(dbr:Málaga, \allowbreak dbo:country, dbr:Spain)}. 
+Un \textit{chemin} sur le graphe est une suite d'entités et de relations $(x_1, x_2, \ldots, x_T)$ telles que, pour tout $k \in \{1, 2, \ldots, \frac{T}{2}\}$, $x_{2k-1}$ est une entité, $x_{2k}$ est une relation, et $(x_{2k-1}, x_{2k}, x_{2k+1})$ est un triplet valide de $\KG$. Par exemple, la séquence \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga, dbo:country, dbr:Spain)} est un chemin de longueur 5, constitué des triplets \texttt{(dbr:Picasso, dbo:birthPlace, dbr:Málaga)} et \texttt{(dbr:Málaga, \allowbreak dbo:country, dbr:Spain)}. 
 Dans un tel chemin, le \textit{contexte} d'un élément $x_i$ est l'ensemble des $c$ éléments précédant $x_i$ et des $c$ éléments le suivant, avec $c$ un paramètre appelé la \textit{longueur}
 du contexte. On le note :
  \begin{equation}
     x_{t \pm c} = (x_{t-c}, x_{t-c+1}, \ldots, x_{t-1}, x_{t+1}, \ldots, x_{t+c})
 \end{equation}
- Pour chaque entité $e$ du graphe, on effectue des marches aléatoires de longueur $T$ au départ de $e$ pour former un ensemble de séquences $S_e$ : il suffit pour cela d'effectuer une recherche en profondeur à partir de $e$, et de s'arrêter lorqu'on atteint une profondeur $T$. Ces marches aléatoires constituent le jeu d'entraînement.
+ Pour chaque entité $e$ du graphe, on effectue des marches aléatoires de longueur $T$ au départ de $e$ pour former un ensemble de séquences $S_e$ : il suffit pour cela d'effectuer une recherche en profondeur à partir de $e$, et de s'arrêter lorsqu'on atteint une profondeur $T$. Ces marches aléatoires constituent le jeu d'entraînement.
 
 % Ajouter l'équation pour définir une marche aléatoire
 
-Ensuite, ces chemins sont passés en entrée à un réseau de neurones. Deux variantes existents : dans la version C-BoW, le but de ce réseau est de prédire une entité en fonction des plongements de son contexte; dans la version Skip-Gram, il s'agit au contraire de prédire le contexte d'une entité à partir du plongement de celle-ci.
+Ensuite, ces chemins sont passés en entrée à un réseau de neurones. Deux variantes existent : dans la version C-BoW, le but de ce réseau est de prédire une entité en fonction des plongements de son contexte; dans la version Skip-Gram, il s'agit au contraire de prédire le contexte d'une entité à partir du plongement de celle-ci.
 
 \paragraph{C-BoW}
 

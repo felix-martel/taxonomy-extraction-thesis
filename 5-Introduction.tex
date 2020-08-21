@@ -39,7 +39,7 @@ En effet, lorsqu'un vocabulaire ontologique (c'est-à-dire un ensemble de classe
 %
 Dans ces conditions, pouvoir construire automatiquement, à partir d'un graphe, une ontologie qui corresponde aux données et à leur utilisation est un enjeu important pour l'extraction et la maintenance automatique et à grande échelle de graphes de connaissances \cite{zhou2007ontology}.
 
-Le problème de l'extraction automatique d'ontologies est très étudié, et notamment sous une forme particulière : l'extraction de \textit{taxonomies}. Une taxonomie est une hiérarchie entre les classes d'un graphe; on peut la voir comme une ontologie réduite à des axiomes de la forme $A \sqsubset B$, qui indique que la classe $A$ est une sous-classe de $B$, et donc que toutes les entités qui font partie de $A$ font également partie de $B$. De tels axiomes sont appelés axiomes de \textit{subsumption}; un exemple de taxonomie est donné à la figure \ref{fig:intro-taxo}.
+Le problème de l'extraction automatique d'ontologies est très étudié, et notamment sous une forme particulière : l'extraction de \textit{taxonomies}. Une taxonomie est une hiérarchie entre les classes d'un graphe; on peut la voir comme une ontologie réduite à des axiomes de la forme $A \sqsubset B$, qui indique que la classe $A$ est une sous-classe de $B$, et donc que toutes les entités qui font partie de $A$ font également partie de $B$. De tels axiomes sont appelés axiomes de \textit{subsomption}; un exemple de taxonomie est donné à la figure \ref{fig:intro-taxo}.
 
 \begin{figure}[h]
     \centering
@@ -67,7 +67,7 @@ on observe une certaine convergence des méthodes grâce à l'utilisation de rep
 
 \footnotetext{Ces plongements ont été obtenus sur DBpedia \cite{auer2007dbpedia} avec le modèle TransE \cite{bordes2013translating}. Leur dimension est ramenée de $d=50$ à $d=2$ grâce à une PCA.}
 
-Qu'ils soient entraînés sur un graphe ou sur du texte, ces plongements permettent l'application de diverses techniques issues de l'apprentissage automatique au problème de l'extraction de taxonomie, par exemple en entraînant un classificateur capable de détecter la subsumption \cite{fu2014learning}, ou en regroupant les plongements sur la base de leur proximité géométrique \cite{gupta2016domain, zhang2018taxogen}.
+Qu'ils soient entraînés sur un graphe ou sur du texte, ces plongements permettent l'application de diverses techniques issues de l'apprentissage automatique au problème de l'extraction de taxonomie, par exemple en entraînant un classificateur capable de détecter la subsomption \cite{fu2014learning}, ou en regroupant les plongements sur la base de leur proximité géométrique \cite{gupta2016domain, zhang2018taxogen}.
 
 
 Toutefois, la plupart de ces méthodes se contentent d'organiser hiérarchiquement des classes pré-existantes, et ne sont pas capables de caractériser ces classes (que ce soit au moyen d'axiomes logiques, de descriptions textuelles ou même de mots-clés), ni d'identifier de nouvelles classes à partir des données.

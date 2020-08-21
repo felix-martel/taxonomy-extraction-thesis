@@ -1,23 +1,14 @@
 \Chapter{EXTRACTION DE TAXONOMIE}
 \label{chap:te}
 
-% Introduction et présentation générale \ldots \hl{Note : j'attends d'avoir rédigé la revue de littérature pour écrire l'introduction, puisqe j'aurais probablement à présenter les enjeux de l'extraction de taxonomie dans ce chapitre là}
 
 Au chapitre précédent, on s'est intéressé à la capacité des modèles de plongement à représenter des entités de même type dans des régions de l'espace bien délimitées. Ici, l'objectif est d'utiliser cette propriété pour reconstituer une taxonomie sur les types à partir de plongements vectoriels de graphe. 
-% Le point de départ est un ensemble de données sans hiérarchie, constitué de plongements vectoriels typés
-% regroupement non-supervisé
 
 L'extraction de taxonomie se fait en deux étapes.
 Tout d'abord, on utilise la proximité géométrique entre plongements vectoriels pour effectuer un regroupement hiérarchique ascendant sur ces plongements,
 ce qui permet d'extraire une structure d'arbre sur des groupes d'entités. Ensuite, des types connus sont injectés dans cet arbre, afin de transformer la hiérarchie sur les groupes d'entités en une taxonomie sur les types. Pour réaliser cette injection des types dans l'arbre, nous proposons deux méthodes capables d'associer des types à des groupes d'entités en tenant compte de la structure d'arbre existante.
 
-
-
 La section \ref{sec:te-problem} est consacrée à l'énoncé du problème. Dans la section \ref{sec:te-method}, nous proposons deux variantes d'une même méthode pour résoudre ce problème, et nous les évaluons à la section \ref{sec:te-evaluation}. Enfin, dans la section \ref{sec:te-hp}, nous étudions l'influence des différents hyperparamètres.
-
-% TODO
-% - écrire l'intro
-% - trouver des noms français (Liaison multiple / Liaison injective)
 
 
 \section{Présentation générale}
@@ -25,7 +16,7 @@ La section \ref{sec:te-problem} est consacrée à l'énoncé du problème. Dans 
 \label{sec:te-problem}
 Soit $\KG \subseteq \Ent \times \Rel \times \Ent$ un graphe de connaissances. Pour une entité $e \in \Ent$, on dit que $e$ est de type $t$ si le triplet $(e, \texttt{rdf:type}, t)$ appartient à $\KG$. Dans la littérature, les types sont souvent appelés des \textit{classes} ou des \textit{concepts} : ici, on préfère l'usage de \textit{type} pour éviter des conflits de notation avec les \textit{clusters}, qui seront introduits dans la section~\ref{subsec:te-clustering}. Notons qu'une entité peut avoir plusieurs types : ainsi, \dbr{Charles\_Baudelaire} est à la fois de type \dbo{Poet}, \dbo{Writer} et \dbo{Agent}.
 
-On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsumption $\{(t_i \sqsubset t_i')\}_{i=1, \ldots}$. Un axiome $t \sqsubset t'$ signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Dans ce cas, on dit que $t$ est un \textit{sous-type} de $t'$, et que $t'$ est un \textit{supertype} de $t$.
+On note $\cal{T}$ l'ensemble des types contenus dans le graphe. L'enjeu est de construire une taxonomie $T$ sur $\cal{T}$, c'est-à-dire un ensemble d'axiomes de subsomption $\{(t_i \sqsubset t_i')\}_{i=1, \ldots}$. Un axiome $t \sqsubset t'$ signifie que $t'$ est un type plus général que $t$, et donc que tout élément de type $t$ est aussi de type $t'$. Dans ce cas, on dit que $t$ est un \textit{sous-type} de $t'$, et que $t'$ est un \textit{supertype} de $t$.
 Pour être valide, une taxonomie $T$ doit vérifier une structure d'arbre, c'est-à-dire respecter deux conditions : chaque type doit avoir au plus un supertype, et $T$ ne doit pas contenir de cycle, donc ne doit contenir aucune séquence $t_0, t_1, \ldots, t_k$ telle que $t_0 \sqsubset t_1 \sqsubset \ldots \sqsubset t_k \sqsubset t_0$.
 
 
@@ -36,13 +27,13 @@ L'objectif est d'extraire l'information taxonomique contenue dans la géométrie
 
 \subsection{Idée générale}
 
-Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsumption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels. %, et de liens d'inclusion entre groupes d'instances. 
+Dans le problème de l'extraction de taxonomie, on est amené à manipuler des données sur deux plans : le premier est celui des types (\dbo{Person}, \dbo{Athlete}, \dbo{Artist}, \ldots) reliés entre eux par des liens de subsomption (par exemple, $\dbo{Athlete} \sqsubset \dbo{Person}$); le second est celui des instances et des groupes d'instances, dans lequel on dispose de liens de proximité entre instances, grâce aux plongements vectoriels. %, et de liens d'inclusion entre groupes d'instances. 
 Ces deux plans sont liés : les entités sont liées aux types par la relation \texttt{rdf:type}, ce qui permet de représenter un type dans l'espace des entités par l'ensemble des instances de ce type, et de traduire l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ par une relation d'inclusion entre les instances de \dbo{Athlete} et celles de \dbo{Person}. En pratique, cette liaison est imparfaite : il y a des entités dont les types sont inconnus, erronés ou arbitraires.
 
 %entités qui possèdent ce type, et donc de traduire l'axiome 
 %le pendant dans le plan des instances de l'axiome $\dbo{Athlete} \sqsubset \dbo{Person}$ est l'affirmation «le groupe des athlètes est inclus dans le groupe des personnes».
 
-Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie sur les groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Inversement, les plongements vectoriels d'entités fournissent un moyen pour créer une hiérarchie sur les groupes d'entités : il suffit pour cela d'appliquer un algorithme de regroupement hiérarchique sur ces plongements. Un tel algorithme regroupe les plongements en groupes, sur la base de leur proximité géométrique; on obtient une division des plongements en groupes géométriquement similaires, eux-même divisés en sous-groupes, et ainsi de suite. L'idée de notre méthode est d'utiliser cette hiérarchie sur les groupes pour induire une hiérarchie sur les types, autrement dit une taxonomie.
+Si l'on dispose d'une taxonomie, on peut naturellement déduire une hiérarchie sur les groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Inversement, les plongements vectoriels d'entités fournissent un moyen pour créer une hiérarchie sur les groupes d'entités : il suffit pour cela d'appliquer un algorithme de regroupement hiérarchique sur ces plongements. Un tel algorithme regroupe les plongements en groupes, sur la base de leur proximité géométrique; on obtient une division des plongements en groupes géométriquement similaires, eux-mêmes divisés en sous-groupes, et ainsi de suite. L'idée de notre méthode est d'utiliser cette hiérarchie sur les groupes pour induire une hiérarchie sur les types, autrement dit une taxonomie.
 
 La section \ref{sec:te-method} décrit en détail la méthode proposée et ses deux variantes. La section \ref{sec:te-evaluation} évalue cette méthode et discute l'influence de chaque paramètre.
 
@@ -58,14 +49,6 @@ La section \ref{sec:te-method} décrit en détail la méthode proposée et ses d
 
 La méthode proposée ici se résume en trois étapes : d'abord, on effectue un regroupement hiérarchique des plongements vectoriels afin d'extraire un arbre de clustering, c'est-à-dire une hiérarchie sur les groupes d'entités (section \ref{subsec:te-clustering}); ensuite, les types des entités sont injectés dans cet arbre de clustering (section \ref{subsec:te-mapping}); enfin, une taxonomie est extraite en combinant les types et la structure d'arbre (section \ref{subsec:te-taxconstruction}). 
 
-% création d'une hiérarchie sur des groupes d'entités à partir du regroupement hiérarchique de plongements vectoriels
-
-% Une taxonomie est une hiérarchie sur des types, composée d'axiomes de subsumption $t \sqsubset t'$. Cette hiérarchie sur les types induit naturellement une hiérarchie sur des groupes d'entités : ainsi, les entités de type \dbo{Agent} peuvent être divisées en deux sous-groupes, celui des \dbo{Organisation} et celui des \dbo{Person}; les entités de ce dernier groupe peuvent à leur tour être divisées en plusieurs sous-groupes (\dbo{Athlete}, \dbo{Artist}, etc.). Or le regroupement hiérarchique appliqué aux plongements vectoriels d'entités permet justement d'obtenir une telle hiérarchie sur des groupes : cette méthode consiste à regrouper ensemble des points situés à proximité les uns des autres, puis à regrouper ces groupes entre eux, et ainsi de suite. Lorsqu'on l'applique à des plongements d'entités, on identifie donc des groupes d'entités géométriquement proches – donc sémantiquement similaires, ces groupes étant eux-mêmes subdivisés en sous-groupes, etc. Il reste alors à transformer cette hiérarchie sur des groupes d'entités en une hiérarchie sur les types eux-mêmes
-
-
-% identifie des groupes d'entités géométriquement proches (donc sémantiquement proches), et subdivise ces groupes en sous-groupes
-
-% Le préalable à notre méthode est le plongement du graphe dans $\R^d$. Pour cela, on s'appuie sur les travaux préliminaires décrits dans la section~\ref{chap:kge}. Notre point de départ est donc une matrice de dimension $N \times d$, qui peut être vue comme un nuage de points dans $\R^d$.
 
 \subsection{Regroupement hiérarchique}
 \label{subsec:te-clustering}
@@ -146,7 +129,7 @@ $X = (\cal{C}_0, \emptyset)$ \;
 \end{algorithm}
 
 
-On définit maintenant les quatres critères de fusion considérés dans la suite. 
+On définit maintenant les quatre critères de fusion considérés dans la suite. 
 
 \paragraph{Saut minimum}
 
@@ -217,7 +200,7 @@ Au terme du regroupement hiérarchique, on dispose d'un côté d'une hiérarchie
 %- définir, pour chaque type, une probabilité d'injection, ou un score d'association avec tous les clusters
 
 
-\subsubsection{Méthode de liaison injective (MLI)}
+\subsubsection{méthode de liaison injective (MLI)}
 \label{ssubsec:te-hardmapping}
 
 Pour pouvoir associer les types aux clusters pertinents, il faut mesurer à quel point un cluster $C$ donné représente un type $t$. Pour ce faire, on peut utiliser la précision et le rappel de ce cluster pour $t$. Posons $N_{C,t} = | e \in C, type(e) = t|$ le nombre d'entités de type $t$ contenues dans le cluster $C$,
@@ -255,12 +238,12 @@ L'équation~\ref{eq:optim-mapping} définit un problème d'affectation linéaire
 Cette solution optimale peut être trouvée par l'algorithme de Jonker-Volgenant, avec une complexité de $O(|\Clusters|^3)$ dans le pire des cas \cite{jonker1987shortest}. Toutefois, l'utilisation de l'heuristique \textit{Asymmetric Greedy Search} \cite{brown2017heuristic} permet de réduire cette complexité, tout en trouvant des solutions dont le score est supérieur à 99.9\% du score optimal, en moyenne.
 %, which can be useful when the size of $\mathcal{D}$ increases.
 
-\subsubsection{Méthode de liaison multiple (MLM)}
+\subsubsection{méthode de liaison multiple (MLM)}
 \label{ssubsec:te-softmapping}
 
 L'approche précédente aboutit à une fonction de décision binaire : un axiome $(t_i \sqsubset t_j)$ est prédit ou non, sans intermédiaire possible. Ceci parce que la fonction $\argmax$ de l'équation~\ref{eq:optim-mapping} n'est pas continue. En conséquence, la taxonomie prédite est sensible à des légers changements dans les données d'entrée.
 
-Dans cette version, on explore une version lissée de l'approche précédente : l'association entre types et clusters est conservée, mais elle est lissée en remplacant la fonction $\argmax$ par une fonction softmax. Ainsi, un type n'est plus associé à un unique cluster; on lui attribue plutôt un vecteur de probabilités qui, pour chaque cluster, mesure si ce cluster le représente  bien. Ensuite, comme précédemment, cette association type-cluster est utilisée pour transformer la hiérarchie des clusters en une hiérarchie des types. Par rapport au cas précédent, la condition d'injectivité de l'association disparaît : une étape supplémentaire est nécessaire pour transformer le graphe de subsumption en une taxonomie valide. Ainsi, la discontinuité identifiée précédemment ne disparaît pas, mais elle est déplacée : au lieu d'intervenir lors de l'extraction des axiomes de subsumption, elle apparaît lors de la création de la taxonomie prédite à partir de ces axiomes. 
+Dans cette version, on explore une version lissée de l'approche précédente : l'association entre types et clusters est conservée, mais elle est lissée en remplaçant la fonction $\argmax$ par une fonction softmax. Ainsi, un type n'est plus associé à un unique cluster; on lui attribue plutôt un vecteur de probabilités qui, pour chaque cluster, mesure si ce cluster le représente  bien. Ensuite, comme précédemment, cette association type-cluster est utilisée pour transformer la hiérarchie des clusters en une hiérarchie des types. Par rapport au cas précédent, la condition d'injectivité de l'association disparaît : une étape supplémentaire est nécessaire pour transformer le graphe de subsomption en une taxonomie valide. Ainsi, la discontinuité identifiée précédemment ne disparaît pas, mais elle est déplacée : au lieu d'intervenir lors de l'extraction des axiomes de subsomption, elle apparaît lors de la création de la taxonomie prédite à partir de ces axiomes. 
 
 % Dans le cas précédent, on cherchait à déterminer la position optimale $m^*(t)$ de chaque type $t$ dans l'arbre. Ici, on suppose
 
@@ -293,7 +276,7 @@ Pour exprimer l'événement $(Z_{t'} \subset Z_{t})$, il suffit d'examiner les v
 \end{equation}
 %
 %correspond au cas où le cluster représentant $t'$ est un successeur du cluster représentant $t$.
-%Une fois que l'on peut estimer la probabilité de l'événement $(Z_t = C)$, on peut également interpréter l'axiome $t' \sqsubset t$ comme un événément aléatoire. % En effet, on a dit en introduction que la relation de subsumption entre les types se traduisait par une relation d'inclusion entre des groupes d'entités;
+%Une fois que l'on peut estimer la probabilité de l'événement $(Z_t = C)$, on peut également interpréter l'axiome $t' \sqsubset t$ comme un événément aléatoire. % En effet, on a dit en introduction que la relation de subsomption entre les types se traduisait par une relation d'inclusion entre des groupes d'entités;
 %$t' \sqsubset t$ correspond au cas où le cluster représentant $t'$ est un successeur du cluster représentant $t$. 
 %
 En utilisant cette décomposition et l'indépendance des $Z_t$, on peut écrire :
@@ -305,7 +288,7 @@ En utilisant cette décomposition et l'indépendance des $Z_t$, on peut écrire 
     &= \sum_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} P(Z_{t }= C)\cdot P(Z_{t'} = C') \\
     &= \sum_{\substack{C, C' \in \mathcal{C} \\ C' \subset C}} \sigma(t, C) \cdot \sigma(t', C')
 \end{align}
-On obtient donc une formule qui attribue une probabilité à chaque axiome de subsumption en fonction des scores d'association type-cluster. Par rapport au cas précédent, la validité d'un axiome n'est plus évaluée de manière binaire, mais peut prendre n'importe quelle valeur entre 0 et 1. Cela permet, entre autres, plus de souplesse dans l'étape suivante de reconstruction de taxonomie : en éliminant les axiomes trop incertains, on minimise le nombre d'axiomes faux qui sont extraits, quitte à ne pas extraire certains axiomes vrais; inversement, en conservant des axiomes incertains, on extrait davantage d'axiomes, au risque d'extraire certains axiomes faux.
+On obtient donc une formule qui attribue une probabilité à chaque axiome de subsomption en fonction des scores d'association type-cluster. Par rapport au cas précédent, la validité d'un axiome n'est plus évaluée de manière binaire, mais peut prendre n'importe quelle valeur entre 0 et 1. Cela permet, entre autres, plus de souplesse dans l'étape suivante de reconstruction de taxonomie : en éliminant les axiomes trop incertains, on minimise le nombre d'axiomes faux qui sont extraits, quitte à ne pas extraire certains axiomes vrais; inversement, en conservant des axiomes incertains, on extrait davantage d'axiomes, au risque d'extraire certains axiomes faux.
 
 \begin{figure}[h]
     \centering
@@ -320,7 +303,7 @@ Un exemple de calcul est illustré à la figure \ref{fig:te-softmapping-example}
 % On pourra alors, dans l'étape de reconstruction de taxonomie, éliminer les axiomes trop incertains si l'on souhaite minimiser le nombre de faux positifs, ou au contraire garder des axiomes incertains si l'on veut minimiser le nombre de faux négatifs.
 \paragraph{Formulation récursive}
 
-Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les paires de clusters, on peut concevoir un algorithme récursif de type «diviser pour régner». Pour cela, il nous faut exprimer $P(t' \sqsubset t)$ sous forme récursive. On introduit donc une nouvelle quantité,  $P_C(t' \sqsubset t)$ : c'est, comme dans l'équation~\ref{eq:softmapping_2}, la probabilité de l'événement $t' \sqsubset t$ (c'est-à-dire de l'événément $Z_{t'} \subset Z_{t}$), mais restreint au cas où $Z_t$ et $Z_{t'}$ appartienent au sous-arbre $X[C]$.
+Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les paires de clusters, on peut concevoir un algorithme récursif de type «diviser pour régner». Pour cela, il nous faut exprimer $P(t' \sqsubset t)$ sous forme récursive. On introduit donc une nouvelle quantité,  $P_C(t' \sqsubset t)$ : c'est, comme dans l'équation~\ref{eq:softmapping_2}, la probabilité de l'événement $t' \sqsubset t$ (c'est-à-dire de l'événement $Z_{t'} \subset Z_{t}$), mais restreint au cas où $Z_t$ et $Z_{t'}$ appartiennent au sous-arbre $X[C]$.
 \begin{equation}
     P_C(t' \sqsubset t) = P(Z_{t'} \subset Z_{t} \land Z_t, Z_{t'} \in X[C])
 \end{equation}
@@ -328,7 +311,7 @@ Pour calculer ces probabilités pour chaque $t, t'$ sans sommer sur toutes les p
 Or appartenir au sous-arbre $X[C]$ est équivalent à être un successeur de $C$, on peut donc réécrire l'événement $(Z_{t'} \subset Z_{t}) \land (Z_t, Z_{t'} \in X[C])$ sous la forme $Z_{t'} \subset Z_{t} \subseteq C$. D'où :
 \begin{align}
     P_C(t' \sqsubset t) &= P(Z_{t'} \subset Z_{t} \subseteq C) \nonumber \\
-    &= \sum_{\substack{C, C' \in \succs(C) \\  C' \subset C}} P(Z_t = C)\cdot P(Z_{t'} = C) \label{eq:proba_subsumption}
+    &= \sum_{\substack{C, C' \in \succs(C) \\  C' \subset C}} P(Z_t = C)\cdot P(Z_{t'} = C) \label{eq:proba_subsomption}
 \end{align}
 
 
@@ -340,7 +323,7 @@ Soit $L = \gauche(C)$ et $R = \droite(C)$ les sous-clusters gauche et droit de $
 \begin{equation}
     \succs(C) = \succs(L) \sqcup \succs(R) \sqcup \{ C\}
 \end{equation}
-En suivant cette observation, on peut donc partager la somme~\ref{eq:proba_subsumption} en trois :
+En suivant cette observation, on peut donc partager la somme~\ref{eq:proba_subsomption} en trois :
 \begin{align}
 P_{C}(t' \sqsubset t) = 
 &
@@ -389,7 +372,7 @@ Cela permet de reformuler ainsi l'équation \ref{eq:l_def}:
     \label{eq:l_update}
 \end{equation}
 
-On a désormais nos équations de récurrences : \ref{eq:recursive_q_formula} pour $\bf{Q_C}$, \ref{eq:def_uc} pour $\bf{u_C}$ et \ref{eq:l_update} pour $\bf{s_C}$. Il reste à calculer les cas de base, c'est-à-dire les valeurs de $\bf{Q, u, s}$ pour les clusters feuilles. Si $C$ est une feuille, la probabilité pour un type $t$ d'être associé à un de ses successeurs stricts est nulle, puisque $C$ n'a aucun successeur strict. Pour la même raison, la probabilité pour qu'un axiome de subsumption $t' \sqsubset t$ soit vérifié dans le sous-arbre $X[C]$ est également zéro. Ainsi $\mathbf{s_C}$ et $\mathbf{Q_C}$ sont tous les deux nuls pour chaque cluster feuille. Quant à $\bf{u_C}$, sa valeur sur les feuilles peut être calculée par l'équation \ref{eq:def_uc}.
+On a désormais nos équations de récurrences : \ref{eq:recursive_q_formula} pour $\bf{Q_C}$, \ref{eq:def_uc} pour $\bf{u_C}$ et \ref{eq:l_update} pour $\bf{s_C}$. Il reste à calculer les cas de base, c'est-à-dire les valeurs de $\bf{Q, u, s}$ pour les clusters feuilles. Si $C$ est une feuille, la probabilité pour un type $t$ d'être associé à un de ses successeurs stricts est nulle, puisque $C$ n'a aucun successeur strict. Pour la même raison, la probabilité pour qu'un axiome de subsomption $t' \sqsubset t$ soit vérifié dans le sous-arbre $X[C]$ est également zéro. Ainsi $\mathbf{s_C}$ et $\mathbf{Q_C}$ sont tous les deux nuls pour chaque cluster feuille. Quant à $\bf{u_C}$, sa valeur sur les feuilles peut être calculée par l'équation \ref{eq:def_uc}.
 
 On peut finalement écrire les équations de récurrence pour $\mathbf{s_C}, \mathbf{Q_C}, \mathbf{u_C}$:
 \begin{align}
@@ -413,7 +396,7 @@ Pour un arbre binaire équilibré, cet algorithme garantit un cache de taille ma
 \subsection{Construction de la taxonomie}
 \label{subsec:te-taxconstruction}
 
-Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode de liaison injective, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont succcesseurs l'un de l'autre ($m(t') \subset m(t)$), sans qu'il existe un cluster étiquetté entre $m(t)$ et $m(t')$ :
+Une fois les types associés aux clusters, la taxonomie est construite en transformant la hiérarchie sur les clusters en une hiérarchie sur les types. Dans le cas de la méthode de liaison injective, l'injectivité de l'association permet de réaliser facilement cette transformation. La taxonomie prédite $\Tpred$ contient tous les types $t \in \cal{T}$, et elle contient l'axiome $t' \sqsubset t$ si et seulement si les clusters $m(t')$ et $m(t)$ associés à $t$ et $t'$ sont successeurs l'un de l'autre ($m(t') \subset m(t)$), sans qu'il existe un cluster étiqueté entre $m(t)$ et $m(t')$ :
 \begin{equation}
     \Tpred = (\cal{T}, \{t' \sqsubset t : m(t') \subset m(t) \text{ et } \forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T}) \})
     \label{eq:te-extract-tax-from-mapping}
@@ -422,7 +405,7 @@ Une fois les types associés aux clusters, la taxonomie est construite en transf
 \begin{figure}[h]
     \centering
     \input{fig/te-hm-extraction}
-    \caption[Extraction de taxonomie selon la méthode de liaison injective]{Extraction de taxonomie à partir d'un arbre de clustering étiquetté (méthode de liaison injective).}
+    \caption[Extraction de taxonomie selon la méthode de liaison injective]{Extraction de taxonomie à partir d'un arbre de clustering étiqueté (méthode de liaison injective).}
     \label{fig:te-hm-extraction}
 \end{figure}
 
@@ -431,11 +414,11 @@ Pour rappel, $m(\cal{T})$ désigne l'image de $\cal{T}$ par $m$, c'est-à-dire l
 \begin{equation}
     m(\cal{T}) = \{ C \in \cal{C}, \exists t \in \cal{T}, m(t) = C \}
 \end{equation}
-Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$, et on remonte vers la racine en cherchant le premier prédécesseur de $m(t')$ qui soit associé à un type. Si un tel prédécesseur $m(t)$ existe, on ajoute à $\Tpred$ l'axiome de subsumption $t' \sqsubset t$. Ce processus est décrit à la figure \ref{fig:te-hm-extraction}.
+Autrement dit, pour chaque type $t'$, on récupère le cluster associé $m(t')$, et on remonte vers la racine en cherchant le premier prédécesseur de $m(t')$ qui soit associé à un type. Si un tel prédécesseur $m(t)$ existe, on ajoute à $\Tpred$ l'axiome de subsomption $t' \sqsubset t$. Ce processus est décrit à la figure \ref{fig:te-hm-extraction}.
 
 
 
-Dans le cas de la liaison multiple, on récupère une liste d'axiomes de subsumption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raison. D'une part, la condition d'injectivité qui existe pour la méthode de liaison injective n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset t$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
+Dans le cas de la liaison multiple, on récupère une liste d'axiomes de subsomption $t' \sqsubset t$ qui ne constituent pas nécessairement une taxonomie, et ce pour deux raisons. D'une part, la condition d'injectivité qui existe pour la méthode de liaison injective n'existe pas ici, si bien que l'on peut extraire à la fois les axiomes $t \sqsubset t'$ et $t' \sqsubset t$. D'autre part, même dans le cas idéal – et théorique – où l'algorithme d'association donnerait une probabilité $1$ aux axiomes effectivement valides et $0$ aux axiomes invalides, le résultat ne serait pas un arbre mais la clôture transitive d'un arbre. En effet, par construction de l'algorithme, on n'extrait pas uniquement l'axiome $t \sqsubset t'$ pour l'immédiat parent de $t$, mais tous les axiomes $t \sqsubset t_i$ pour les axiomes $t_i$ tels que $t \sqsubset t_1 \sqsubset t_2 \ldots \sqsubset t_k$. Cela revient à supprimer la clause $\forall C \in \cal{C},  m(t') \subseteq C \subseteq m(t) \implies C \notin m(\cal{T})$ de l'équation \ref{eq:te-extract-tax-from-mapping}. Pour ces deux raisons, il est nécessaire d'opérer un filtrage avant de pouvoir obtenir une taxonomie valide : d'une part en éliminant les axiomes susceptibles de créer des cycles dans la taxonomie, d'autre part en calculant la réduction transitive (l'opération inverse de la clôture transitive).
 
 \begin{figure}
     \centering
@@ -445,7 +428,7 @@ Dans le cas de la liaison multiple, on récupère une liste d'axiomes de subsump
     \label{fig:softmapping-extraction}
 \end{figure}
 
-Pour cela, on construit un graphe $G$ des axiomes à conserver. Chaque axiome extrait est examiné, par ordre de probabilité décroissante. Pour chaque axiome $\alpha$, si ajouter $\alpha$ à $G$ crée un cycle, on rejete $\alpha$. Sinon, on l'ajoute effectivement à $G$. Par construction, le graphe $G$ ainsi obtenu est un graphe orienté acyclique (ou DAG en anglais, pour \textit{direct acyclic graph}) : il est bien acyclique car le graphe de départ est vide donc acyclique, et car il reste acyclique à chaque étape; il est orienté car l'axiome de subsumption $t \sqsubset t'$ est différent de l'axiome inverse $t' \sqsubset t$, il y a donc bien une orientation des arêtes de $G$. 
+Pour cela, on construit un graphe $G$ des axiomes à conserver. Chaque axiome extrait est examiné, par ordre de probabilité décroissante. Pour chaque axiome $\alpha$, si ajouter $\alpha$ à $G$ crée un cycle, on rejette $\alpha$. Sinon, on l'ajoute effectivement à $G$. Par construction, le graphe $G$ ainsi obtenu est un graphe orienté acyclique (ou DAG en anglais, pour \textit{direct acyclic graph}) : il est bien acyclique car le graphe de départ est vide donc acyclique, et car il reste acyclique à chaque étape; il est orienté car l'axiome de subsomption $t \sqsubset t'$ est différent de l'axiome inverse $t' \sqsubset t$, il y a donc bien une orientation des arêtes de $G$. 
 
 Ensuite, on calcule la réduction transitive $G_{red}$ du graphe $G$ : c'est le plus petit graphe $G_{red}$ tel qu'il existe un chemin de $t$ vers $t'$ dans $G_{red}$ si et seulement si il existe un chemin de $t$ vers $t'$ dans $G$. Enfin, pour tout type $t$ qui a un degré entrant supérieur à 1, c'est-à-dire qui est impliqué dans au moins deux axiomes $t \sqsubset t'$ et $t\sqsubset t''$, on supprime tous les axiomes de la forme $t \sqsubset t'$ à l'exception de celui de probabilité maximale. Le résultat est la taxonomie extraite $\Tpred$. Le processus est représenté à la figure \ref{fig:softmapping-extraction}.
 
@@ -465,16 +448,10 @@ Pour extraire cette sous-taxonomie, on fixe la profondeur maximale à $p_{\max}=
     \item $C$ ait moins de $n_c$ sous-classes
 \end{itemize}
 
-Cette taxonomie sera nommée par la suite \textsc{DBpedia-Fréq}. Elle contient sept classes de niveau 1, qui sont \texttt{Agent}, \texttt{Event}, \texttt{MeanOfTransportation}, \texttt{Place}, \texttt{Species}, \texttt{SportsSeason}, \texttt{Work}; 25 classes de niveau 2, et 52 classes de niveau 3. Cette taxonomie, quoique simplifiée, couvre 75\% des triplets \texttt{rdf:type} de DBpedia. Les valeurs des paramètres $p_{\max}, n_c, n_e$ ont été choisis empiriquement de sorte à atteindre ce seuil de couverture. 
+Cette taxonomie sera nommée par la suite \textsc{DBpedia-Fréq}. Elle contient sept classes de niveau 1, qui sont \texttt{Agent}, \texttt{Event}, \texttt{MeanOfTransportation}, \texttt{Place}, \texttt{Species}, \texttt{SportsSeason}, \texttt{Work}; 25 classes de niveau 2, et 52 classes de niveau 3. Cette taxonomie, quoique simplifiée, couvre 75\% des triplets \texttt{rdf:type} de DBpedia. Les valeurs des paramètres $p_{\max}, n_c, n_e$ ont été choisies empiriquement de sorte à atteindre ce seuil de couverture. 
 
 Une fois que l'on dispose de cette taxonomie de référence \textsc{DBpedia-Fréq}, on prélève aléatoirement dans le graphe des instances de chacune des classes de la taxonomie; on obtient un jeu de données $\cal{D}$ comportant $N = 51 418$ instances, chacune étant ensuite représentée par un plongement vectoriel de dimension $d=50$. L'objectif est alors de reconstituer \textsc{DBpedia-Fréq} à partir de $\cal{D}$.
 
-
-%L'ontologie DBpedia comporte un ensemble de classes et de sous-classes qui forment un arbre dont on peu trouver le détail à l'adresse \href{http://mappings.dbpedia.org/server/ontology/classes/}{http://mappings.dbpedia.org/server/ontology/classes/}. Comme on peut le voir, toutes les classes héritent d'une seule classe racine \texttt{owl:Thing} (classe de niveau 0); la profondeur maximale d'une sous-classe est 6. On peut difficilement utiliser toute l'ontologie pour le clustering, car certaines classes très spécifiques contiennent trop peu d'éléments [par exemple, seulement 7 éléments sont de type \texttt{dbo:Star}). On cherche donc à extraire un sous-arbre qui soit (a) suffisamment profond pour modéliser une base de connaissances du monde réel et tel que (b) chaque classe contienne un nombre minimal d'éléments. 
-
-
-
-% À partir de cette taxonomie, on tire pour chaque classe feuille un ensemble d'instances DBpedia qui y appartienne. On obtient alors $N=51 418$  instances. Chaque instance est représentée par son plongement, de dimension $d=50$. Le jeu de données consiste donc en une matrice réelle de dimension $51 418 \times 50$.
 
 \subsection{Méthode d'évaluation}
 \label{subsec:te-evaluation}
@@ -482,7 +459,7 @@ Une fois que l'on dispose de cette taxonomie de référence \textsc{DBpedia-Fré
 On évalue notre méthode en faisant varier le modèle de plongement employé, le type de regroupement hiérarchique et la méthode d'association type-cluster. Les modèles de plongement expérimentés sont TransE, TransD, TransH, ComplEx, DistMult et RDF2Vec. Le regroupement hiérarchique se fait avec un des quatre critères de liaison cités (saut minimum, moyen, maximum, critère de Ward) et l'une des trois distances suivantes : euclidienne, cosinus, $L_1$. % soit avec le critère de Ward basé sur la distance euclidienne, soit par liaison moyenne avec la distance cosinus – le choix de ces deux combinaisons de paramètres est discuté dans la section \ref{sec:te-hp}. 
 La méthode d'association est soit la méthode de liaison injective (MLI), soit la méthode de liaison multiple (MLM). On compare ces résultats avec ceux obtenus par la méthode TIEmb \cite{ristoski2017large} (présentée à la section \ref{subsec:litt-tiemb}, page \pageref{subsec:litt-tiemb}); pour cette méthode également, on expérimente avec les distances euclidienne, cosinus et $L_1$. 
 
-Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpedia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsumption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F_1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédécesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F_1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
+Pour comparer une taxonomie prédite $\Tpred$ avec la taxonomie de référence de \textsc{DBpedia-Freq}, notée ici $T^*$, on mesure la différence entre les axiomes de subsomption prédits et les axiomes de référence en calculant la précision (nombre d'axiomes prédits qui sont vrais), le rappel (nombre de vrais axiomes qui sont correctement prédits), et la mesure $F_1$ (moyenne géométrique de la précision et du rappel). On calcule également la clôture transitive de $\Tpred$ et $T^*$ : la clôture transitive d'un arbre $T$ est le graphe $T^+$ qui contient les mêmes sommets que $T$ et dont les arêtes sont définies par $t \sqsubset t' \iff \exists t_1, \ldots t_k, (t \sqsubset t_1), (t_1 \sqsubset t_2), \ldots, (t_k \sqsubset t') \in T$. C'est donc le graphe obtenu en reliant un sommet $t$ à tous ses prédécesseurs dans $T$. Une fois ces clôtures transitives calculées, on évalue à nouveau la différence entre les axiomes de $\Tpred^+$ et ceux de $(T^*)^+$ en terme de précision, de rappel et de mesure $F_1$. Ces deux modes d'évaluation sont appelés respectivement \textit{évaluation directe} et \textit{évaluation transitive}.
 
 Ces deux modes d'évaluation – directe et transitive – sont nécessaires pour évaluer correctement la proximité d'une taxonomie prédite avec une taxonomie de référence, car ils ne mesurent pas la même chose. Prenons le cas où le modèle d'extraction prédit correctement la plupart des axiomes mais commet des erreurs sur les axiomes de haut niveau (proches de la racine, par exemple en prédisant à tort l'axiome $\dbo{Person} \sqsubset \dbo{Event}$). Comme la majorité des axiomes sont corrects, la mesure $F_1$ directe est élevée; toutefois, après clôture transitive, l'erreur de haut niveau se propage dans tout le sous-arbre : dans notre exemple, toutes les sous-classe de \dbo{Person} seront incorrectement considérées comme des sous-classes de \dbo{Event}, ce qui fera chuter la précision et donc la mesure $F_1$. À l'inverse, considérons le cas où un modèle extrait correctement les axiomes de haut niveau mais ne parvient pas à reproduire les axiomes de plus bas niveau – par exemple en prédisant $\dbo{SoccerPlayer} \sqsubset \dbo{Person}$ et $\dbo{Athlete} \sqsubset \dbo{Person}$ au lieu de $\dbo{SoccerPlayer} \sqsubset \dbo{Athlete} \sqsubset \dbo{Person}$. Dans ce cas, la mesure $F_1$ transitive est élevée, car la majorité des axiomes transitifs de référence sont correctement prédits, mais la mesure $F_1$ directe est basse, car les axiomes directs manquent. % En un sens, la mesure directe donne une évaluation locale de la prédiction
 
@@ -497,10 +474,10 @@ Les résultats pour les autres modèles de plongement, métriques et critères d
 % Si l'on considère le $F_1$ moyen comme 
 Du point de vue du $F_1$ moyen, le meilleur modèle est MLM avec TransE et distance cosinus; ce modèle obtient d'ailleurs le $F_1$ le plus élevé sur chacune des trois évaluations. Ce modèle est suivi, dans l'ordre décroissant, par MLI avec TransE et distance cosinus, MLM avec TransE et distance euclidienne, TIEmb et les distances cosinus puis euclidiennes, et MLI avec TransE et distance euclidienne. Tous ces modèles obtiennent un $F_1$ moyen supérieur à $0,75$.
 
-En moyenne, la méthode MLM obtient des résultats supérieurs à MLI et à TIEmb. TIEmb est inférieur aux méthodes MLM et MLI sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. 
+En moyenne, la méthode MLM obtient des résultats légèrement supérieurs à MLI, et supérieurs à TIEmb. TIEmb est inférieur aux méthodes MLM et MLI sur tous les modèles de plongement à l'exception de RDF2Vec, où il obtient de meilleurs scores. 
 
 
-Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérachie entre modèles est nette : TransE obtient les meilleurs résultats, quelle que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
+Si l'on évalue les modèles de plongement sur leur capacité à intégrer géométriquement l'information taxonomique, la hiérarchie entre modèles est nette : TransE obtient les meilleurs résultats, quelle que soit la méthode d'extraction ou la distance utilisée; RDF2Vec couplé à TIEmb obtient de bons résultats pour l'évaluation directe, ce qui indique une capacité à intégrer correctement les hiérarchies locales, mais commet des erreurs de haut niveau qui grèvent ses résultats moyens; ComplEx et DistMult sont nettement inférieurs à TransE, avec un léger avantage pour ComplEx.
 
 
 % TODO à affiner
@@ -532,7 +509,7 @@ On peut trouver étonnante la nette supériorité du modèle TransE, alors qu'il
 Puisque $(h, r_{\text{IS\_A}}, t)$ et $(h', r_{\text{IS\_A}}, t)$ sont deux triplets valides, les énergies $E(h, r_{\text{IS\_A}}, t) + E(h', r_{\text{IS\_A}}, t)$ sont minimisées pendant l'entraînement, et la distance entre $\bf{h}$ et $\bf{h'}$ est également minimisée. 
 On avait déjà noté cette propriété dans la section \ref{subsec:kge-models-transx} sur les limites du modèle TransE pour les relations \textit{many-to-one}: ici, dans le cas de l'extraction de taxonomie, cette limitation se transforme en point fort. De plus, nos observations permettent de valider une des hypothèses derrière TransE : ses concepteurs expliquaient que la translation était une bonne représentation pour les relations hiérarchiques, sans pouvoir en apporter de preuve; ici, les bons résultats de TransE apportent un argument empirique à cette intuition.
 
-Dans le chapitre précédent, on concluait que RDF2Vec et TransE étaient les meilleurs modèles en terme de séparabilité, dans cet ordre. Ici, nous devons constater que la séparabilité ne permet pas entièrement de préjuger des performances des modèles sur la tâche d'extraction de taxonomie. En effet, on observe bien une supériorité de RDF2Vec et TransE par rapport aux autres, mais c'est ici TransE qui domine nettement, tandis que RDF2Vec est à peine au-dessus de ComplEx et DistMult. Une piste d'explication viendrait du regroupement hiérarchique : si on observe les arbres de clustering produits par RDF2Vec et TransE, on constate que RDF2Vec donne des arbres plus déséquilibrés que TransE, et présente notamment une tendance à fusionner des clusters de tailles très inégales. Cette «aptitude au regroupement» n'est pas mesurée par la séparabilité, et pourrait expliquer l'inversion de la hiérarchie entre TransE et RDF2Vec. 
+Dans le chapitre précédent, on concluait que RDF2Vec et TransE étaient les meilleurs modèles en termes de séparabilité, dans cet ordre. Ici, nous devons constater que la séparabilité ne permet pas entièrement de préjuger des performances des modèles sur la tâche d'extraction de taxonomie. En effet, on observe bien une supériorité de RDF2Vec et TransE par rapport aux autres, mais c'est ici TransE qui domine nettement, tandis que RDF2Vec est à peine au-dessus de ComplEx et DistMult. Une piste d'explication viendrait du regroupement hiérarchique : si on observe les arbres de clustering produits par RDF2Vec et TransE, on constate que RDF2Vec donne des arbres plus déséquilibrés que TransE, et présente notamment une tendance à fusionner des clusters de tailles très inégales. Cette «aptitude au regroupement» n'est pas mesurée par la séparabilité, et pourrait expliquer l'inversion de la hiérarchie entre TransE et RDF2Vec. 
 
 Finalement, notons que, si notre approche obtient de bons résultats sur \textsc{DBpedia-Freq}, elle est encore incapable de traiter la taxonomie DBpedia complète. En effet, on est confronté à une tension entre gestion des classes rares et taille des données :
 d'un côté, si l'on maintient un jeu de données d'entrée de 50 000 entités, alors les classes rares de DBpedia sont insuffisamment représentées dans les données et l'algorithme ne parvient pas à les placer correctement dans la taxonomie prédite. À l'inverse, si l'on augmente la taille des données d'entrée, la complexité de l'algorithme de regroupement augmente de façon cubique, et le temps de calcul devient prohibitif. 
@@ -556,11 +533,11 @@ L'étape de regroupement hiérarchique consiste à regrouper des entités géom�
 
 Le deuxième paramètre du regroupement est le critère de liaison à utiliser. Les critères considérés ici sont détaillés dans la section \ref{sec:te-clustering-linkage} et sont au nombre de quatre : saut minimum, moyen et maximum, et distance de Ward, ce dernier critère étant propre à la distance euclidienne. Cela donne donc 10 combinaisons possibles pour l'étape de regroupement hiérarchique.
 
-Pour évaluer les performances moyennes de chaque combinaison de paramètres, on calcule la mesure $F_1$ de chaque combinaison, moyennée sur l'ensemble des modèles de plongements, et ce, pour les deux modes d'extraction MLI et MLM, et pour les deux modes d'évaluation direct et transitve. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
+Pour évaluer les performances moyennes de chaque combinaison de paramètres, on calcule la mesure $F_1$ de chaque combinaison, moyennée sur l'ensemble des modèles de plongements, et ce, pour les deux modes d'extraction MLI et MLM, et pour les deux modes d'évaluation direct et transitif. Le résultat est tracé à la figure \ref{fig:taxex-cluparams-all}.
 
 On observe que les deux meilleures combinaisons sont, dans tous les cas, la distance cosinus avec saut moyen (abrégé en «cos-moy» dans la suite) et la distance euclidienne avec critère de Ward (abrégé en «euc-ward»). Pour la méthode MLI, cos-moy est nettement supérieur à euc-ward dans les deux modes d'évaluation; pour la méthode MLM, les résultats des deux combinaisons sont très proches. 
 
-Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'ont pas abouti. Le saut minimum tend à renforcer les plus gros clusters à chaque étape \cite{everitt2011cluster}, ce qui produit des arbres-peignes, ou \textit{arbres dégénérés}. Un arbre-peigne est un arbre tel que chaque cluster est soit un cluster singleton, soit la fusion d'un cluster singleton avec un autre cluster (c'est donc l'opposé d'un arbre équilibré). Confronté à cette structure particulière, nos deux modèles MLI et MLM obtiennent des résultats nuls dans la plupart des cas.
+Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'ont pas abouti. Le saut minimum tend à renforcer les plus gros clusters à chaque étape \cite{everitt2011cluster}, ce qui produit des arbres-peignes, ou \textit{arbres dégénérés}. Un arbre-peigne est un arbre tel que chaque cluster est soit un cluster singleton, soit la fusion d'un cluster singleton avec un autre cluster (c'est donc l'opposé d'un arbre équilibré). Confrontés à cette structure particulière, nos deux modèles MLI et MLM obtiennent des résultats nuls dans la plupart des cas.
 
 %Le critère du saut minimum conduit à des arbres dégénérés 
 
@@ -574,7 +551,7 @@ Enfin, notons que la plupart de nos essais avec le critère du saut minimum n'on
 \subsection{Base du softmax et seuil de probabilité}
 \label{subsec:te-hp-softmapping}
 
-Les deux autres hyperparamètres sont propres à la méthode de liaison multiple : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsumption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$. Dans toute la suite, le modèle de plongement utilisé est TransE et le regroupement se fait avec la distance cosinus et le critère du saut moyen, puisque ce sont les paramètres qui donnent le meilleur $F_1$ sur toutes les évaluations. 
+Les deux autres hyperparamètres sont propres à la méthode de liaison multiple : il s'agit de la base $\beta$ du softmax, et du seuil de probabilité $t$. La base du softmax contrôle le piqué des distributions de probabilité $P(Z_t = C)$ autour des clusters qui ont la plus forte mesure $F_1$ : une valeur élevée concentre l'essentiel de la masse de probabilité sur le meilleur cluster, tandis qu'une valeur nulle distribue cette masse à tous les clusters. Le seuil de probabilité $t$ est utilisé pour filtrer la liste d'axiomes de subsomption lors de l'étape de reconstruction taxonomique : seuls les axiomes $(B \sqsubset A)$ qui vérifient $P(B \sqsubset A) > t$ sont conservés et ajoutés au graphe acyclique $G$. Dans toute la suite, le modèle de plongement utilisé est TransE et le regroupement se fait avec la distance cosinus et le critère du saut moyen, puisque ce sont les paramètres qui donnent le meilleur $F_1$ sur toutes les évaluations. 
 
 Un jeu d'évaluation $X$ est constitué d'un jeu de données d'entrée $\cal{D}$, contenant des plongements vectoriels et les types correspondants, et d'une taxonomie de référence $T^*$. Pour des paramètres fixés, on peut extraire une taxonomie $\hat{T}$ à partir de $\cal{D}$, comparer cette taxonomie à la référence $T^*$, et calculer les métriques précédentes : précision $p$, rappel $r$ et $F_1$, de façon directe et transitive. 
 
@@ -673,7 +650,7 @@ Cependant, cette recherche d'hyperparamètres demeure très limitée. D'une part
 \subsubsection{Influence de \texorpdfstring{$\beta$}{beta}}
 \label{subsec:te-hp-beta}
 
-Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsumption, on affiche les superclasses les plus probables de quelques classes choisies : \dbo{Athlete}, \dbo{Song}, \dbo{Event} (en français : Athlète, Chanson, Événément). Par superclasse la plus probable d'une classe $x$, on entend la classe $y$ telle que la probabilité $P(x \sqsubset y)$ soit supérieure à toutes les autres probabilités $P(x \sqsubset y')$. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie de référence, \dbo{Athlete} et \dbo{Song} ont deux superclasses (\dbo{Person}, \dbo{Agent} et \dbo{MusicalWork}, \dbo{Work} respectivement), tandis que \dbo{Event} n'en a aucune.
+Pour observer qualitativement l'effet de $\beta$ sur les probabilités des axiomes de subsomption, on affiche les superclasses les plus probables de quelques classes choisies : \dbo{Athlete}, \dbo{Song}, \dbo{Event} (en français : Athlète, Chanson, Événement). Par superclasse la plus probable d'une classe $x$, on entend la classe $y$ telle que la probabilité $P(x \sqsubset y)$ soit supérieure à toutes les autres probabilités $P(x \sqsubset y')$. Le résultat est affiché dans le tableau \ref{tab:hp-most-prob-axioms}. Dans la taxonomie de référence, \dbo{Athlete} et \dbo{Song} ont deux superclasses (\dbo{Person}, \dbo{Agent} et \dbo{MusicalWork}, \dbo{Work} respectivement), tandis que \dbo{Event} n'en a aucune.
 
 
 \begin{table}[h]
@@ -716,9 +693,9 @@ $\beta$	&	classe	&	$p$	&	classe	&	$p$	&	classe	&	$p$  \\
 
 
 
-Étudions d'abord les deux premiers tableaux. Dans les deux cas, on observe des résultats incohérents pour $\beta < 30$ : d'une part, les superclasses les plus probables ne correspondent pas aux vraies superclasses; d'autre part, les probabilités de toutes les superclasses sont très proches de zéro, ce qui ne permet pas de distinguer les axiomes pertinents des autres. Lorsque $\beta$ augmente (ici $\beta = 30$), les vraies superclasses commencent à émerger. Pour \dbo{Athlete}, les deux superclasses les plus probables sont bien les vraies superclasses; l'une d'elle  (\dbo{Agent}) est prédite avec probabilité 0.97, ce qui est satisfaisant; en revanche, l'autre (\dbo{Person}) est prédite avec une probabilité très faible. Il faut attendre $\beta = 100$ pour discriminer nettement les classes valides (\dbo{Agent} et \dbo{Person}, prédites avec probabilités $1$ et $0.41$ respectivement) des classes invalides (\dbo{Organisation}, avec probabilité $0.0$). Les mêmes observations s'appliquent à \dbo{Song} : les vraies superclasses émergent et se détachent progressivement des fausses superclasses. Dans ce cas, on note aussi que \dbo{Single}, qui n'est pas une superclasse de \dbo{Song} mais une classe sémantiquement proche, se voit attribuer une probabilité relativement élevée (entre $0.1$ et $0.2$).
+Étudions d'abord les deux premiers tableaux. Dans les deux cas, on observe des résultats incohérents pour $\beta < 30$ : d'une part, les superclasses les plus probables ne correspondent pas aux vraies superclasses; d'autre part, les probabilités de toutes les superclasses sont très proches de zéro, ce qui ne permet pas de distinguer les axiomes pertinents des autres. Lorsque $\beta$ augmente (ici $\beta = 30$), les vraies superclasses commencent à émerger. Pour \dbo{Athlete}, les deux superclasses les plus probables sont bien les vraies superclasses; l'une d'elles  (\dbo{Agent}) est prédite avec probabilité 0.97, ce qui est satisfaisant; en revanche, l'autre (\dbo{Person}) est prédite avec une probabilité très faible. Il faut attendre $\beta = 100$ pour discriminer nettement les classes valides (\dbo{Agent} et \dbo{Person}, prédites avec probabilités $1$ et $0.41$ respectivement) des classes invalides (\dbo{Organisation}, avec probabilité $0.0$). Les mêmes observations s'appliquent à \dbo{Song} : les vraies superclasses émergent et se détachent progressivement des fausses superclasses. Dans ce cas, on note aussi que \dbo{Single}, qui n'est pas une superclasse de \dbo{Song} mais une classe sémantiquement proche, se voit attribuer une probabilité relativement élevée (entre $0.1$ et $0.2$).
 
-Enfin, dans le cas de \dbo{Event}, le modèle prédit correctement des probabilités nulles pour tous les axiomes de subsumption possibles, et ce, quelle que soit la valeur de $\beta$. Cela correspond bien à la réalité, puisque \dbo{Event} ne possède aucune superclasse.
+Enfin, dans le cas de \dbo{Event}, le modèle prédit correctement des probabilités nulles pour tous les axiomes de subsomption possibles, et ce, quelle que soit la valeur de $\beta$. Cela correspond bien à la réalité, puisque \dbo{Event} ne possède aucune superclasse.
 
 Si l'on examine maintenant les taxonomies extraites pour différentes valeurs de $\beta$, on obtient la figure \ref{fig:hp-beta-taxonomies} (seules quelques classes sont représentées, pour faciliter l'affichage). Comme prévu, le cas $\beta = 1$ n'aboutit à rien : on obtient un arbre dégénéré. Quand $\beta$ augmente, les deux classes de niveau 1 (\dbo{Place} et \dbo{Agent}) sont identifiées, mais l'une est incorrectement considérée comme sous-classe de l'autre. Aucune hiérarchie ne se distingue sur les autres classes. Puis, pour $\beta=50$, les deux classes principales sont correctement séparées, et leurs sous-classes attribuées sans erreur. Une hiérarchie commence à se dessiner dans les sous-classes de \dbo{Place}, avec d'un côté les lieux habités (\dbo{PopulatedPlace} et \dbo{Region}), et de l'autre les espaces naturels (\dbo{NaturalPlace}, \dbo{Mountain}, \dbo{Volcano}). Enfin, pour $\beta=100$, la taxonomie est correctement extraite, avec une seule erreur (\dbo{Volcano} n'est pas sous-classe de \dbo{Mountain} dans la taxonomie de référence, même si cette classification aurait une certaine logique). Ces observations illustrent comment l'émergence progressive des superclasses quand $\beta$ augmente, décrite dans les paragraphes précédents, se traduit par une structuration croissante de la taxonomie extraite.
 
@@ -767,7 +744,7 @@ Ces tendances sont plus ou moins marquées selon $\beta$ : la précision augment
     \label{fig:threshold-search-1}
 \end{figure}
 
-Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail des résultats pour chacune des cinq taxonomies $X_i$ dans la figure \ref{fig:threshold-search-1}. On observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autre, le rappel est assez stable dans l'intervale $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$. La diversité des comportements d'une taxonomie à l'autre peut s'expliquer par la diversité des taxonomies elles-mêmes. Celles-ci ont en effet été construites avec un nombre de classes et une profondeur variable, dans l'espoir de mieux refléter la diversité des taxonomies du monde réel.
+Pour affiner ces observations, on fixe $\beta = 100$, et on affiche le détail des résultats pour chacune des cinq taxonomies $X_i$ dans la figure \ref{fig:threshold-search-1}. On observe également une grande hétérogénéité d'une taxonomie à l'autre. En particulier, l'augmentation de la précision avec $t$ est très nette pour l'un des modèles, mais moins pour les autres. De plus, la diminution du rappel est très rapide (dès $t > 0.05$) pour deux des modèles; pour les cinq autres, le rappel est assez stable dans l'intervalle $[0, 0.5]$, et diminue ensuite. Cette hétérogénéité s'observe aussi pour la mesure $F_1$ : dans un cas, elle est stable dans l'intervalle $[0.1, 0.7]$ et diminue ensuite régulièrement; dans deux autres cas, elle est stable sur $[0.1, 0.5]$, diminue vers un plateau sur $[0.5, 0.75]$, et diminue encore après $0.75$; dans les deux derniers cas, elle diminue rapidement dès que $t$ s'écarte de $0$. La diversité des comportements d'une taxonomie à l'autre peut s'expliquer par la diversité des taxonomies elles-mêmes. Celles-ci ont en effet été construites avec un nombre de classes et une profondeur variable, dans l'espoir de mieux refléter la diversité des taxonomies du monde réel.
 
 % Cette hétérogénéité des comportements rend difficile le choix définitif d'une valeur pour $t$; toutefois, choisir une valeur basse telle que $t = 0.1$ paraît donner les meilleurs résultats en moyenne.
 
